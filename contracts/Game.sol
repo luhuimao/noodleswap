@@ -57,7 +57,7 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
     //创建者手续费
     uint8 public ownerFee = 2;  
 
-    //平台手续费1
+    //平台手续费
     uint8 public platformFee = 2;
 
     uint8   public winOption;
