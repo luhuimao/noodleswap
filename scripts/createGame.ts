@@ -45,7 +45,7 @@ let main = async () => {
     console.log('new Game address:', gameAddress);
     const instanceGame = (await ethers.getContractFactory('Game')).connect(owner).attach(gameAddress) as Game;
     console.log('instanceGame.winOption:', await instanceGame.winOption());
-    instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('1'));
+    await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('1'));
     //TODO 这里增加其他函数调用
   });
   await instanceGameFactory.createGame(
