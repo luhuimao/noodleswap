@@ -5,7 +5,7 @@ pragma solidity = 0.8.3;
 import "../interfaces/ITokenStandardInterface.sol";
 
 //Token Transfer Library
-library TransferHelperLibrary {
+library TransferHelper {
     
     function safeApprove(address token, address to, uint256 value) internal {
         bool success = TokenStandardInterface(token).approve(to, value);

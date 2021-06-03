@@ -1,29 +1,13 @@
 pragma solidity = 0.8.3;
 
-import './interfaces/IGame.sol';
-import './NoodleGameERC20.sol';
 import './libraries/SafeMath.sol';
 import './interfaces/IERC20.sol';
-import './interfaces/IGameFactory.sol';
 import './ConfigurableParametersContract.sol';
+import './libraries/TransferHelper.sol';
 
-contract Game is IGame, NoodleGameERC20,ConfigurableParametersContract {
+contract Vote is ConfigurableParametersContract {
 
     using SafeMath  for uint;
-
-    struct OptionDataStruct {
-        uint256 marketNumber;
-        uint256 placeNumber;
-        uint256 frozenNumber;
-    }
-
-    event placeGame(address sender,address game,address token,string[] options,uint[] optionNum,uint256[] tokenId);
-    event addLiquidity(address sender,address game,address token,uint256 amount,uint256 liquidity,uint256 tokenId);
-    event removeLiquidity(address sender,address game,address token,uint256 liquidity,uint256 amount,uint256 tokenId);
-    event stakeGame(address sender,address game,address token,uint256 amount);
-    event openGame(address sender,address game,uint option);
-    event challengeGame(address sender,address game,uint originOption,uint challengeOption,address vote);
-    event openGameWithVote(address sender,address game,address vote,uint voteOption);
 
     address public game;
     address public noodleGameToken;
@@ -38,38 +22,21 @@ contract Game is IGame, NoodleGameERC20,ConfigurableParametersContract {
 
     uint256 public award;
 
+    address public noodleToken;
+
     mapping (address=>uint8) optionMap;
 
-    constructor() public {
-        game = msg.sender;
+    constructor(address _game) public{
+        game = _game;
     }
 
     // called once by the factory at time
-    function initialize(address _token,string _gameName,string[] _optionName,uint256[] _optionNum,string _resultSource,uint256 _endTime) external {
-        require(msg.sender == factory, 'NoodleSwap: FORBIDDEN'); 
-        token = _token;
-        gameName = _gameName;
-        optionName = _optionName;
-        optionNum = _optionNum;
-        resultSource = _resultSource;
-        endTime = _endTime;
-        ownerFee = 0.02;
-        platformFee = 0.02;
-        for (uint8 i = 0; i < optionNum.length; i++) {
-            OptionDataStruct option = new OptionDataStruct();
-            option.marketNumber = optionNum[i];
-            option.placeNumber = 0;
-            option.frozenNumber = 0;
-            options.push(option);
-        }
-    }
 
-    function add(uint8 option){
+    function add(uint8 option) public{
         require(endTime > block.timestamp, 'NoodleSwap: Vote end');
-        uint balance = IERC20(_token).balanceOf(address(msg.sender));
+        uint balance = IERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance <= voteNumber, 'NoodleSwap: address have not enough amount');
-        totalSupply = totalSupply - voteNumber;
-        TransferHelper.safeTransferFrom(noodleToken, msg.sender, this, voteNumber);
+        TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), voteNumber);
         optionMap[msg.sender] = option;
         if(option == originOption){
             originVoteNumber += 1;
@@ -78,7 +45,7 @@ contract Game is IGame, NoodleGameERC20,ConfigurableParametersContract {
         }
     }
 
-    function confirm(){
+    function confirm() public{
         require(endTime < block.timestamp, 'NoodleSwap: Vote cannot confirm before end');
         if(challengeVoteNumber > originVoteNumber * 2){
             winOption = challengeOption;
@@ -89,11 +56,11 @@ contract Game is IGame, NoodleGameERC20,ConfigurableParametersContract {
         }
     }
 
-    function getAward(){
+    function getAward() public{
         require(endTime < block.timestamp, 'NoodleSwap: Vote cannot confirm before end');
         uint8 option = optionMap[msg.sender];
         if(option == winOption){
-            TransferHelper.safeTransferFrom(noodleToken, this, msg.sender, award);
+            TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, award);
         }
     }
     
