@@ -7,5 +7,5 @@ interface IGameFactory {
         uint[] memory _optionNum,
         string memory _resultSource,
         uint _endTime
-    ) public returns(address game);
+    ) external returns(address game);
 }

@@ -9,7 +9,7 @@ contract PlayNFT is ERC721 {
     
     
     //constructor for an ERC721 is a name and symbol
-    constructor () external ERC721 ("NoodleSwapNFT", "NoodleSwapNFT"){
+    constructor () ERC721 ("NoodleSwapNFT", "NoodleSwapNFT"){
         tokenCounter = 0;
     }
 

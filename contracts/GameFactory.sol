@@ -22,13 +22,13 @@ contract GameFactory is IGameFactory {
 
     function createGame(
         address _token,
-        string _gameName,
-        string[] _optionName,
-        uint[] _optionNum,
-        string _resultSource,
+        string memory _gameName,
+        string[] memory _optionName,
+        uint[] memory _optionNum,
+        string memory _resultSource,
         uint _endTime
-    )  ensure(_endTime) public returns(address game) {
-        Game game = new Game(this,_token,_gameName,_optionName,_optionNum,_resultSource,_endTime);
+    )  ensure(_endTime) public override returns(address game) {
+        Game game = new Game(_token,_gameName,_optionName,_optionNum,_resultSource,_endTime);
         emit _GameCreated(_token,_gameName, _optionName,_optionNum,_resultSource,_endTime,address(game));
     }
 }

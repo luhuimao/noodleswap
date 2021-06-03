@@ -28,7 +28,7 @@ contract Vote is ConfigurableParametersContract {
 
     mapping (address=>uint8) optionMap;
 
-    constructor(address _game) external{
+    constructor(address _game) {
         game = _game;
     }
 
