@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
-import { ERC20 } from '../typechain/ERC20';
+import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import { GameFactory } from '../typechain/GameFactory';
 import { Game } from '../typechain/Game';
 import * as config from '../.config';
@@ -31,8 +31,13 @@ let main = async () => {
   let instanceGameFactory = (await (await ethers.getContractFactory('GameFactory')).deploy()) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
   // 下注代币
-  let instanceERC20 = (await (await ethers.getContractFactory('ERC20')).deploy('T0', 'Token 0')) as ERC20;
-  console.log('new ERC20 address:', instanceERC20.address);
+  let instanceERC20 = (await (
+    await ethers.getContractFactory('ERC20Faucet')
+  ).deploy('T0', 'Token 0', 18)) as ERC20Faucet;
+  // 领币
+  await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
+  await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
+  console.log('new ERC20Faucet address:', instanceERC20.address);
   let eventFilter = instanceGameFactory.filters._GameCreated(null, null, null, null, null, null, null);
   let gameAddress: string;
   instanceGameFactory.once(eventFilter, async (v0, v1, v2, v3, v4, v5, v6) => {
@@ -40,6 +45,7 @@ let main = async () => {
     console.log('new Game address:', gameAddress);
     const instanceGame = (await ethers.getContractFactory('Game')).connect(owner).attach(gameAddress) as Game;
     console.log('instanceGame.winOption:', await instanceGame.winOption());
+    instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('1'));
     //TODO 这里增加其他函数调用
   });
   await instanceGameFactory.createGame(
