@@ -38,14 +38,14 @@ let main = async () => {
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   console.log('new ERC20Faucet address:', instanceERC20.address);
-  let eventFilter = instanceGameFactory.filters._GameCreated(null, null, null, null, null, null, null);
+  let eventFilter = instanceGameFactory.filters._GameCreated(instanceERC20.address, null, null, null, null, null, null);
   let gameAddress: string;
-  instanceGameFactory.once(eventFilter, async (v0, v1, v2, v3, v4, v5, v6) => {
-    gameAddress = v6;
+  instanceGameFactory.once(eventFilter, async (tokenaddr, gameaddr) => {
+    gameAddress = gameaddr;
     console.log('new Game address:', gameAddress);
     const instanceGame = (await ethers.getContractFactory('Game')).connect(owner).attach(gameAddress) as Game;
     console.log('instanceGame.winOption:', await instanceGame.winOption());
-    await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('1'));
+    // await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('1'));
     //TODO 这里增加其他函数调用
   });
   await instanceGameFactory.createGame(

@@ -14,11 +14,10 @@ describe('ERC20Faucet', () => {
   describe('faucet', () => {
     it('faucet 1 eth', async () => {
       expect(await instance['faucet(uint256)'](1))
-        .to.be.be.be.be.emit(instance, 'Transfer')
+        .to.emit(instance, 'Transfer')
         .withArgs('0x0000000000000000000000000000000000000000', owner.address, 1);
       // expect(await instance.balanceOf(owner.address)).to.be.eq(0);
     });
-    //TODO 还没有水龙头接口
   });
   describe('transfer', () => {
     it('user should inc 1 eth', async () => {

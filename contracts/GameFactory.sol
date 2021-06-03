@@ -12,13 +12,13 @@ contract GameFactory is IGameFactory {
     }
 
     event _GameCreated(
-        address _token,
+        address indexed _token,
+        address indexed _game,
         string _gameName,
         string[] _optionName,
         uint256[] _optionNum,
         string _resultSource,
-        uint256 _endTime,
-        address _game
+        uint256 _endTime
     );
 
     function createGame(
@@ -30,6 +30,6 @@ contract GameFactory is IGameFactory {
         uint256 _endTime
     ) public override ensure(_endTime) returns (address game) {
         game = address(new Game(_token, _gameName, _optionName, _optionNum, _resultSource, _endTime));
-        emit _GameCreated(_token, _gameName, _optionName, _optionNum, _resultSource, _endTime, game);
+        emit _GameCreated(_token, game, _gameName, _optionName, _optionNum, _resultSource, _endTime);
     }
 }
