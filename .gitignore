@@ -11,6 +11,7 @@ bin/
 .DS_Store
 coverage/
 coverage.json
+scripts/*.js
 
 hardhat.config.ts
 truffle-config.js
