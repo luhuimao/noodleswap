@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity = 0.8.3;
 
-//import "./libraries/ERC721.sol";
-import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
+import "./libraries/openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 //this contract inherits ERC721
 contract PlayNFT is ERC721 {
@@ -16,16 +15,16 @@ contract PlayNFT is ERC721 {
 
     //a token url is a ipfs url
     //after we mint the token we are going to return the id of the token
-    function createNFT(string memory tokenURI) public returns (uint256) {
+    function createNFT(address player,string memory tokenURI) public returns (uint256) {
 
         //get number from token counter
         uint256 newNFTTokenId = tokenCounter;
 
         //safely mint token for the person that called the function
-        _safeMint(msg.sender, newNFTTokenId);
+        _safeMint(player, newNFTTokenId);
     
         //set the token uri of the token id of the uri passed
-        _setTokenURI(newNFTTokenId, tokenURI);
+        //_setTokenURI(newNFTTokenId, tokenURI);
     
         //increment the counter
         tokenCounter = tokenCounter + 1;
