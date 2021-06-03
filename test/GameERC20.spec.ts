@@ -36,13 +36,14 @@ describe('GameERC20', () => {
       let after = await user.getBalance();
       expect(ethers.utils.formatEther(after.sub(before))).to.eq('1.0');
     });
-    it('transfer 1000000 eth should revert', async () => {
-      let tx = owner.sendTransaction({
-        value: ethers.utils.parseEther('1000000'),
-        to: user.address,
-      });
-      // await expect(tx).to.be.reverted;
+    it('transfer 1 should revert', async () => {
+      let tx = instance.transfer(user.address, 1);
+      await expect(tx).to.be.reverted;
       // await expect(tx).to.be.revertedWith('InvalidInputError');
     });
+    // it('checkFalse should revert', async () => {
+    //   await expect(instance.checkFalse()).to.be.reverted;
+    //   await expect(instance.checkFalse()).to.be.revertedWith('false');
+    // });
   });
 });
