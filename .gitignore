@@ -12,6 +12,7 @@ bin/
 coverage/
 coverage.json
 scripts/*.js
+test/*.js
 
 hardhat.config.ts
 truffle-config.js
