@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity = 0.8.3;
 
-import "./libraries/ERC721.sol";
+//import "./libraries/ERC721.sol";
+import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
 
 //this contract inherits ERC721
 contract PlayNFT is ERC721 {

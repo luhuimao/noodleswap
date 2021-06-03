@@ -157,7 +157,8 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
         uint balance = IERC20(_token).balanceOf(address(msg.sender));
         require(balance < amount, 'NoodleSwap: address have not enough amount');
 
-        uint256 sum = 0,frozenSum = 0;
+        uint256 sum = 0;
+        uint256 frozenSum = 0;
         for (uint8 i = 0; i < options.length; i++){
             sum += options[i].marketNumber;
             if(options[i].placeNumber > options[i].frozenNumber){
@@ -204,7 +205,8 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
         //从池子里拿出的金额
         uint256 k = liquidity/totalSupply;
 
-        uint256 sum = 0, frozenSum = 0;
+        uint256 sum = 0;
+        uint256 frozenSum = 0;
         for (uint8 i = 0; i < options.length; i++){
             sum += options[i].marketNumber * k;
             options[i].marketNumber = options[i].marketNumber * (1 - k);
