@@ -222,7 +222,7 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
                 uint256 optionP = frozenSum/placeNumber + 1;
                 //调用生成ERC721 token的接口, i,placeNumber,optionP,frozenSum,返回tokenId
                 uint256 tokenId = playNFT.createNFT(msg.sender,'');
-                PlayInfoStruct memory playInfo = new PlayInfoStruct();
+                PlayInfoStruct memory playInfo;
                 playInfo.option = i;
                 playInfo.optionNum = placeNumber;
                 playInfo.optionP = optionP;
