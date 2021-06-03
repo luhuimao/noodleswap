@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity = 0.8.3;
+pragma solidity ^0.8.3;
 
 interface INoodleGameERC20 {
     //event Approval(address indexed owner, address indexed spender, uint value);
