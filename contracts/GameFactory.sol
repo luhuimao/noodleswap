@@ -12,7 +12,7 @@ contract GameFactory is IGameFactory {
         _;
     }
 
-    event GameCreated(address _token,
+    event _GameCreated(address _token,
         string _gameName,
         string[] _optionName,
         uint[] _optionNum,
@@ -29,6 +29,6 @@ contract GameFactory is IGameFactory {
         uint _endTime
     )  ensure(_endTime) public returns(address game) {
         Game game = new Game(this,_token,_gameName,_optionName,_optionNum,_resultSource,_endTime);
-        emit GameCreated(_token,_gameName, _optionName,_optionNum,_resultSource,_endTime,address(game));
+        emit _GameCreated(_token,_gameName, _optionName,_optionNum,_resultSource,_endTime,address(game));
     }
 }

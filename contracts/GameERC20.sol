@@ -4,7 +4,7 @@ pragma solidity = 0.8.3;
 import './interfaces/INoodleGameERC20.sol';
 import './libraries/SafeMath.sol';
 
-contract NoodleGameERC20 is INoodleGameERC20 {
+contract GameERC20 is INoodleGameERC20 {
     using SafeMath for uint;
 
     string public constant name = 'NoodleGame';

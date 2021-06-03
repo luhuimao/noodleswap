@@ -28,8 +28,8 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
         uint256 allFrozen;
     }
 
-    modifier ensure(uint endTime) {
-        require(endTime >= block.timestamp, 'NoodleSwapGame: EXPIRED');
+    modifier ensure(uint _endTime) {
+        require(_endTime >= block.timestamp, 'NoodleSwapGame: EXPIRED');
         _;
     }
 
@@ -38,13 +38,13 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
         _;
     }
 
-    event placeGame(address sender,address game,address token,string[] options,uint[] optionNum,uint256[] tokenId);
-    event addLiquidity(address sender,address game,address token,uint256 amount,uint256 liquidity,uint256 tokenId);
-    event removeLiquidity(address sender,address game,address token,uint256 liquidity,uint256 amount,uint256 tokenId);
-    event stakeGame(address sender,address game,address token,uint256 amount);
-    event openGame(address sender,address game,uint option);
-    event challengeGame(address sender,address game,uint originOption,uint challengeOption,address vote);
-    event openGameWithVote(address sender,address game,address vote,uint voteOption);
+    event _placeGame(address sender,address game,address token,string[] options,uint[] optionNum,uint256[] tokenIds);
+    event _addLiquidity(address sender,address game,address token,uint256 amount,uint256 liquidity,uint256[] tokenIds);
+    event _removeLiquidity(address sender,address game,address token,uint256 liquidity,uint256 amount,uint256[] tokenIds);
+    event _stakeGame(address sender,address game,address token,uint256 amount);
+    event _openGame(address sender,address game,uint option);
+    event _challengeGame(address sender,address game,uint originOption,uint challengeOption,address vote);
+    event _openGameWithVote(address sender,address game,address vote,uint voteOption);
 
     address public token;
     string  public gameName;
@@ -72,20 +72,19 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
     address private playNFT;
 
     constructor(address _token,
-    string _gameName,
+    string memory _gameName,
     string[] memory _optionName,
     uint256[] memory _optionNum,
-    string _resultSource,
+    string memory _resultSource,
     uint _endTime) external {
         token = _token;
         gameName = _gameName;
         optionName = _optionName;
-        optionNum = _optionNum;
         resultSource = _resultSource;
         endTime = _endTime;
-        for (uint8 i = 0; i < optionNum.length; i++) {
-            OptionDataStruct option = new OptionDataStruct();
-            option.marketNumber = optionNum[i];
+        for (uint8 i = 0; i < _optionNum.length; i++) {
+            OptionDataStruct memory option;
+            option.marketNumber = _optionNum[i];
             option.placeNumber = 0;
             option.frozenNumber = 0;
             options.push(option);
@@ -94,25 +93,24 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
     }
 
     //下单
-    function placeGame(
-        address _token, 
+    function placeGame(address _token, 
         uint8[] memory _options,
         uint256[] memory _optionNum,
         uint _endTime)  ensure(_endTime) gameEndCheck(endTime) public payable returns(uint256[] tokenIds){
         require(token != _token,'NoodleSwap: Forbidden');
         require(block.timestamp > endTime,'NoodleSwap: Game End');
         uint balance = IERC20(_token).balanceOf(address(msg.sender));
-        unit256 sum = 0;
+        uint256 sum = 0;
         for (uint8 i = 0; i < _optionNum.length; i++) {
             sum  += _optionNum[i];
         }
         require(balance < sum, 'NoodleSwap: address have not enough amount');
         for (uint8 i = 0; i < _options.length; i++){
-            OptionDataStruct option = options[_options[i]];
+            OptionDataStruct memory option = options[_options[i]];
             option.placeNumber += _optionNum[i];
         }
         //calc the odd
-        uint256[] currentFrozen = new uint256[options.length];
+        uint256[] memory currentFrozen;
         for (uint8 i = 0;i < _options.length; i++){
             uint8  optionId = _options[i];
             uint256 optionNum = _optionNum[i];
@@ -126,11 +124,11 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
                 }
             }
             //这个选项的赔率
-            uint256 optionP = allFrozen/optionNum*(1 - ownerFee - platformFee) + 1;
+            uint256 optionP = allFrozen/optionNum*(1 - ownerFee/100 - platformFee/100) + 1;
             //调用生成ERC721 token的接口, option,optionNum,optionP,allFrozen,返回tokenId
             //可以考虑将这些信息放到uri这个字符串中
-            tokenId = PlayNFT(playNFT).createNFT('');
-            PlayInfoStruct playInfo = new PlayInfoStruct();
+            uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender,'');
+            PlayInfoStruct memory playInfo;
             playInfo.option = optionId;
             playInfo.optionNum = optionNum;
             playInfo.optionP = optionP;
@@ -142,11 +140,11 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
             options[i].frozenNumber = options[i].frozenNumber - currentFrozen[i];
         }
         TransferHelper.safeTransferFrom(token, msg.sender, this, sum);
-        emit placeGame(msg.sender,this,token,_options,_optionNum,tokenId);
+        emit _placeGame(msg.sender,this,token,_options,_optionNum,tokenIds);
     }
 
     //p = (b + placeB) / (a + placeA)
-    function _calcOdd(OptionDataStruct a,OptionDataStruct b) private returns(uint256 p){
+    function _calcOdd(OptionDataStruct memory a,OptionDataStruct memory b) private returns(uint256 p){
         uint256 sumA = a.placeNumber + a.marketNumber - a.frozenNumber;
         uint256 sumB = b.placeNumber + b.marketNumber - b.frozenNumber;
         p = sumB/sumA;
@@ -177,9 +175,8 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
                 options[i].placeNumber += placeNumber;
                 uint256 optionP = frozenSum / placeNumber;
                 //调用生成ERC721 token的接口, i,placeNumber,optionP,frozenSum,返回tokenId
-                PlayNFT playNFT = new PlayNFT();
-                tokenId = playNFT.createNFT('');
-                PlayInfoStruct playInfo = new PlayInfoStruct();
+                uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender,'');
+                PlayInfoStruct memory playInfo = new PlayInfoStruct();
                 playInfo.option = i;
                 playInfo.optionNum = placeNumber;
                 playInfo.optionP = optionP;
@@ -191,7 +188,7 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
             }
         }
         //以第一个池子的数来计算生成的做市币数量
-        uint256 liquidity = options[0].marketNumber *k;
+        liquidity = options[0].marketNumber *k;
         TransferHelper.safeTransferFrom(token, msg.sender, this, amount);
         //转做市代币，转生成的交易代币
         TransferHelper.safeTransferFrom(address(this), this, msg.sender, liquidity);
@@ -224,8 +221,8 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
                 options[i].placeNumber += placeNumber;
                 uint256 optionP = frozenSum/placeNumber + 1;
                 //调用生成ERC721 token的接口, i,placeNumber,optionP,frozenSum,返回tokenId
-                tokenId = playNFT.createNFT('');
-                PlayInfoStruct playInfo = new PlayInfoStruct();
+                uint256 tokenId = playNFT.createNFT(msg.sender,'');
+                PlayInfoStruct memory playInfo = new PlayInfoStruct();
                 playInfo.option = i;
                 playInfo.optionNum = placeNumber;
                 playInfo.optionP = optionP;
@@ -241,24 +238,22 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
     function getAward(
         uint256 tokenId
     ) private returns (uint256 amount) {
-        PlayInfoStruct playInfo = playInfoMap[tokenId];
+        PlayInfoStruct memory playInfo = playInfoMap[tokenId];
         //todo: 要加一些条件校验
         if(playInfo.option == winOption){ //用户赢了，则将币转给用户
 
         }
-
     }
 
-    function stakeGame(uint deadline) {
+    function stakeGame(uint deadline) public{
         require(openAddress != address(0),'NoodleSwap: the game has openAddress');
         uint balance = IERC20(gameToken).balanceOf(address(msg.sender));
         require(balance < stakeNumber, 'NoodleSwap: address have not enough amount');
-        totalSupply = totalSupply - stakeNumber;
         TransferHelper.safeTransferFrom(gameToken, msg.sender, this, stakeNumber);
         openAddress = msg.sender;
     }
 
-    function openGame(uint8 _winOption) {
+    function openGame(uint8 _winOption) public{
         require(openAddress != msg.sender,'NoodleSwap: cannot open game');
         winOption = _winOption;
         endTime = block.timestamp;
@@ -269,10 +264,10 @@ contract Game is IGame, GameERC20,ConfigurableParametersContract {
         uint balance = IERC20(gameToken).balanceOf(address(msg.sender));
         require(balance < stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(gameToken, msg.sender, this, stakeNumber);
-        vote = new Vote();
+        vote = new Vote(address(this));
     }
 
-    function openGameWithVote(){
+    function openGameWithVote() public{
         winOption = vote.getWinOption();
         endTime = block.timestamp;
     }

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity = 0.8.3;
 
 import './libraries/SafeMath.sol';
@@ -26,7 +27,7 @@ contract Vote is ConfigurableParametersContract {
 
     mapping (address=>uint8) optionMap;
 
-    constructor(address _game) public{
+    constructor(address _game) external{
         game = _game;
     }
 
