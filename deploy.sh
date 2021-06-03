@@ -1,6 +1,6 @@
 #!/bin/bash
 
-npx hardhat run --network harhat  ./scripts/deploy.ts
+npx hardhat run --network hardhat  ./scripts/deploy-hardhat.ts
 #npx hardhat run --network ganache  ./scripts/deploy.ts
 #npx hardhat run --network bsctestnet  ./scripts/deploy-bsctestnet.ts
 #npx hardhat run --network bsc  ./scripts/deploy.ts
