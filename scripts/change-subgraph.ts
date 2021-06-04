@@ -17,11 +17,6 @@ let main = async () => {
 
   console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));
 
-  let response = await config.GetConfigAddressByGameFactoryAddress(
-    network.name,
-    config.getGameFactoryAddressByNetwork(network.name)
-  );
-
   let factoryaddr = config.getGameFactoryAddressByNetwork(network.name);
   if (factoryaddr == null) {
     console.error('gamerouter address null:', network.name);
