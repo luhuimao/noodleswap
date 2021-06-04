@@ -158,7 +158,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         console.log('playInfo.optionNum:',playInfoMap[0].optionNum);
         console.log('playInfo.allFrozen:',playInfoMap[0].allFrozen);
         for (uint8 i = 0; i < options.length; i++) {
-            options[i].frozenNumber = options[i].frozenNumber - currentFrozen[i];
+            options[i].frozenNumber = options[i].frozenNumber + currentFrozen[i];
         }
         console.log('begin transfer');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
