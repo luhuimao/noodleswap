@@ -6,8 +6,6 @@ import { ERC20 } from '../typechain/ERC20';
 import * as config from '../.config';
 import { Contract } from 'ethers';
 import { getOwnerPrivateKey } from '../.privatekey';
-//import { TransactionReceipt } from "@ethersproject/abstract-provider";
-import { TransactionResponse } from '@ethersproject/abstract-provider';
 import * as boutils from './boutils';
 
 let main = async () => {
@@ -79,15 +77,6 @@ let main = async () => {
     (await instanceGameFactory.getCodeHash()).slice(2)
   );
 
-  const GameRouterFactory = await ethers.getContractFactory('GameRouter');
-  //address _factory, address _gst, address _ballot
-  const instanceGameRouter = (await GameRouterFactory.connect(owner).deploy(
-    instanceGameFactory.address,
-    instanceGSTTOKEN.address,
-    instanceGameBallot.address
-  )) as GameRouter;
-  console.log('new GameRouter address:', instanceGameRouter.address);
-
   boutils.ReplaceLine(
     'contracts/libraries/GameLibrary.sol',
     'hex.*\\/\\/8f27dd26047dcc02e6e4b1d15f94c59f5b7c4b3162bb661d3a1e29154c6a2562',
@@ -105,26 +94,12 @@ let main = async () => {
           instanceGameFactory.address +
           '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
       );
-      boutils.ReplaceLine(
-        'config.ts',
-        'GAMEROUTER_ADDRESS_GANACHE.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
-        'GAMEROUTER_ADDRESS_GANACHE = "' +
-          instanceGameRouter.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
-      );
     case 'bsctestnet':
       boutils.ReplaceLine(
         'config.ts',
         'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
         'GAMEFACTORY_ADDRESS_BSCTESTNET = "' +
           instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
-      );
-      boutils.ReplaceLine(
-        'config.ts',
-        'GAMEROUTER_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
-        'GAMEROUTER_ADDRESS_BSCTESTNET = "' +
-          instanceGameRouter.address +
           '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
       );
     case 'rinkeby':
@@ -135,26 +110,12 @@ let main = async () => {
           instanceGameFactory.address +
           '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
       );
-      boutils.ReplaceLine(
-        'config.ts',
-        'GAMEROUTER_ADDRESS_RINKEBY.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
-        'GAMEROUTER_ADDRESS_RINKEBY = "' +
-          instanceGameRouter.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
-      );
     default:
       boutils.ReplaceLine(
         'config.ts',
         'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
         'GAMEFACTORY_ADDRESS_BSCTESTNET = "' +
           instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
-      );
-      boutils.ReplaceLine(
-        'config.ts',
-        'GAMEROUTER_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
-        'GAMEROUTER_ADDRESS_BSCTESTNET = "' +
-          instanceGameRouter.address +
           '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
       );
   }
@@ -175,14 +136,13 @@ let main = async () => {
   let ret = await (
     await instanceConfigAddress.upsert(
       instanceGameFactory.address,
-      instanceGameRouter.address,
+      97,
       instanceGSTTOKEN.address,
       instanceWETH9.address,
       instanceUSDT.address,
       'https://data-seed-prebsc-1-s1.binance.org:8545',
       'https://testnet.bscscan.com',
-      'Bsc Test NetWork',
-      97
+      'Bsc Test NetWork'
     )
   ).wait();
   console.log('instanceConfigAddress.upsert:', ret.transactionHash);
