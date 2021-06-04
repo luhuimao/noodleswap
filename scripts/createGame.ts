@@ -10,7 +10,7 @@ let main = async () => {
   console.log('network:', network.name);
   let deadline = Date.now() + 86400;
   let user;
-  let owner = new ethers.Wallet(getOwnerPrivateKey(network.name), ethers.provider);
+  let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();
   let ownerBalance = await owner.getBalance();
   if (ownerBalance.toString() == '0') {

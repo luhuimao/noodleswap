@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
-import { ConfigurableParametersContract } from '../typechain/ConfigurableParametersContract';
+import { ConfigAddress } from '../typechain/ConfigAddress';
 import { GameERC20 } from '../typechain/GameERC20';
 import { ERC20 } from '../typechain/ERC20';
 import * as config from '../.config';
@@ -11,7 +11,7 @@ import * as boutils from './boutils';
 let main = async () => {
   console.log('network:', network.name);
   let user;
-  let owner = new ethers.Wallet(getOwnerPrivateKey(network.name), ethers.provider);
+  let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();
 
   console.log(
@@ -21,13 +21,13 @@ let main = async () => {
     ethers.utils.formatEther((await owner.getBalance()).toString())
   );
 
-  const ConfigAddressFactory = await ethers.getContractFactory('ConfigurableParametersContract');
+  const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
   let tmpaddr = config.getConfigAddressByNetwork(network.name);
   if (tmpaddr == null) {
     console.error('config address null:', network.name);
     return;
   }
-  const instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(tmpaddr) as ConfigurableParametersContract;
+  const instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(tmpaddr) as ConfigAddress;
   console.log('config address:', instanceConfigAddress.address);
 
   if (instanceConfigAddress.address == '') {
@@ -89,34 +89,34 @@ let main = async () => {
     case 'ganache':
       boutils.ReplaceLine(
         'config.ts',
-        'GAMEFACTORY_ADDRESS_GANACHE.*\\/\\/REPLACE_FLAG',
+        'GAMEFACTORY_ADDRESS_GANACHE.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
         'GAMEFACTORY_ADDRESS_GANACHE = "' +
           instanceGameFactory.address +
-          '"; \\/\\/REPLACE_FLAG'
+          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
       );
     case 'bsctestnet':
       boutils.ReplaceLine(
         'config.ts',
-        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/REPLACE_FLAG',
+        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
         'GAMEFACTORY_ADDRESS_BSCTESTNET = "' +
           instanceGameFactory.address +
-          '"; \\/\\/REPLACE_FLAG'
+          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
       );
     case 'rinkeby':
       boutils.ReplaceLine(
         'config.ts',
-        'GAMEFACTORY_ADDRESS_RINKEBY.*\\/\\/REPLACE_FLAG',
+        'GAMEFACTORY_ADDRESS_RINKEBY.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
         'GAMEFACTORY_ADDRESS_RINKEBY = "' +
           instanceGameFactory.address +
-          '"; \\/\\/REPLACE_FLAG'
+          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
       );
     default:
       boutils.ReplaceLine(
         'config.ts',
-        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/REPLACE_FLAG',
+        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
         'GAMEFACTORY_ADDRESS_BSCTESTNET = "' +
           instanceGameFactory.address +
-          '"; \\/\\/REPLACE_FLAG'
+          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
       );
   }
 

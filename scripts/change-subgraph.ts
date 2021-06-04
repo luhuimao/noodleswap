@@ -12,7 +12,7 @@ const abi: AbiCoder = require('web3-eth-abi');
 let main = async () => {
   console.log('network:', network.name);
   let user;
-  let owner = new ethers.Wallet(getOwnerPrivateKey(network.name), ethers.provider);
+  let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();
 
   console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));

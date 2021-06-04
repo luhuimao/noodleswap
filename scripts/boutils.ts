@@ -1,4 +1,3 @@
-import { json } from '@graphprotocol/graph-ts';
 import { exec } from 'child_process';
 
 export function ReplaceLine(filename: string, srcStr: string, dstStr: string): any {

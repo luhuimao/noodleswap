@@ -11,7 +11,7 @@ import * as boutils from './boutils';
 let main = async () => {
   console.log('network:', network.name);
   let user;
-  let owner = new ethers.Wallet(getOwnerPrivateKey(network.name), ethers.provider);
+  let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();
 
   let ownerBalance = await owner.getBalance();

@@ -10,7 +10,7 @@ let main = async () => {
   console.log('network:', network.name);
   let deadline = Date.now() + 8640000;
   let user;
-  let owner = new ethers.Wallet(getOwnerPrivateKey(network.name), ethers.provider);
+  let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();
   let ownerBalance = await owner.getBalance();
   if (ownerBalance.toString() == '0') {
@@ -45,11 +45,11 @@ let main = async () => {
     console.log('new Game address:', gameAddress);
     const instanceGame = (await ethers.getContractFactory('Game')).connect(owner).attach(gameAddress) as Game;
     console.log('instanceGame.winOption:', await instanceGame.winOption());
-    console.log('game optionNames:',await instanceGame.options(0));
+    console.log('game optionNames:', await instanceGame.options(0));
     // await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('1'));
     //TODO 这里增加其他函数调用
-    let tokenId = await instanceGame.placeGame(instanceERC20.address,[0],[10],Date.now()+1000);
-    console.log('tokenId',tokenId);
+    let tokenId = await instanceGame.placeGame(instanceERC20.address, [0], [10], Date.now() + 1000);
+    console.log('tokenId', tokenId);
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,
