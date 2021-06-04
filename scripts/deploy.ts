@@ -89,34 +89,34 @@ let main = async () => {
     case 'ganache':
       boutils.ReplaceLine(
         'config.ts',
-        'GAMEFACTORY_ADDRESS_GANACHE.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
+        'GAMEFACTORY_ADDRESS_GANACHE.*\\/\\/REPLACE_FLAG',
         'GAMEFACTORY_ADDRESS_GANACHE = "' +
           instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
+          '"; \\/\\/REPLACE_FLAG'
       );
     case 'bsctestnet':
       boutils.ReplaceLine(
         'config.ts',
-        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
+        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/REPLACE_FLAG',
         'GAMEFACTORY_ADDRESS_BSCTESTNET = "' +
           instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
+          '"; \\/\\/REPLACE_FLAG'
       );
     case 'rinkeby':
       boutils.ReplaceLine(
         'config.ts',
-        'GAMEFACTORY_ADDRESS_RINKEBY.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
+        'GAMEFACTORY_ADDRESS_RINKEBY.*\\/\\/REPLACE_FLAG',
         'GAMEFACTORY_ADDRESS_RINKEBY = "' +
           instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
+          '"; \\/\\/REPLACE_FLAG'
       );
     default:
       boutils.ReplaceLine(
         'config.ts',
-        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
+        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/REPLACE_FLAG',
         'GAMEFACTORY_ADDRESS_BSCTESTNET = "' +
           instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
+          '"; \\/\\/REPLACE_FLAG'
       );
   }
 

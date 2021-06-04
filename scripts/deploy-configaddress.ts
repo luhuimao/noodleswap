@@ -14,7 +14,7 @@ let main = async () => {
 
   const instance = (await (await ethers.getContractFactory('ConfigAddress')).connect(owner).deploy()) as ConfigAddress;
   console.log('new ConfigAddress address:', instance.address);
-  let flag = '\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9';
+  let flag = '\\/\\/REPLACE_FLAG';
   let key = 'CONFIGADDRESS_ADDRESS_' + network.name.toUpperCase();
   ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instance.address + '"; ' + flag);
   key = 'DEPLOY_ACCOUNT_' + network.name.toUpperCase();
