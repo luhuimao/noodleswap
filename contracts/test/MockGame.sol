@@ -97,7 +97,9 @@ contract MockGame is IGame {
         public
         override
         returns (uint256 liquidity, uint256[] memory tokenIds)
-    {}
+    {
+        emit _addLiquidity(address(this), _token, msg.sender, amount, liquidity, tokenIds);
+    }
 
     function removeLiquidity(address _token, uint256 liquidity)
         public
