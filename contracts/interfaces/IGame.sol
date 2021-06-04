@@ -26,31 +26,31 @@ interface IGame {
     function openGameWithVote() external;
 
     event _placeGame(
-        address indexed sender,
         address indexed game,
         address indexed token,
+        address indexed sender,
         uint8[] options,
         uint256[] optionNum,
         uint256[] tokenIds
     );
     event _addLiquidity(
-        address indexed sender,
         address indexed game,
         address indexed token,
+        address indexed sender,
         uint256 amount,
         uint256 liquidity,
         uint256[] tokenIds
     );
     event _removeLiquidity(
-        address indexed sender,
         address indexed game,
         address indexed token,
+        address indexed sender,
         uint256 liquidity,
         uint256 amount,
         uint256[] tokenIds
     );
-    event _stakeGame(address indexed sender, address indexed game, address indexed token, uint256 amount);
-    event _openGame(address indexed sender, address indexed game, uint256 option);
+    event _stakeGame(address indexed game, address indexed token, address indexed sender, uint256 amount);
+    event _openGame(address indexed game, address indexed sender, uint256 option);
     event _challengeGame(
         address indexed sender,
         address indexed game,
@@ -58,5 +58,5 @@ interface IGame {
         uint256 challengeOption,
         address vote
     );
-    event _openGameWithVote(address indexed sender, address indexed game, address vote, uint256 voteOption);
+    event _openGameWithVote(address indexed game, address indexed sender, address vote, uint256 voteOption);
 }

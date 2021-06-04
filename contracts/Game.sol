@@ -166,7 +166,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //p = (b + placeB) / (a + placeA)
-    function _calcOdd(OptionDataStruct memory a, OptionDataStruct memory b) private returns (uint256 p) {
+    function _calcOdd(OptionDataStruct memory a, OptionDataStruct memory b) private pure returns (uint256 p) {
         uint256 sumA = a.placeNumber + a.marketNumber - a.frozenNumber;
         uint256 sumB = b.placeNumber + b.marketNumber - b.frozenNumber;
         p = sumB / sumA;
