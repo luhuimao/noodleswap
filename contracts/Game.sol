@@ -10,7 +10,6 @@ import './ConfigurableParametersContract.sol';
 import './Vote.sol';
 import './PlayNFT.sol';
 
-//contract Game is IGame, GameERC20,ConfigurableParametersContract {
 contract Game is IGame, GameERC20, ConfigurableParametersContract {
     using SafeMath for uint256;
 
@@ -86,22 +85,13 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         playNFT = address(new PlayNFT());
     }
 
-    function createGame(
-        address _token,
-        string memory _gameName,
-        string[] memory _optionName,
-        uint256[] memory _optionNum,
-        string memory _resultSource,
-        uint256 _endTime
-    ) public override returns (address game) {}
-
     //下单
     function placeGame(
         address _token,
         uint8[] memory _options,
         uint256[] memory _optionNum,
         uint256 _endTime
-    ) public payable ensure(_endTime) gameEndCheck(endTime) returns (uint256[] memory tokenIds) {
+    ) public payable override ensure(_endTime) gameEndCheck(endTime) returns (uint256[] memory tokenIds) {
         require(token != _token, 'NoodleSwap: Forbidden');
         require(block.timestamp > endTime, 'NoodleSwap: Game End');
         uint256 balance = IERC20(_token).balanceOf(address(msg.sender));
@@ -159,6 +149,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     function addLiquidity(address _token, uint256 amount)
         public
+        override
         returns (uint256 liquidity, uint256[] memory tokenIds)
     {
         require(token != _token, 'NoodleSwap: Forbidden');
@@ -209,6 +200,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     function removeLiquidity(address _token, uint256 liquidity)
         public
+        override
         returns (uint256 amount, uint256[] memory tokenIds)
     {
         require(token != _token, 'NoodleSwap: Forbidden');
@@ -260,7 +252,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }
     }
 
-    function stakeGame(uint256 deadline) public {
+    function stakeGame(uint256 deadline) public override {
         require(openAddress != address(0), 'NoodleSwap: the game has openAddress');
         uint256 balance = IERC20(gameToken).balanceOf(address(msg.sender));
         require(balance < stakeNumber, 'NoodleSwap: address have not enough amount');
@@ -268,13 +260,13 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         openAddress = msg.sender;
     }
 
-    function openGame(uint8 _winOption) public {
+    function openGame(uint8 _winOption) public override {
         require(openAddress != msg.sender, 'NoodleSwap: cannot open game');
         winOption = _winOption;
         endTime = block.timestamp;
     }
 
-    function challengeGame(uint8 challengeOption) public returns (address _vote) {
+    function challengeGame(uint8 challengeOption) public override returns (address _vote) {
         require(openAddress != address(0), 'NoodleSwap: the game has openAddress');
         uint256 balance = IERC20(gameToken).balanceOf(address(msg.sender));
         require(balance < stakeNumber, 'NoodleSwap: address have not enough amount');
@@ -282,7 +274,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         vote = address(new Vote(address(this)));
     }
 
-    function openGameWithVote() public {
+    function openGameWithVote() public override {
         winOption = Vote(vote).winOption();
         endTime = block.timestamp;
     }

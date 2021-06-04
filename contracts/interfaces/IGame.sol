@@ -2,14 +2,28 @@
 pragma solidity ^0.8.3;
 
 interface IGame {
-    function createGame(
+    function placeGame(
         address _token,
-        string memory _gameName,
-        string[] memory _optionName,
+        uint8[] memory _options,
         uint256[] memory _optionNum,
-        string memory _resultSource,
         uint256 _endTime
-    ) external returns (address game);
+    ) external payable returns (uint256[] memory tokenIds);
+
+    function addLiquidity(address _token, uint256 amount)
+        external
+        returns (uint256 liquidity, uint256[] memory tokenIds);
+
+    function removeLiquidity(address _token, uint256 liquidity)
+        external
+        returns (uint256 amount, uint256[] memory tokenIds);
+
+    function stakeGame(uint256 deadline) external;
+
+    function openGame(uint8 _winOption) external;
+
+    function challengeGame(uint8 challengeOption) external returns (address _vote);
+
+    function openGameWithVote() external;
 
     event _placeGame(
         address indexed sender,
