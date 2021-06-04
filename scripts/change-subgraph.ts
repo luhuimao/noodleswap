@@ -37,7 +37,7 @@ let main = async () => {
   ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': "' + factoryaddr + '" ' + flag);
   key = 'startBlock';
   flag = '#{{STARTBLOCK}}';
-  ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': "' + config.getStartBlockNumber(network.name) + '" ' + flag);
+  ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': ' + config.getStartBlockNumber(network.name) + ' ' + flag);
 };
 
 main();

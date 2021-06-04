@@ -16,13 +16,23 @@ let main = async () => {
 
   console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));
 
-  const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
-  let tmpaddr = config.getConfigAddressByNetwork(network.name);
-  if (tmpaddr == null) {
-    console.error('config address null:', network.name);
-    return;
+  let instanceConfigAddress: ConfigAddress;
+  if (network.name == 'hardhat') {
+    instanceConfigAddress = (await (await ethers.getContractFactory('ConfigAddress'))
+      .connect(owner)
+      .deploy()) as ConfigAddress;
+  } else {
+    instanceConfigAddress = (await (await ethers.getContractFactory('ConfigAddress'))
+      .connect(owner)
+      .deploy()) as ConfigAddress;
+    // const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
+    // let tmpaddr = config.getConfigAddressByNetwork(network.name);
+    // if (tmpaddr == null) {
+    //   console.error('config address null:', network.name);
+    //   return;
+    // }
+    // instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(tmpaddr) as ConfigAddress;
   }
-  const instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(tmpaddr) as ConfigAddress;
   console.log('config address:', instanceConfigAddress.address);
 
   let tokens = config.getTokensByNetwork(network.name);
@@ -44,11 +54,15 @@ let main = async () => {
   const instanceUSDT = (await (await ethers.getContractFactory('ERC20Faucet'))
     .connect(owner)
     .deploy('Test BUSDT', 'BUSDT', 6)) as ERC20Faucet;
-  console.log('new BUSDT address:', instanceUSDT.address);
+  console.log(
+    'new BUSDT address:',
+    instanceUSDT.address,
+    (await ethers.provider.getBlock('latest')).gasLimit.toString()
+  );
 
   const instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
     .connect(owner)
-    .deploy()) as GameFactory;
+    .deploy({ gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
 
   let flag = '\\/\\/REPLACE_FLAG';
@@ -66,20 +80,20 @@ let main = async () => {
   let blockNumber = await ethers.provider.getBlockNumber();
   console.log('gasPrice:', blockNumber, gasprice.toString(), ethers.utils.formatEther(gasprice));
   console.log('gasLimit:', blockNumber, gaslimit.toString(), ethers.utils.formatEther(gaslimit));
+  let chainId = (await ethers.provider.getNetwork()).chainId;
 
   //方便目前测试已经部署的业务
   let ret = await (
     await instanceConfigAddress.upsert(
       instanceGameFactory.address,
-      (
-        await ethers.provider.getNetwork()
-      ).chainId,
+      chainId,
       instanceNDLToken.address,
       instanceWETH9.address,
       instanceUSDT.address,
       'https://data-seed-prebsc-1-s1.binance.org:8545',
       'https://testnet.bscscan.com',
-      network.name
+      network.name,
+      { gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit }
     )
   ).wait();
   console.log('instanceConfigAddress.upsert:', ret.transactionHash);

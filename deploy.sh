@@ -5,7 +5,8 @@ if [[ $network = "" ]]; then
     network=hardhat
 fi
 if [[ $network = "hardhat" ]]; then
-    script=./scripts/deploy-hardhat.ts
+    script=./scripts/deploy.ts
+    #script=./scripts/deploy-hardhat.ts
 fi
 echo npx hardhat run $script --network $network
 npx hardhat run $script --network $network
