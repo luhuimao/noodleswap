@@ -10,6 +10,8 @@ import './ConfigurableParametersContract.sol';
 import './Vote.sol';
 import './PlayNFT.sol';
 
+import 'hardhat/console.sol';
+
 contract Game is IGame, GameERC20, ConfigurableParametersContract {
     using SafeMath for uint256;
 
@@ -33,7 +35,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     modifier gameEndCheck(uint256 gameEndTime) {
-        require(gameEndTime < block.timestamp, 'NoodleSwapGame: Game End');
+        require(gameEndTime > block.timestamp, 'NoodleSwapGame: Game End');
         _;
     }
 
@@ -60,7 +62,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     address public vote;
 
-    address private playNFT;
+    address public playNFT;
 
     constructor(
         address _token,
@@ -86,45 +88,64 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //下单
+    //ensure(_endTime) gameEndCheck(endTime)
     function placeGame(
         address _token,
         uint8[] memory _options,
         uint256[] memory _optionNum,
         uint256 _endTime
     ) public payable override ensure(_endTime) gameEndCheck(endTime) returns (uint256[] memory tokenIds) {
-        require(token != _token, 'NoodleSwap: Forbidden');
-        require(block.timestamp > endTime, 'NoodleSwap: Game End');
-        uint256 balance = IERC20(_token).balanceOf(address(msg.sender));
+        console.log('_token:',_token);
+        console.log('token:',token);
+        //require(token == _token, 'NoodleSwap: Forbidden');
+        //require(block.timestamp < endTime, 'NoodleSwap: Game End');
+        uint256 balance = IERC20(token).balanceOf(address(msg.sender));
+        console.log('balance:',balance);
         uint256 sum = 0;
         for (uint8 i = 0; i < _optionNum.length; i++) {
             sum += _optionNum[i];
         }
-        require(balance < sum, 'NoodleSwap: address have not enough amount');
+        console.log('sum:',sum);
+        require(balance >= sum, 'NoodleSwap: address have not enough amount');
         for (uint8 i = 0; i < _options.length; i++) {
+            console.log('_option[i]:',_options[i]);
             OptionDataStruct memory option = options[_options[i]];
             option.placeNumber += _optionNum[i];
         }
-        //calc the odd
-        uint256[] memory currentFrozen;
+        console.log('calc the odd');
+        uint256[3] memory currentFrozen;  //是否可以定义为可变长数组？
         tokenIds = new uint256[](_options.length);
         for (uint8 i = 0; i < _options.length; i++) {
             uint8 optionId = _options[i];
             uint256 optionNum = _optionNum[i];
             uint256 allFrozen = 0;
+            console.log('optionId:',optionId);
             for (uint8 j = 0; j < options.length; j++) {
+                console.log('j:',j);
                 if (j != optionId) {
                     //计算optionId 和 j 池子的赔率
+                    console.log('j != optionId');
                     uint256 p = _calcOdd(options[optionId], options[j]);
+                    console.log('p:',p);
                     uint256 frozenJ = optionNum * p;
-                    currentFrozen[j] += frozenJ;
+                    console.log('frozenJ',frozenJ);
+                    currentFrozen[j] = frozenJ;
+                    console.log('currentFrozen[j]:',currentFrozen[j]);
                     allFrozen += frozenJ;
-                }
+                } 
             }
+            console.log('allFrozen:',allFrozen);
+            console.log('currentFrozen[0]:',currentFrozen[0]);
+            console.log('currentFrozen[1]:',currentFrozen[1]);
+
             //这个选项的赔率
             uint256 optionP = (allFrozen / optionNum) * (1 - ownerFee / 100 - platformFee / 100) + 1;
+            console.log('optionP:',optionP);
             //调用生成ERC721 token的接口, option,optionNum,optionP,allFrozen,返回tokenId
             //可以考虑将这些信息放到uri这个字符串中
+            console.log('playNFT:',playNFT);
             uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
+            console.log('tokenId',tokenId);
             PlayInfoStruct memory playInfo;
             playInfo.option = optionId;
             playInfo.optionNum = optionNum;
@@ -133,9 +154,13 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             playInfoMap[tokenId] = playInfo;
             tokenIds[i] = tokenId;
         }
+        console.log('playInfo.option:',playInfoMap[0].option);
+        console.log('playInfo.optionNum:',playInfoMap[0].optionNum);
+        console.log('playInfo.allFrozen:',playInfoMap[0].allFrozen);
         for (uint8 i = 0; i < options.length; i++) {
             options[i].frozenNumber = options[i].frozenNumber - currentFrozen[i];
         }
+        console.log('begin transfer');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
         emit _placeGame(msg.sender, address(this), token, _options, _optionNum, tokenIds);
     }
