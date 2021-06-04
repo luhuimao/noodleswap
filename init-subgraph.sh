@@ -24,6 +24,6 @@ npx hardhat run $script --network $network
 
 yarn graph:codegen
 
-yarn graph:create-local
+yarn graph:create-$network
 
-yarn graph:deploy-local
+yarn graph:deploy-$network
