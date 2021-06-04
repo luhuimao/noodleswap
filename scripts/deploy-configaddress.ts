@@ -5,7 +5,7 @@ import { getOwnerPrivateKey } from '../.privatekey';
 import { ReplaceLine } from './boutils';
 
 let main = async () => {
-  console.log('network:', network.name);
+  console.log('network:', network.name, (await ethers.provider.getNetwork()).chainId);
   let user;
   let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();

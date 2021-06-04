@@ -7,11 +7,11 @@ export const DEPLOY_ACCOUNT_LOCALHOST = '0xf1b5311FC420643f15F7983f204763516c43B
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_HARDHAT = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_HARDHAT = '0xd257766F6Ba54B6904009109a681487b31dEc51a'; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_HARDHAT = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_HARDHAT = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; //REPLACE_FLAG
 
 // ConfigAddree 地址
-export const CONFIGADDRESS_ADDRESS_GANACHE = "0x1813e4E8CEc28488615bde67eEf95C86b782D6C8"; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_GANACHE = "0xc161F6fd99Cd7b8c19585121C1b0B0F575962897"; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_GANACHE = '0xd257766F6Ba54B6904009109a681487b31dEc51a'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_GANACHE = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
 
@@ -47,6 +47,7 @@ export const TOKENS_RINKEBY = [];
 
 export const TOKENS_MAINNET = [];
 export const TOKENS_GANACHE = [];
+export const TOKENS_HARDHAT = [];
 
 export const FAUCET_ADDRESSES = [
   '0x176791d147bEf3f62Dadde535604f339a1758E44', //来福
@@ -60,6 +61,7 @@ export const TOKENS = {
   rinkeby: TOKENS_RINKEBY,
   mainnet: TOKENS_MAINNET,
   ganache: TOKENS_GANACHE,
+  hardhat: TOKENS_HARDHAT,
 };
 export function getTokensByNetwork(name: string): Array<{ symbol: string; address: string }> | null {
   switch (name) {
@@ -73,6 +75,8 @@ export function getTokensByNetwork(name: string): Array<{ symbol: string; addres
       return TOKENS_MAINNET;
     case 'ganache':
       return TOKENS_GANACHE;
+    case 'hardhat':
+      return TOKENS_HARDHAT;
   }
   return null;
 }
@@ -89,6 +93,8 @@ export function getTokenAddrBySymbol(tokens: Array<{ symbol: string; address: st
 
 export function getConfigAddressByNetwork(name: string): string | null {
   switch (name) {
+    case 'hardhat':
+      return CONFIGADDRESS_ADDRESS_HARDHAT;
     case 'ganache':
       return CONFIGADDRESS_ADDRESS_GANACHE;
     case 'bsctestnet':
@@ -104,6 +110,8 @@ export function getConfigAddressByNetwork(name: string): string | null {
 }
 export function getGameFactoryAddressByNetwork(name: string): string {
   switch (name) {
+    case 'hardhat':
+      return GAMEFACTORY_ADDRESS_HARDHAT;
     case 'ganache':
       return GAMEFACTORY_ADDRESS_GANACHE;
     case 'bsctestnet':

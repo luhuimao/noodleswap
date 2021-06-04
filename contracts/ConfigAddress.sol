@@ -148,8 +148,8 @@ contract ConfigAddress {
 
     function upsertGameToken(
         address factoryAddress,
-        string memory tokenSymbol,
-        address tokenAdress
+        address tokenAdress,
+        string memory tokenSymbol
     ) public {
         require(_owner == msg.sender, 'only owner can upsertGameToken');
         Config storage config = configMap[factoryAddress];

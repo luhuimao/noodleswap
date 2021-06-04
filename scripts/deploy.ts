@@ -1,25 +1,20 @@
 import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
 import { ConfigAddress } from '../typechain/ConfigAddress';
-import { GameERC20 } from '../typechain/GameERC20';
-import { ERC20 } from '../typechain/ERC20';
+import { GameFactory } from '../typechain/GameFactory';
+import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import * as config from '../.config';
 import { Contract } from 'ethers';
 import { getOwnerPrivateKey } from '../.privatekey';
 import * as boutils from './boutils';
 
 let main = async () => {
-  console.log('network:', network.name);
+  console.log('network:', network.name, (await ethers.provider.getNetwork()).chainId);
   let user;
   let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();
 
-  console.log(
-    'deploy account:',
-    network.name,
-    owner.address,
-    ethers.utils.formatEther((await owner.getBalance()).toString())
-  );
+  console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));
 
   const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
   let tmpaddr = config.getConfigAddressByNetwork(network.name);
@@ -30,95 +25,35 @@ let main = async () => {
   const instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(tmpaddr) as ConfigAddress;
   console.log('config address:', instanceConfigAddress.address);
 
-  if (instanceConfigAddress.address == '') {
-    console.error('config address null:', network.name);
-    return;
-  }
-
   let tokens = config.getTokensByNetwork(network.name);
   if (tokens == null) {
     console.error('tokens address null:', network.name);
     return;
   }
 
-  const WETH9Factory = await ethers.getContractFactory('WETH9');
-  const instanceWETH9 = (await WETH9Factory.connect(owner).deploy()) as WETH9;
+  const instanceWETH9 = (await (await ethers.getContractFactory('ERC20Faucet'))
+    .connect(owner)
+    .deploy('WETH9', 'WETH9', 18)) as ERC20Faucet;
   console.log('new WETH9 address:', instanceWETH9.address);
 
-  const GSTTOKENFactory = await ethers.getContractFactory('GSTTOKEN');
-  //address marketAddress, address omAddress, address adminAddress, address WETHAddress
-  const instanceGSTTOKEN = (await GSTTOKENFactory.connect(owner).deploy(
-    owner.address,
-    owner.address,
-    owner.address,
-    instanceWETH9.address
-  )) as GSTTOKEN;
-  console.log('new GSTTOKEN address:', instanceGSTTOKEN.address);
+  const instanceNDLToken = (await (await ethers.getContractFactory('ERC20Faucet'))
+    .connect(owner)
+    .deploy('NoodleToken', 'TDLT', 18)) as ERC20Faucet;
+  console.log('new NoodleToken address:', instanceNDLToken.address);
 
-  const USDTFactory = await ethers.getContractFactory('ERC20');
-  let instanceUSDT = (await USDTFactory.connect(owner).deploy('Test BUSDT', 'BUSDT', 6)) as ERC20;
-  console.log('new BUSDT address:', instanceUSDT.address, await instanceUSDT['symbol()']());
+  const instanceUSDT = (await (await ethers.getContractFactory('ERC20Faucet'))
+    .connect(owner)
+    .deploy('Test BUSDT', 'BUSDT', 6)) as ERC20Faucet;
+  console.log('new BUSDT address:', instanceUSDT.address);
 
-  const GameBallotFactory = await ethers.getContractFactory('GameBallot');
-  //address GST
-  const instanceGameBallot = (await GameBallotFactory.connect(owner).deploy(instanceGSTTOKEN.address)) as GameBallot;
-  console.log('new GameBallot address:', instanceGameBallot.address);
+  const instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
+    .connect(owner)
+    .deploy()) as GameFactory;
+  console.log('new GameFactory address:', instanceGameFactory.address);
 
-  const GamePairFactory = await ethers.getContractFactory('GamePair');
-  const instanceGamePair = (await GamePairFactory.connect(owner).deploy()) as GamePair;
-  console.log('new GamePair address:', instanceGamePair.address);
-
-  const GameFactoryFactory = await ethers.getContractFactory('GameFactory');
-  const instanceGameFactory = (await GameFactoryFactory.connect(owner).deploy(instanceGSTTOKEN.address)) as GameFactory;
-  //const instance = (await GameFactoryFactory.connect(owner).attach('0x76f601f92A58536001a9Ca69261c194B3111Fa8A')) as GameFactory;
-  console.log(
-    'new GameFactory address:',
-    instanceGameFactory.address,
-    (await instanceGameFactory.getCodeHash()).slice(2)
-  );
-
-  boutils.ReplaceLine(
-    'contracts/libraries/GameLibrary.sol',
-    'hex.*\\/\\/8f27dd26047dcc02e6e4b1d15f94c59f5b7c4b3162bb661d3a1e29154c6a2562',
-    'hex"' +
-      (await instanceGameFactory.getCodeHash()).slice(2) +
-      '"\\/\\/8f27dd26047dcc02e6e4b1d15f94c59f5b7c4b3162bb661d3a1e29154c6a2562'
-  );
-  //这里保存下地址,方便水龙头等其他使用
-  switch (network.name) {
-    case 'ganache':
-      boutils.ReplaceLine(
-        'config.ts',
-        'GAMEFACTORY_ADDRESS_GANACHE.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
-        'GAMEFACTORY_ADDRESS_GANACHE = "' +
-          instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
-      );
-    case 'bsctestnet':
-      boutils.ReplaceLine(
-        'config.ts',
-        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
-        'GAMEFACTORY_ADDRESS_BSCTESTNET = "' +
-          instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
-      );
-    case 'rinkeby':
-      boutils.ReplaceLine(
-        'config.ts',
-        'GAMEFACTORY_ADDRESS_RINKEBY.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
-        'GAMEFACTORY_ADDRESS_RINKEBY = "' +
-          instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
-      );
-    default:
-      boutils.ReplaceLine(
-        'config.ts',
-        'GAMEFACTORY_ADDRESS_BSCTESTNET.*\\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9',
-        'GAMEFACTORY_ADDRESS_BSCTESTNET = "' +
-          instanceGameFactory.address +
-          '"; \\/\\/0x83f238F8a8F557dEdE7aE201434f5FB3bC2dE1F9'
-      );
-  }
+  let flag = '\\/\\/REPLACE_FLAG';
+  let key = 'GAMEFACTORY_ADDRESS_' + network.name.toUpperCase();
+  boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceGameFactory.address + '"; ' + flag);
 
   const wethAddr = config.getTokenAddrBySymbol(tokens, 'WBNB');
   console.log('WETH address:', wethAddr);
@@ -136,13 +71,15 @@ let main = async () => {
   let ret = await (
     await instanceConfigAddress.upsert(
       instanceGameFactory.address,
-      97,
-      instanceGSTTOKEN.address,
+      (
+        await ethers.provider.getNetwork()
+      ).chainId,
+      instanceNDLToken.address,
       instanceWETH9.address,
       instanceUSDT.address,
       'https://data-seed-prebsc-1-s1.binance.org:8545',
       'https://testnet.bscscan.com',
-      'Bsc Test NetWork'
+      network.name
     )
   ).wait();
   console.log('instanceConfigAddress.upsert:', ret.transactionHash);
@@ -152,19 +89,21 @@ let main = async () => {
   if (tokens != null) {
     for (let index = 0; index < tokens.length; index++) {
       const element = tokens[index];
-      ret = await (
-        await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, element.symbol, element.address)
-      ).wait();
-      console.log('instanceConfigAddress.upsertGameToken:', ret.transactionHash);
+      await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, element.address, element.symbol);
+      console.log('instanceConfigAddress.upsertGameToken:', element.address, element.symbol);
     }
   }
-  const ERC20Factory = await ethers.getContractFactory('ERC20');
-  let instanceERC20 = (await ERC20Factory.connect(owner).deploy('Test BOST', 'BOST', 18)) as ERC20;
+  let instanceERC20 = (await (await ethers.getContractFactory('ERC20Faucet'))
+    .connect(owner)
+    .deploy('Test BOST', 'BOST', 18)) as ERC20Faucet;
   console.log('GameERC20 address:', instanceERC20.address);
-  ret = await (
-    await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, 'BOST', instanceERC20.address)
-  ).wait();
-  console.log('instanceConfigAddress.upsertGameToken:', ret.transactionHash);
+
+  await instanceConfigAddress.upsertGameToken(
+    instanceGameFactory.address,
+    instanceERC20.address,
+    await instanceERC20.symbol()
+  );
+  console.log('instanceConfigAddress.upsertGameToken:', instanceERC20.address, await instanceERC20.symbol());
 };
 
 main();
