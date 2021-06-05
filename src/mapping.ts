@@ -1,7 +1,7 @@
 import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/ConfigAddress';
-import { EventBetForToken, EventCreateGame } from '../generated/GameRouter/GameRouter';
-import * as GamePairEvent from '../generated/templates/GamePair/GamePair';
-import { ERC20Token, ConfigAddress, GameInfo, BetInfo, GamePair } from '../generated/schema';
+import { _GameCreated } from '../generated/GameFactory/GameFactory';
+import * as GamePairEvent from '../generated/templates/Game/Game';
+import { ERC20Token, ConfigAddress, GameInfo, BetInfo, Game } from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
 import * as boutils from './boutils';
 import { BigInt, ethereum, Bytes, log } from '@graphprotocol/graph-ts';
@@ -9,13 +9,13 @@ import { BigInt, ethereum, Bytes, log } from '@graphprotocol/graph-ts';
 export function handleUpsertConfig(event: UpsertConfig): void {
   let id = event.params.factoryAddress.toHex();
   log.info('xxxxxxxxxxxxxxxxxx:handleUpsertConfig:' + id, []);
-  let gstToken = ERC20Token.load(event.params.gstToken.toHexString());
-  if (gstToken == null) {
-    gstToken = new ERC20Token(event.params.gstToken.toHexString());
-    gstToken.name = event.params.networkName + ' GST';
-    gstToken.symbol = 'GST';
-    gstToken.decimals = BigInt.fromI32(18);
-    gstToken.save();
+  let ndlToken = ERC20Token.load(event.params.ndlToken.toHexString());
+  if (ndlToken == null) {
+    ndlToken = new ERC20Token(event.params.ndlToken.toHexString());
+    ndlToken.name = event.params.networkName + ' GST';
+    ndlToken.symbol = 'GST';
+    ndlToken.decimals = BigInt.fromI32(18);
+    ndlToken.save();
   }
   let wethToken = ERC20Token.load(event.params.wethToken.toHexString());
   if (wethToken == null) {
@@ -39,8 +39,7 @@ export function handleUpsertConfig(event: UpsertConfig): void {
     config.gameTokens = [];
   }
   config.factoryAddress = event.params.factoryAddress;
-  config.routerAddress = event.params.routerAddress;
-  config.gstToken = gstToken.id;
+  config.ndlToken = ndlToken.id;
   config.wethToken = wethToken.id;
   config.usdtToken = usdtToken.id;
   config.networkName = event.params.networkName;
@@ -93,75 +92,74 @@ export function handleUpsertGameToken(event: UpsertGameToken): void {
   // */
 }
 
-export function handleEventCreateGame(event: EventCreateGame): void {
-  let gameStr = event.params.gameStr;
-  let deadline = event.params.deadline;
-  //let id = event.params.token.toHex() + "-" + gameStr[0];
-  let id = event.params.pair.toHex();
-  log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:{}', [id]);
-  var game = GameInfo.load(id);
-  if (game != null) {
-    log.info('GameInfo oready exist: {}', [id]);
-    return;
-  }
-  let gamePair = new GamePair(event.params.pair.toHex());
-  gamePair.title = gameStr[0];
-  gamePair.locked = BigInt.fromI32(0);
-  gamePair.save();
-
-  game = new GameInfo(id);
-  game.title = gameStr[0];
-  game.token = event.params.token.toHex();
-  game.pair = gamePair.id;
-  game.url = gameStr[1];
-  game.options = gameStr[2];
-  game.startSec = deadline[0];
-  game.endSec = deadline[1];
-  game.deadline = deadline[2];
-  game.initAmountsIn = event.params.amountsIn;
-  game.amount = event.params.amount;
-  game.side = event.params.side;
-  game.timestamp = event.block.timestamp;
-  game.save();
+export function handleEventCreateGame(event: _GameCreated): void {
+  // let gameStr = event.params.gameStr;
+  // let deadline = event.params.deadline;
+  // //let id = event.params.token.toHex() + "-" + gameStr[0];
+  // let id = event.params.pair.toHex();
+  // log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:{}', [id]);
+  // var game = GameInfo.load(id);
+  // if (game != null) {
+  //   log.info('GameInfo oready exist: {}', [id]);
+  //   return;
+  // }
+  // let gamePair = new GamePair(event.params.pair.toHex());
+  // gamePair.title = gameStr[0];
+  // gamePair.locked = BigInt.fromI32(0);
+  // gamePair.save();
+  // game = new GameInfo(id);
+  // game.title = gameStr[0];
+  // game.token = event.params.token.toHex();
+  // game.pair = gamePair.id;
+  // game.url = gameStr[1];
+  // game.options = gameStr[2];
+  // game.startSec = deadline[0];
+  // game.endSec = deadline[1];
+  // game.deadline = deadline[2];
+  // game.initAmountsIn = event.params.amountsIn;
+  // game.amount = event.params.amount;
+  // game.side = event.params.side;
+  // game.timestamp = event.block.timestamp;
+  // game.save();
 }
-export function handleEventBetForToken(event: EventBetForToken): void {
-  let id = event.params.pair.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
-  log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:{}', [id]);
-  var bet = BetInfo.load(id);
-  if (bet != null) {
-    log.error('BetInfo oready exist: {}', [id]);
-    return;
-  }
+// export function handleEventBetForToken(event: EventBetForToken): void {
+//   let id = event.params.pair.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
+//   log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:{}', [id]);
+//   var bet = BetInfo.load(id);
+//   if (bet != null) {
+//     log.error('BetInfo oready exist: {}', [id]);
+//     return;
+//   }
 
-  bet = new BetInfo(id);
-  bet.sender = event.params.sender;
-  bet.token = event.params.token;
+//   bet = new BetInfo(id);
+//   bet.sender = event.params.sender;
+//   bet.token = event.params.token;
 
-  bet.gameInfo = event.params.pair.toHex();
-  bet.amount = event.params.amount;
-  bet.deadline = event.params.deadline;
-  bet.side = event.params.side;
-  bet.save();
-}
+//   bet.gameInfo = event.params.pair.toHex();
+//   bet.amount = event.params.amount;
+//   bet.deadline = event.params.deadline;
+//   bet.side = event.params.side;
+//   bet.save();
+// }
 export function handleTransfer(event: GamePairEvent.Approval): void {
-  let pair = GamePair.load(event.address.toHex());
-  if (pair == null) {
-    log.error('handleTransfer GamePair not find: {}', [event.address.toHex()]);
-    return;
-  }
-  let pairContract = GamePairEvent.GamePair.bind(event.address);
-  pair.title = pairContract.title();
-  pair.save();
+  // let pair = GamePair.load(event.address.toHex());
+  // if (pair == null) {
+  //   log.error('handleTransfer GamePair not find: {}', [event.address.toHex()]);
+  //   return;
+  // }
+  // let pairContract = GamePairEvent.GamePair.bind(event.address);
+  // pair.title = pairContract.title();
+  // pair.save();
 }
 export function handleApproval(event: GamePairEvent.Approval): void {
-  let pair = GamePair.load(event.address.toHex());
-  if (pair == null) {
-    log.error('handleTransfer GamePair not find: {}', [event.address.toHex()]);
-    return;
-  }
-  let pairContract = GamePairEvent.GamePair.bind(event.address);
-  pair.title = pairContract.title();
-  pair.save();
+  // let pair = GamePair.load(event.address.toHex());
+  // if (pair == null) {
+  //   log.error('handleTransfer GamePair not find: {}', [event.address.toHex()]);
+  //   return;
+  // }
+  // let pairContract = GamePairEvent.GamePair.bind(event.address);
+  // pair.title = pairContract.title();
+  // pair.save();
 }
 export function handleBlock(block: ethereum.Block): void {
   let id = block.hash.toHex();

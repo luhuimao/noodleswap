@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: '0x5FbDB2315678afecb367f032d93F642f64180aa3' #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x0895211038947699A86aCf643708F0aDE55352f9" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9' #{{GAMEFACTORY_ADDRESS}}
+      address: "0xB3C438FCAf29bD07E7f99e4F9E6761252DaD9820" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
