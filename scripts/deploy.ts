@@ -128,6 +128,26 @@ let main = async () => {
       console.log('instanceConfigAddress.upsertGameToken:', element.address, element.symbol);
     }
   }
+  if (
+    (await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T0')) ==
+    '0x0000000000000000000000000000000000000000'
+  ) {
+    const t0 = (await (await ethers.getContractFactory('ERC20Faucet'))
+      .connect(owner)
+      .deploy('Test Token 0', 'T0', 6)) as ERC20Faucet;
+    console.log('new T0 address:', t0);
+    await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, t0.address, await t0.symbol());
+  }
+  if (
+    (await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T1')) ==
+    '0x0000000000000000000000000000000000000000'
+  ) {
+    const t1 = (await (await ethers.getContractFactory('ERC20Faucet'))
+      .connect(owner)
+      .deploy('Test Token 1', 'T1', 18)) as ERC20Faucet;
+    console.log('new T0 address:', t1);
+    await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, t1.address, await t1.symbol());
+  }
   let instanceERC20 = (await (await ethers.getContractFactory('ERC20Faucet'))
     .connect(owner)
     .deploy('Test BOST', 'BOST', 18)) as ERC20Faucet;
