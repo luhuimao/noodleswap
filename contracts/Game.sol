@@ -84,6 +84,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             option.frozenNumber = 0;
             options.push(option);
         }
+        totalSupply = 100 ether;
         playNFT = address(new PlayNFT());
     }
 
@@ -178,11 +179,11 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         override
         returns (uint256 liquidity, uint256[] memory tokenIds)
     {
-        require(token != _token, 'NoodleSwap: Forbidden');
-        require(block.timestamp > endTime, 'NoodleSwap: Game End');
+        //require(token == _token, 'NoodleSwap: Forbidden');
+        //require(block.timestamp < endTime, 'NoodleSwap: Game End');
         uint256 balance = IERC20(_token).balanceOf(address(msg.sender));
-        require(balance < amount, 'NoodleSwap: address have not enough amount');
-
+        require(balance >= amount, 'NoodleSwap: address have not enough amount');
+        console.log('user balance:',balance);
         uint256 sum = 0;
         uint256 frozenSum = 0;
         for (uint8 i = 0; i < options.length; i++) {
@@ -212,6 +213,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
                 playInfo.allFrozen = frozenSum;
                 playInfoMap[tokenId] = playInfo;
                 tokenIds[i] = tokenId;
+                console.log(tokenId);
             } else {
                 //冻结的金额
                 options[i].frozenNumber += (options[i].frozenNumber - options[i].placeNumber) * k;
@@ -219,24 +221,26 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }
         //以第一个池子的数来计算生成的做市币数量
         liquidity = options[0].marketNumber * k;
-        TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
+        console.log('liquidity:',liquidity);
+        //TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
         //转做市代币，转生成的交易代币
-        TransferHelper.safeTransferFrom(address(this), address(this), msg.sender, liquidity);
+        //TransferHelper.safeTransferFrom(address(this), address(this), msg.sender, liquidity);
     }
 
-    function removeLiquidity(address _token, uint256 liquidity)
+    function removeLiquidity(address _token, uint256 _liquidity)
         public
         override
         returns (uint256 amount, uint256[] memory tokenIds)
     {
-        require(token != _token, 'NoodleSwap: Forbidden');
-        require(block.timestamp > endTime, 'NoodleSwap: Game End');
-        uint256 balance = IERC20(_token).balanceOf(address(msg.sender));
-        require(balance < liquidity, 'NoodleSwap: address have not enough amount');
-
+        //require(token == _token, 'NoodleSwap: Forbidden');
+        //require(block.timestamp < endTime, 'NoodleSwap: Game End');
+        uint256 balance = IERC20(token).balanceOf(address(msg.sender));
+        //require(balance < _liquidity, 'NoodleSwap: address have not enough amount');
+        console.log('totalSupply:',totalSupply);
+        console.log('_liquidity:',_liquidity);
         //从池子里拿出的金额
-        uint256 k = liquidity / totalSupply;
-
+        uint256 k = _liquidity / totalSupply;
+        console.log('k:',k);
         uint256 sum = 0;
         uint256 frozenSum = 0;
         for (uint8 i = 0; i < options.length; i++) {
@@ -264,10 +268,14 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
                 playInfo.allFrozen = frozenSum;
                 playInfoMap[tokenId] = playInfo;
                 tokenIds[i] = tokenId;
+                console.log('tokenId:',tokenId);
             }
         }
-        TransferHelper.safeTransferFrom(address(this), msg.sender, address(this), liquidity);
-        TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
+        amount = sum;
+        console.log('amount:',amount);
+        //转账需要处理approve
+        //TransferHelper.safeTransferFrom(address(this), msg.sender, address(this), liquidity);
+        //TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
     }
 
     function getAward(uint256 tokenId) private returns (uint256 amount) {
