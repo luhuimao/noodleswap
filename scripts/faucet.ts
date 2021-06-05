@@ -44,6 +44,15 @@ let main = async () => {
   // ).wait();
   for (let index = 0; index < config.FAUCET_ADDRESSES.length; index++) {
     const faucet_addr = config.FAUCET_ADDRESSES[index];
+    const [, _, user] = await ethers.getSigners();
+    let balance = await ethers.provider.getBalance(faucet_addr);
+    if (balance.toString() <= '1') {
+      await user.sendTransaction({
+        value: ethers.utils.parseEther('10'),
+        to: faucet_addr,
+      });
+      console.log('fauct eth:', (await ethers.provider.getBalance(faucet_addr)).toString());
+    }
 
     await instanceNDLTOKEN['faucet(address,uint256)'](faucet_addr, ethers.utils.parseEther('100000'));
     //await (await instanceNDLTOKEN.transfer(faucet_addr, ethers.utils.parseEther('100000'))).wait();
