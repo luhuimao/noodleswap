@@ -49,10 +49,10 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     mapping(uint256 => PlayInfoStruct) public playInfoMap;
 
     //创建者手续费
-    uint256 public ownerFee = 2**18;
+    uint256 public ownerFee = 2;
 
     //平台手续费
-    uint256 public platformFee = 2**18;
+    uint256 public platformFee = 2;
 
     uint8 public winOption;
 
