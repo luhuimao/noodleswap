@@ -45,11 +45,21 @@ let main = async () => {
     console.log('new Game address:', gameAddress);
     const instanceGame = (await ethers.getContractFactory('Game')).connect(owner).attach(gameAddress) as Game;
     console.log('instanceGame.winOption:', await instanceGame.winOption());
-    console.log('game optionNames:', await instanceGame.options(0));
-    // await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('1'));
+    console.log('game optionNames[0]:', await instanceGame.options(0));
+    console.log('game optionNames[1]:', await instanceGame.options(1));
+    
     //TODO 这里增加其他函数调用
-    let tokenId = await instanceGame.placeGame(instanceERC20.address, [0], [10], Date.now() + 1000);
-    console.log('tokenId', tokenId);
+    //console.log('-------placeGame--------');
+    //let tokenId = await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('10')], Date.now() + 1000);
+    //console.log('tokenId', tokenId);
+
+    //console.log('-------addLiquidity--------');
+    //let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('100'));
+    //console.log(liquidity);
+
+    console.log('-------removeLiquidity--------');
+    let amount = await instanceGame.removeLiquidity(instanceERC20.address, ethers.utils.parseEther('20'));
+    console.log(amount);
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,
