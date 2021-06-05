@@ -49,10 +49,10 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     mapping(uint256 => PlayInfoStruct) public playInfoMap;
 
     //创建者手续费
-    uint8 public ownerFee = 2;
+    uint256 public ownerFee = 2**18;
 
     //平台手续费
-    uint8 public platformFee = 2;
+    uint256 public platformFee = 2**18;
 
     uint8 public winOption;
 
@@ -104,6 +104,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 sum = 0;
         for (uint8 i = 0; i < _optionNum.length; i++) {
             sum += _optionNum[i];
+            console.log('_optionNum:',_optionNum[i]);
         }
         console.log('sum:', sum);
         require(balance >= sum, 'NoodleSwap: address have not enough amount');

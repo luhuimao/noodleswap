@@ -55,7 +55,7 @@ let main = async () => {
     instanceERC20.address,
     'Test T0',
     ['BIG', 'SMALL'],
-    [50, 50],
+    [ethers.utils.parseEther('50'), ethers.utils.parseEther('50')],
     'https://github.com/NoodleDAO/noodleswap',
     deadline
   );
