@@ -38,17 +38,26 @@ let main = async () => {
   const tmp0 = await ethers.getContractFactory('ERC20Faucet');
   console.log(
     'deploy ERC20Faucet gas:',
-    (await owner.estimateGas(tmp0.getDeployTransaction('WETH9', 'WETH9', 18))).toString()
+    ethers.utils.formatEther(
+      (await owner.estimateGas(tmp0.getDeployTransaction('WETH9', 'WETH9', 18))).mul(await owner.getGasPrice())
+    )
   );
   let tmp1 = await ethers.getContractFactory('Game');
   console.log(
     'deploy Game gas:',
-    (
-      await owner.estimateGas(tmp1.getDeployTransaction(owner.address, 'test', ['t0', 't1'], [1, 2], 'test', 1))
-    ).toString()
+    ethers.utils.formatEther(
+      (await owner.estimateGas(tmp1.getDeployTransaction(owner.address, 'test', ['t0', 't1'], [1, 2], 'test', 1))).mul(
+        await owner.getGasPrice()
+      )
+    )
   );
   const tmp2 = await ethers.getContractFactory('GameFactory');
-  console.log('deploy GameFactory gas::', (await owner.estimateGas(tmp2.getDeployTransaction())).toString());
+  console.log(
+    'deploy GameFactory gas:',
+    ethers.utils.formatEther(
+      await (await owner.estimateGas(tmp2.getDeployTransaction())).mul(await owner.getGasPrice())
+    )
+  );
   let tokens = config.getTokensByNetwork(network.name);
   if (tokens == null) {
     console.error('tokens address null:', network.name);
@@ -97,20 +106,21 @@ let main = async () => {
   let chainId = (await ethers.provider.getNetwork()).chainId;
 
   //方便目前测试已经部署的业务
-  let ret = await (
-    await instanceConfigAddress.upsert(
-      instanceGameFactory.address,
-      chainId,
-      instanceNDLToken.address,
-      instanceWETH9.address,
-      instanceUSDT.address,
-      'https://data-seed-prebsc-1-s1.binance.org:8545',
-      'https://testnet.bscscan.com',
-      network.name,
-      { gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit }
-    )
-  ).wait();
-  console.log('instanceConfigAddress.upsert:', ret.transactionHash);
+  //let ret = await (
+  let ret = await instanceConfigAddress.upsert(
+    instanceGameFactory.address,
+    chainId,
+    instanceNDLToken.address,
+    instanceWETH9.address,
+    instanceUSDT.address,
+    'https://data-seed-prebsc-1-s1.binance.org:8545',
+    'https://testnet.bscscan.com',
+    network.name,
+    { gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit }
+  );
+  //).wait(1);
+  //console.log('instanceConfigAddress.upsert:', ret.transactionHash);
+  console.log('instanceConfigAddress.upsert:', ret.gasPrice.toString());
   // */
 
   //await instanceConfigAddress.updateBlockUrl(instanceConfigAddress.address,"test4");

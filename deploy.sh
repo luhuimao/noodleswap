@@ -1,6 +1,7 @@
 #!/bin/bash
 
 script=./scripts/deploy.ts
+network=$1
 if [[ $network = "" ]]; then
     network=hardhat
 fi

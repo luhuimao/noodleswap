@@ -13,7 +13,7 @@ dataSources:
     source:
       address: "0x5FbDB2315678afecb367f032d93F642f64180aa3" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
-      startBlock: "0" #{{STARTBLOCK}}
+      startBlock: 0 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -51,7 +51,7 @@ dataSources:
     source:
       address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9" #{{GAMEFACTORY_ADDRESS}}
       abi: GameRouter
-      startBlock: "0" #{{STARTBLOCK}}
+      startBlock: 0 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
