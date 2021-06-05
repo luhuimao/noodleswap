@@ -23,16 +23,13 @@ let main = async () => {
       .connect(owner)
       .deploy()) as ConfigAddress;
   } else {
-    instanceConfigAddress = (await (await ethers.getContractFactory('ConfigAddress'))
-      .connect(owner)
-      .deploy()) as ConfigAddress;
-    // const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
-    // let tmpaddr = config.getConfigAddressByNetwork(network.name);
-    // if (tmpaddr == null) {
-    //   console.error('config address null:', network.name);
-    //   return;
-    // }
-    // instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(tmpaddr) as ConfigAddress;
+    const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
+    let tmpaddr = config.getConfigAddressByNetwork(network.name);
+    if (tmpaddr == null) {
+      console.error('config address null:', network.name);
+      return;
+    }
+    instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(tmpaddr) as ConfigAddress;
   }
   console.log('config address:', instanceConfigAddress.address);
   const tmp0 = await ethers.getContractFactory('ERC20Faucet');
