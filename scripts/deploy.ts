@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
 import { ConfigAddress } from '../typechain/ConfigAddress';
+import { Game } from '../typechain/Game';
 import { GameFactory } from '../typechain/GameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import * as config from '../.config';
@@ -34,7 +35,20 @@ let main = async () => {
     // instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(tmpaddr) as ConfigAddress;
   }
   console.log('config address:', instanceConfigAddress.address);
-
+  const tmp0 = await ethers.getContractFactory('ERC20Faucet');
+  console.log(
+    'deploy ERC20Faucet gas:',
+    (await owner.estimateGas(tmp0.getDeployTransaction('WETH9', 'WETH9', 18))).toString()
+  );
+  let tmp1 = await ethers.getContractFactory('Game');
+  console.log(
+    'deploy Game gas:',
+    (
+      await owner.estimateGas(tmp1.getDeployTransaction(owner.address, 'test', ['t0', 't1'], [1, 2], 'test', 1))
+    ).toString()
+  );
+  const tmp2 = await ethers.getContractFactory('GameFactory');
+  console.log('deploy GameFactory gas::', (await owner.estimateGas(tmp2.getDeployTransaction())).toString());
   let tokens = config.getTokensByNetwork(network.name);
   if (tokens == null) {
     console.error('tokens address null:', network.name);
