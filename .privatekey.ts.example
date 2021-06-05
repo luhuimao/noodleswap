@@ -1,28 +1,62 @@
-import { waffle } from 'hardhat';
-
+import { ethers, network, waffle } from 'hardhat';
 //export const ACCOUNT_PRIVATE_KEY_BSC_TESTNET = '0xaf43652256977c85d2e39d57258ed7a5a774c41ccc02c8c6fc8f709d316ddc55';
 export const ACCOUNT_PRIVATE_KEY_BSC_TESTNET = '065cd8f6c97655dbab98859935bf47d86b8dda993868105f28c97907ce959c92';
 //export const ACCOUNT_PRIVATE_KEY_BSC_TESTNET = '0x41b1ccb53b7df90a8ef2e32db4023081a57db8375608960518c2a7bd5295e623';
 //export const ACCOUNT_PRIVATE_KEY_BSC_TESTNET = '0x73cadf8affaa48759dfdf0bfc5826da338e90ecd009aa6949888f2b5b17b26f3';
 export const ACCOUNT_PRIVATE_KEY_RINKEBY = '0xaf43652256977c85d2e39d57258ed7a5a774c41ccc02c8c6fc8f709d316ddc55';
 
-export function getOwnerPrivateKey(name: string) :string {
-  const [owner] = waffle.provider.getWallets();
-    switch(name){
-        case "bsctestnet":
-            return ACCOUNT_PRIVATE_KEY_BSC_TESTNET;
-        case "bsc":
-            return ACCOUNT_PRIVATE_KEY_BSC_TESTNET;
-        case "rinkeby":
-            return ACCOUNT_PRIVATE_KEY_RINKEBY;
-        case "mainnet":
-            return ACCOUNT_PRIVATE_KEY_RINKEBY;
-        case 'ganache':
-            return owner.privateKey;
-        case 'localhost':
-            return owner.privateKey;
-        case 'hardhat':
-            return owner.privateKey;
-    }
-    return ACCOUNT_PRIVATE_KEY_BSC_TESTNET;
+export async function getOwnerPrivateKey(name: string): Promise<string> {
+  switch (name) {
+    case 'bsctestnet':
+      return ACCOUNT_PRIVATE_KEY_BSC_TESTNET;
+    case 'bsc':
+      return ACCOUNT_PRIVATE_KEY_BSC_TESTNET;
+    case 'rinkeby':
+      return ACCOUNT_PRIVATE_KEY_RINKEBY;
+    case 'mainnet':
+      return ACCOUNT_PRIVATE_KEY_RINKEBY;
+    case 'devnet':
+      {
+        let owner = new ethers.Wallet(ACCOUNT_PRIVATE_KEY_RINKEBY, ethers.provider);
+        const [, user] = await ethers.getSigners();
+        let ownerBalance = await owner.getBalance();
+        if (ownerBalance.toString() <= '1') {
+          await user.sendTransaction({
+            value: ethers.utils.parseEther('10'),
+            to: owner.address,
+          });
+        }
+      }
+      return ACCOUNT_PRIVATE_KEY_RINKEBY;
+    case 'ganache':
+      {
+        let owner = new ethers.Wallet(ACCOUNT_PRIVATE_KEY_RINKEBY, ethers.provider);
+        const [, user] = await ethers.getSigners();
+        let ownerBalance = await owner.getBalance();
+        if (ownerBalance.toString() <= '0') {
+          await user.sendTransaction({
+            value: ethers.utils.parseEther('10'),
+            to: owner.address,
+          });
+        }
+      }
+      return ACCOUNT_PRIVATE_KEY_RINKEBY;
+    case 'localhost':
+      {
+        let owner = new ethers.Wallet(ACCOUNT_PRIVATE_KEY_RINKEBY, ethers.provider);
+        const [, user] = await ethers.getSigners();
+        let ownerBalance = await owner.getBalance();
+        if (ownerBalance.toString() <= '0') {
+          await user.sendTransaction({
+            value: ethers.utils.parseEther('10'),
+            to: owner.address,
+          });
+        }
+      }
+      return ACCOUNT_PRIVATE_KEY_RINKEBY;
+    case 'hardhat':
+      const [owner] = waffle.provider.getWallets();
+      return owner.privateKey;
+  }
+  return ACCOUNT_PRIVATE_KEY_BSC_TESTNET;
 }

@@ -11,6 +11,11 @@ export const GAMEFACTORY_ADDRESS_HARDHAT = "0xDc64a140Aa3E981100a9becA4E685f962f
 export const DEPLOY_ACCOUNT_HARDHAT = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; //REPLACE_FLAG
 
 // ConfigAddree 地址
+export const CONFIGADDRESS_ADDRESS_DEVNET = "0x3217010846b0E35b33bc236f884d3C023cBf2A39"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = "0xB3C438FCAf29bD07E7f99e4F9E6761252DaD9820"; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_DEVNET = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
+
+// ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_GANACHE = "0x3217010846b0E35b33bc236f884d3C023cBf2A39"; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_GANACHE = "0xB3C438FCAf29bD07E7f99e4F9E6761252DaD9820"; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_GANACHE = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
@@ -48,6 +53,7 @@ export const TOKENS_RINKEBY = [];
 export const TOKENS_MAINNET = [];
 export const TOKENS_GANACHE = [];
 export const TOKENS_HARDHAT = [];
+export const TOKENS_DEVNET = [];
 export const TOKENS_LOCALHOST = [];
 
 export const FAUCET_ADDRESSES = [
@@ -63,6 +69,7 @@ export const TOKENS = {
   mainnet: TOKENS_MAINNET,
   ganache: TOKENS_GANACHE,
   hardhat: TOKENS_HARDHAT,
+  devnet: TOKENS_DEVNET,
   localhost: TOKENS_LOCALHOST,
 };
 export function getTokensByNetwork(name: string): Array<{ symbol: string; address: string }> | null {
@@ -79,6 +86,8 @@ export function getTokensByNetwork(name: string): Array<{ symbol: string; addres
       return TOKENS_GANACHE;
     case 'hardhat':
       return TOKENS_HARDHAT;
+    case 'devnet':
+      return TOKENS_DEVNET;
     case 'localhost':
       return TOKENS_LOCALHOST;
   }
@@ -99,6 +108,8 @@ export function getConfigAddressByNetwork(name: string): string | null {
   switch (name) {
     case 'localhost':
       return CONFIGADDRESS_ADDRESS_LOCALHOST;
+    case 'devnet':
+      return CONFIGADDRESS_ADDRESS_DEVNET;
     case 'hardhat':
       return CONFIGADDRESS_ADDRESS_HARDHAT;
     case 'ganache':
@@ -122,6 +133,8 @@ export function getGameFactoryAddressByNetwork(name: string): string {
       return GAMEFACTORY_ADDRESS_HARDHAT;
     case 'ganache':
       return GAMEFACTORY_ADDRESS_GANACHE;
+    case 'devnet':
+      return GAMEFACTORY_ADDRESS_DEVNET;
     case 'bsctestnet':
       return GAMEFACTORY_ADDRESS_BSCTESTNET;
     case 'bsc':
@@ -137,6 +150,10 @@ export function getStartBlockNumber(name: string): number {
   //let blockNumber = await ethers.provider.getBlockNumber()
   switch (name) {
     case 'ganache':
+      return 0;
+    case 'devnet':
+      return 0;
+    case 'hardhat':
       return 0;
     case 'bsctestnet':
       return 8160000;
@@ -158,6 +175,9 @@ export function GetConfigAddressByGameFactoryAddress(name: string, addr: string)
   switch (name) {
     case 'ganache':
       url = 'http://127.0.0.1:8000/subgraphs/name/fatter-bo/noodleswap';
+    case 'hardhat':
+      url = 'http://127.0.0.1:8000/subgraphs/name/fatter-bo/noodleswap';
+    case 'devnet':
     case 'bsctestnet':
     case 'bsc':
     case 'rinkeby':
