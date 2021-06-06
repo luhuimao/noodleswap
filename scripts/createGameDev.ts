@@ -54,23 +54,24 @@ let main = async () => {
 
     console.log('creator liquidity:', await instanceGame.balanceOf(owner.address));
     //TODO 这里增加其他函数调用
-    //console.log('-------placeGame--------');
-    //let tokenId = await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('10')], Date.now() + 1000);
-    //console.log('tokenId', tokenId);
+    console.log('-------placeGame--------');
+    await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('10')], Date.now() + 1000);
+    console.log('game optionNames[0]:', await instanceGame.options(0));
+    console.log('game optionNames[1]:', await instanceGame.options(1));
 
-    console.log('-------addLiquidity--------');
-    let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('100'));
-    console.log(liquidity);
+    //console.log('-------addLiquidity--------');
+    //let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('100'));
+    //console.log(liquidity);
 
-    console.log('-------removeLiquidity--------');
-    let amount = await instanceGame.removeLiquidity(instanceERC20.address, ethers.utils.parseEther('20'));
-    console.log(amount);
+    //console.log('-------removeLiquidity--------');
+    //let amount = await instanceGame.removeLiquidity(instanceERC20.address, ethers.utils.parseEther('20'));
+    //console.log(amount);
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,
     'Test T0',
     ['BIG', 'SMALL'],
-    [ethers.utils.parseEther('50'), ethers.utils.parseEther('50')],
+    [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
     'https://github.com/NoodleDAO/noodleswap',
     deadline
   );
