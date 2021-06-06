@@ -38,8 +38,8 @@ let main = async () => {
   // 工厂合约
   let instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
     .connect(owner)
-    .attach('0xe8c76c0eca2f536abb99b356e9aada6b005f7af8')) as GameFactory;
-  //`.deploy({ gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit })) as GameFactory;
+    .deploy({ gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit })) as GameFactory;
+  // .attach('0xe8c76c0eca2f536abb99b356e9aada6b005f7af8')) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
   // 下注代币
   let eventFilter = instanceGameFactory.filters._GameCreated(instanceERC20.address, null, null, null, null, null, null);
@@ -52,7 +52,7 @@ let main = async () => {
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
 
-    console.log('creator liquidity:',await instanceGame.balanceOf(owner.address));
+    console.log('creator liquidity:', await instanceGame.balanceOf(owner.address));
     //TODO 这里增加其他函数调用
     //console.log('-------placeGame--------');
     //let tokenId = await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('10')], Date.now() + 1000);
