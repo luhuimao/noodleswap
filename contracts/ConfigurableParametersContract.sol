@@ -7,9 +7,9 @@ contract ConfigurableParametersContract {
     //Contract owner
     address public owner = address(0);
 
-    uint16 public stakeNumber = 10000;
+    uint256 public stakeNumber = 100 ether;
 
-    uint16 public voteNumber = 1;
+    uint256 public voteNumber = 1;
     
     //Market rake, A few ten thousandths - （Need to expand n(rakeMagnificationMultiple) times）
     uint16 public marketRake = 0;

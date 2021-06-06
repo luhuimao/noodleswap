@@ -22,6 +22,12 @@ contract GameFactory is IGameFactory {
         uint256 _endTime
     );
 
+    address public noodleToken;
+
+    constructor(address _noodleToken) {
+        noodleToken = _noodleToken;
+    }
+
     function createGame(
         address _token,
         string memory _gameName,
@@ -30,7 +36,7 @@ contract GameFactory is IGameFactory {
         string memory _resultSource,
         uint256 _endTime
     ) public override ensure(_endTime) returns (address _game) {
-        Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime);
+        Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime,noodleToken);
         //取第一个option的金额作为liquidity
         game.mint(msg.sender, _optionNum[0]);
         _game = address(game);

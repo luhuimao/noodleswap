@@ -11,6 +11,8 @@ contract Vote is ConfigurableParametersContract {
 
     using SafeMath  for uint;
 
+    address public creator;
+
     address public game;
     address public noodleGameToken;
     uint256  public endTime;
@@ -28,7 +30,7 @@ contract Vote is ConfigurableParametersContract {
 
     mapping (address=>uint8) optionMap;
 
-    constructor(address _game) {
+    constructor(address _game,address _creator) {
         game = _game;
     }
 
@@ -37,7 +39,7 @@ contract Vote is ConfigurableParametersContract {
     function add(uint8 option) public{
         require(endTime > block.timestamp, 'NoodleSwap: Vote end');
         uint balance = IERC20(noodleToken).balanceOf(address(msg.sender));
-        require(balance <= voteNumber, 'NoodleSwap: address have not enough amount');
+        require(balance >= voteNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), voteNumber);
         optionMap[msg.sender] = option;
         if(option == originOption){
@@ -51,10 +53,10 @@ contract Vote is ConfigurableParametersContract {
         require(endTime < block.timestamp, 'NoodleSwap: Vote cannot confirm before end');
         if(challengeVoteNumber > originVoteNumber * 2){
             winOption = challengeOption;
-            award = 500 / challengeVoteNumber;
+            award = 500 ether/challengeVoteNumber;
         }else{
             winOption = originOption;
-            award = 500 / originVoteNumber;
+            award = 500 ether/ originVoteNumber;
         }
     }
 
