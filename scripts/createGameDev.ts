@@ -27,10 +27,6 @@ let main = async () => {
     ethers.utils.formatEther((await owner.getBalance()).toString())
   );
 
-  // 工厂合约
-  let instanceGameFactory = (await (await ethers.getContractFactory('GameFactory')).deploy()) as GameFactory;
-  console.log('new GameFactory address:', instanceGameFactory.address);
-  // 下注代币
   let instanceERC20 = (await (
     await ethers.getContractFactory('ERC20Faucet')
   ).deploy('T0', 'Token 0', 18)) as ERC20Faucet;
@@ -38,6 +34,13 @@ let main = async () => {
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   console.log('new ERC20Faucet address:', instanceERC20.address);
+  // 工厂合约
+  let instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
+    .connect(owner)
+    .attach('0xe8c76c0eca2f536abb99b356e9aada6b005f7af8')) as GameFactory;
+  //`.deploy({ gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit })) as GameFactory;
+  console.log('new GameFactory address:', instanceGameFactory.address);
+  // 下注代币
   let eventFilter = instanceGameFactory.filters._GameCreated(instanceERC20.address, null, null, null, null, null, null);
   let gameAddress: string;
   instanceGameFactory.once(eventFilter, async (tokenaddr, gameaddr) => {
@@ -47,15 +50,15 @@ let main = async () => {
     console.log('instanceGame.winOption:', await instanceGame.winOption());
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
-    
+
     //TODO 这里增加其他函数调用
     //console.log('-------placeGame--------');
     //let tokenId = await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('10')], Date.now() + 1000);
     //console.log('tokenId', tokenId);
 
-    //console.log('-------addLiquidity--------');
-    //let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('100'));
-    //console.log(liquidity);
+    console.log('-------addLiquidity--------');
+    let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('100'));
+    console.log(liquidity);
 
     console.log('-------removeLiquidity--------');
     let amount = await instanceGame.removeLiquidity(instanceERC20.address, ethers.utils.parseEther('20'));
