@@ -226,7 +226,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         returns (uint256 amount, uint256[] memory tokenIds)
     {
         //require(block.timestamp < endTime, 'NoodleSwap: Game End');
-        uint256 balance = GameERC20(token).balanceOf(address(msg.sender));
+        uint256 balance = balanceOf(address(msg.sender));
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
         console.log('_liquidity:',_liquidity);
         _burn(msg.sender,_liquidity);
@@ -278,9 +278,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         returns (uint256 amount, uint256[] memory tokenIds)
     {
         //require(block.timestamp < endTime, 'NoodleSwap: Game End');
-        uint256 balance = GameERC20(token).balanceOf(address(msg.sender));
+        uint256 balance = balanceOf(address(msg.sender));
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
-        //permit(msg.sender, address(this), _liquidity, _endTime,v, r, s);
+        permit(msg.sender, address(this), _liquidity, _endTime,v, r, s);
         removeLiquidity(_liquidity,_endTime);
     }
 
