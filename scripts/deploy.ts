@@ -43,9 +43,11 @@ let main = async () => {
   console.log(
     'deploy Game gas:',
     ethers.utils.formatEther(
-      (await owner.estimateGas(tmp1.getDeployTransaction(owner.address, 'test', ['t0', 't1'], [1, 2], 'test', 1))).mul(
-        await owner.getGasPrice()
-      )
+      (
+        await owner.estimateGas(
+          tmp1.getDeployTransaction(owner.address, owner.address, 'test', ['t0', 't1'], [1, 2], 'test', 1)
+        )
+      ).mul(await owner.getGasPrice())
     )
   );
   const tmp2 = await ethers.getContractFactory('GameFactory');
@@ -159,6 +161,15 @@ let main = async () => {
     await instanceERC20.symbol()
   );
   console.log('instanceConfigAddress.upsertGameToken:', instanceERC20.address, await instanceERC20.symbol());
+  let deadline = Date.now() + 86400000;
+  await instanceGameFactory.createGame(
+    instanceERC20.address,
+    'Test T0',
+    ['BIG', 'SMALL'],
+    [ethers.utils.parseEther('50'), ethers.utils.parseEther('50')],
+    'https://github.com/NoodleDAO/noodleswap',
+    deadline
+  );
 };
 
 main();

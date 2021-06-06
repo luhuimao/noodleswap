@@ -93,34 +93,38 @@ export function handleUpsertGameToken(event: UpsertGameToken): void {
 }
 
 export function handleEventCreateGame(event: _GameCreated): void {
-  // let gameStr = event.params.gameStr;
-  // let deadline = event.params.deadline;
-  // //let id = event.params.token.toHex() + "-" + gameStr[0];
-  // let id = event.params.pair.toHex();
-  // log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:{}', [id]);
-  // var game = GameInfo.load(id);
-  // if (game != null) {
-  //   log.info('GameInfo oready exist: {}', [id]);
-  //   return;
-  // }
-  // let gamePair = new GamePair(event.params.pair.toHex());
-  // gamePair.title = gameStr[0];
-  // gamePair.locked = BigInt.fromI32(0);
-  // gamePair.save();
-  // game = new GameInfo(id);
-  // game.title = gameStr[0];
-  // game.token = event.params.token.toHex();
-  // game.pair = gamePair.id;
-  // game.url = gameStr[1];
-  // game.options = gameStr[2];
-  // game.startSec = deadline[0];
-  // game.endSec = deadline[1];
-  // game.deadline = deadline[2];
-  // game.initAmountsIn = event.params.amountsIn;
-  // game.amount = event.params.amount;
-  // game.side = event.params.side;
-  // game.timestamp = event.block.timestamp;
-  // game.save();
+  // event: _GameCreated(indexed address,indexed address,string,string[],uint256[],string,uint256)
+  let gameStr = event.params._gameName;
+  //let id = event.params.token.toHex() + "-" + gameStr[0];
+  let id = event.params._game.toHex();
+  log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:0:{}', [id]);
+  var game = Game.load(id);
+  if (game != null) {
+    log.info('GameInfo oready exist: {}', [id]);
+    return;
+  }
+  log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:1:{}', [id]);
+  game = new Game(id);
+  game.title = event.params._gameName;
+  game.locked = BigInt.fromI32(0);
+  game.save();
+  log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:2:{}', [id]);
+  let gameInfo = new GameInfo(id);
+  gameInfo.title = event.params._gameName;
+  gameInfo.token = event.params._token.toHex();
+  gameInfo.gameAddress = game.id;
+  gameInfo.url = event.params._resultSource;
+  let optionName = event.params._optionName;
+  gameInfo.options = optionName[0];
+  gameInfo.startSec = event.params._endTime;
+  gameInfo.endSec = event.params._endTime;
+  gameInfo.deadline = event.params._endTime;
+  gameInfo.initAmountsIn = event.params._optionNum;
+  gameInfo.amount = new BigInt(0);
+  let optionNum = event.params._optionNum;
+  gameInfo.side = optionNum[0];
+  gameInfo.timestamp = event.block.timestamp;
+  gameInfo.save();
 }
 // export function handleEventBetForToken(event: EventBetForToken): void {
 //   let id = event.params.pair.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();

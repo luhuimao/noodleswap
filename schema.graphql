@@ -1,6 +1,6 @@
 type ERC20Token @entity {
   # token address
-  id: ID! 
+  id: ID!
 
   # mirrored from the smart contract
   symbol: String!
@@ -59,7 +59,7 @@ type GameInfo @entity {
   id: ID!
 
   token: ERC20Token! # 游戏代币币种
-  pair: Game! # 游戏合约地址
+  gameAddress: Game! # 游戏合约地址
   title: String! # 标题
   url: String! # 结果网址
   options: String! # 竞猜选项对应的顺序，用分号隔开，如三个比分选项  “2:1;1:1;1:2”
