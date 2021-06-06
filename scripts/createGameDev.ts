@@ -55,17 +55,19 @@ let main = async () => {
     console.log('creator liquidity:', await instanceGame.balanceOf(owner.address));
     //TODO 这里增加其他函数调用
     console.log('-------placeGame--------');
-    await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('10')], Date.now() + 1000);
+    let tokenIds = await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('10')], Date.now() + 1000);
+    await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('15')], Date.now() + 1000);
+    await instanceGame.placeGame(instanceERC20.address, [1], [ethers.utils.parseEther('20')], Date.now() + 1000);
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
-
     //console.log('-------addLiquidity--------');
-    //let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('100'));
-    //console.log(liquidity);
-
+    let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('102'));
+    console.log('add liquidity:');
+    console.log('game optionNames[0]:', await instanceGame.options(0));
+    console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------removeLiquidity--------');
-    //let amount = await instanceGame.removeLiquidity(instanceERC20.address, ethers.utils.parseEther('20'));
-    //console.log(amount);
+    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'),Date.now() + 1000);
+    console.log(amount);
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,

@@ -51,10 +51,10 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     mapping(uint256 => PlayInfoStruct) public playInfoMap;
 
     //创建者手续费
-    uint256 public ownerFee = 2;
+    uint256 public ownerFee = 0;
 
     //平台手续费
-    uint256 public platformFee = 2;
+    uint256 public platformFee = 0;
 
     uint8 public winOption;
 
@@ -161,11 +161,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //p = (b + placeB) / (a + placeA)
-    function _calcOdd(OptionDataStruct memory a, OptionDataStruct memory b) private view returns (uint256 p) {
+    function _calcOdd(OptionDataStruct memory a, OptionDataStruct memory b) private pure returns (uint256 p) {
         uint256 sumA = a.placeNumber + a.marketNumber - a.frozenNumber;
         uint256 sumB = (b.placeNumber + b.marketNumber - b.frozenNumber) * 100;
-        console.log('sumB:',sumB);
-        console.log('sumA:',sumA);
         p = sumB / sumA;
     }
 
@@ -176,29 +174,30 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     {
         //require(token == _token, 'NoodleSwap: Forbidden');
         //require(block.timestamp < endTime, 'NoodleSwap: Game End');
-        uint256 balance = IERC20(_token).balanceOf(address(msg.sender));
+        uint256 balance = IERC20(token).balanceOf(address(msg.sender));
         require(balance >= amount, 'NoodleSwap: address have not enough amount');
         console.log('user balance:',balance);
+        TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
         uint256 sum = 0;
         uint256 frozenSum = 0;
+        uint256 initOption0MarketNumber = options[0].marketNumber;
         for (uint8 i = 0; i < options.length; i++) {
             sum += options[i].marketNumber;
             if (options[i].placeNumber > options[i].frozenNumber) {
-                sum += options[i].placeNumber - options[i].frozenNumber;
+                sum += (options[i].placeNumber - options[i].frozenNumber);
             } else {
-                frozenSum += options[i].frozenNumber - options[i].placeNumber;
+                frozenSum += (options[i].frozenNumber - options[i].placeNumber);
             }
         }
-        uint256 k = amount / sum;
         tokenIds = new uint256[](options.length);
         //放入到做市池子里的金额：
         for (uint8 i = 0; i < options.length; i++) {
-            options[i].marketNumber += options[i].marketNumber * k;
+            options[i].marketNumber += options[i].marketNumber * amount /sum;
             if (options[i].placeNumber > options[i].frozenNumber) {
                 //下单的金额
-                uint256 placeNumber = (options[i].placeNumber - options[i].frozenNumber) * k;
+                uint256 placeNumber = (options[i].placeNumber - options[i].frozenNumber) * amount / sum;
                 options[i].placeNumber += placeNumber;
-                uint256 optionP = frozenSum / placeNumber;
+                uint256 optionP = frozenSum *100 / placeNumber;
                 //调用生成ERC721 token的接口, i,placeNumber,optionP,frozenSum,返回tokenId
                 uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
                 PlayInfoStruct memory playInfo;
@@ -211,28 +210,26 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
                 console.log(tokenId);
             } else {
                 //冻结的金额
-                options[i].frozenNumber += (options[i].frozenNumber - options[i].placeNumber) * k;
+                options[i].frozenNumber += (options[i].frozenNumber - options[i].placeNumber) * amount / sum;
             }
         }
         //以第一个池子的数来计算生成的做市币数量
-        liquidity = options[0].marketNumber * k;
+        liquidity = initOption0MarketNumber * amount /sum;
         console.log('liquidity:',liquidity);
-        //TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
-        //转做市代币，转生成的交易代币
-        //TransferHelper.safeTransferFrom(address(this), address(this), msg.sender, liquidity);
+        _mint(msg.sender,liquidity);
+        emit _addLiquidity(address(this),token,msg.sender,amount,liquidity,tokenIds);
     }
 
-    function removeLiquidity(address _token, uint256 _liquidity)
+    function removeLiquidity(uint256 _liquidity,uint256 _endTime )
         public
         override
         returns (uint256 amount, uint256[] memory tokenIds)
     {
-        //require(token == _token, 'NoodleSwap: Forbidden');
         //require(block.timestamp < endTime, 'NoodleSwap: Game End');
-        uint256 balance = IERC20(token).balanceOf(address(msg.sender));
-        //require(balance < _liquidity, 'NoodleSwap: address have not enough amount');
-        console.log('totalSupply:',totalSupply);
+        uint256 balance = GameERC20(token).balanceOf(address(msg.sender));
+        require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
         console.log('_liquidity:',_liquidity);
+        _burn(msg.sender,_liquidity);
         //从池子里拿出的金额
         uint256 k = _liquidity / totalSupply;
         console.log('k:',k);
@@ -269,8 +266,22 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         amount = sum;
         console.log('amount:',amount);
         //转账需要处理approve
-        //TransferHelper.safeTransferFrom(address(this), msg.sender, address(this), liquidity);
-        //TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
+        TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
+        emit _removeLiquidity(address(this),msg.sender,_liquidity,amount,tokenIds);
+    }
+
+    function removeLiquidityWithPermit(uint256 _liquidity,
+        uint256 _endTime,
+        uint8 v, bytes32 r, bytes32 s)
+        public
+        override
+        returns (uint256 amount, uint256[] memory tokenIds)
+    {
+        //require(block.timestamp < endTime, 'NoodleSwap: Game End');
+        uint256 balance = GameERC20(token).balanceOf(address(msg.sender));
+        require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
+        //permit(msg.sender, address(this), _liquidity, _endTime,v, r, s);
+        removeLiquidity(_liquidity,_endTime);
     }
 
     function mint(address to, uint value) public override{

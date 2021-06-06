@@ -13,7 +13,13 @@ interface IGame {
         external
         returns (uint256 liquidity, uint256[] memory tokenIds);
 
-    function removeLiquidity(address _token, uint256 liquidity)
+    function removeLiquidity(uint256 liquidity,uint256 _endTime)
+        external
+        returns (uint256 amount, uint256[] memory tokenIds);
+
+    function removeLiquidityWithPermit(uint256 _liquidity,
+        uint256 _endTime,
+        uint8 v, bytes32 r, bytes32 s)
         external
         returns (uint256 amount, uint256[] memory tokenIds);
 
@@ -45,7 +51,6 @@ interface IGame {
     );
     event _removeLiquidity(
         address indexed game,
-        address indexed token,
         address indexed sender,
         uint256 liquidity,
         uint256 amount,
