@@ -10,7 +10,7 @@ contract GameERC20 is INoodleGameERC20 {
     string public constant name = 'NoodleGame';
     string public constant symbol = 'NoodleGame';
     uint8 public constant decimals = 18;
-    uint  public totalSupply;
+    uint  public totalSupply = 0;
     mapping(address => uint) public balanceOf;
     mapping(address => mapping(address => uint)) public allowance;
 

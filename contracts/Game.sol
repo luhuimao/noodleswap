@@ -39,6 +39,8 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         _;
     }
 
+    address public creator;
+
     address public token;
     string public gameName;
     string public resultSource;
@@ -65,6 +67,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     address public playNFT;
 
     constructor(
+        address _creator,
         address _token,
         string memory _gameName,
         string[] memory _optionName,
@@ -72,6 +75,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         string memory _resultSource,
         uint256 _endTime
     ) {
+        creator = _creator;
         token = _token;
         gameName = _gameName;
         optionName = _optionName;
@@ -84,7 +88,6 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             option.frozenNumber = 0;
             options.push(option);
         }
-        totalSupply = 100 ether;
         playNFT = address(new PlayNFT());
     }
 
@@ -276,6 +279,10 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         //转账需要处理approve
         //TransferHelper.safeTransferFrom(address(this), msg.sender, address(this), liquidity);
         //TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
+    }
+
+    function mint(address to, uint value) public override{
+        _mint(to,value);
     }
 
     function getAward(uint256 tokenId) private returns (uint256 amount) {

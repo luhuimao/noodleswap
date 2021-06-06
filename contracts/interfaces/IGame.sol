@@ -17,6 +17,8 @@ interface IGame {
         external
         returns (uint256 amount, uint256[] memory tokenIds);
 
+    function mint(address _to,uint256 liquidity) external;
+
     function stakeGame(uint256 deadline) external;
 
     function openGame(uint8 _winOption) external;

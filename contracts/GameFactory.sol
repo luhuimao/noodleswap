@@ -28,8 +28,11 @@ contract GameFactory is IGameFactory {
         uint256[] memory _optionNum,
         string memory _resultSource,
         uint256 _endTime
-    ) public override ensure(_endTime) returns (address game) {
-        game = address(new Game(_token, _gameName, _optionName, _optionNum, _resultSource, _endTime));
-        emit _GameCreated(_token, game, _gameName, _optionName, _optionNum, _resultSource, _endTime);
+    ) public override ensure(_endTime) returns (address _game) {
+        Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime);
+        //取第一个option的金额作为liquidity
+        game.mint(msg.sender,_optionNum[0]);
+        _game =  address(game);
+        emit _GameCreated(_token, _game, _gameName, _optionName, _optionNum, _resultSource, _endTime);
     }
 }

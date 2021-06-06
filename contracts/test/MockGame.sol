@@ -107,6 +107,8 @@ contract MockGame is IGame {
         returns (uint256 amount, uint256[] memory tokenIds)
     {}
 
+    function mint(address _to,uint256 liquidity) public override {}
+
     function getAward(uint256 tokenId) private returns (uint256 amount) {}
 
     function stakeGame(uint256 deadline) public override {}
