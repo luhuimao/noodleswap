@@ -99,40 +99,33 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256[] memory _optionNum,
         uint256 _endTime
     ) public payable override ensure(_endTime) gameEndCheck(endTime) returns (uint256[] memory tokenIds) {
-        console.log('_token:', _token);
-        console.log('token:', token);
         //require(token == _token, 'NoodleSwap: Forbidden');
         //require(block.timestamp < endTime, 'NoodleSwap: Game End');
         uint256 balance = IERC20(token).balanceOf(address(msg.sender));
-        console.log('balance:', balance);
         uint256 sum = 0;
         for (uint8 i = 0; i < _optionNum.length; i++) {
             sum += _optionNum[i];
             console.log('_optionNum:',_optionNum[i]);
         }
-        console.log('sum:', sum);
         require(balance >= sum, 'NoodleSwap: address have not enough amount');
+        TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
+        console.log('before:',options[0].placeNumber);
         for (uint8 i = 0; i < _options.length; i++) {
-            console.log('_option[i]:', _options[i]);
-            OptionDataStruct memory option = options[_options[i]];
-            option.placeNumber += _optionNum[i];
+            options[_options[i]].placeNumber += _optionNum[i];
         }
-        console.log('calc the odd');
+        console.log('after:',options[0].placeNumber);
         uint256[] memory currentFrozen = new uint256[](options.length);
         tokenIds = new uint256[](_options.length);
         for (uint8 i = 0; i < _options.length; i++) {
             uint8 optionId = _options[i];
             uint256 optionNum = _optionNum[i];
             uint256 allFrozen = 0;
-            console.log('optionId:', optionId);
             for (uint8 j = 0; j < options.length; j++) {
-                console.log('j:', j);
                 if (j != optionId) {
                     //计算optionId 和 j 池子的赔率
-                    console.log('j != optionId');
                     uint256 p = _calcOdd(options[optionId], options[j]);
                     console.log('p:', p);
-                    uint256 frozenJ = optionNum * p;
+                    uint256 frozenJ = optionNum * p /100;
                     console.log('frozenJ', frozenJ);
                     currentFrozen[j] = frozenJ;
                     console.log('currentFrozen[j]:', currentFrozen[j]);
@@ -142,9 +135,8 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             console.log('allFrozen:', allFrozen);
             console.log('currentFrozen[0]:', currentFrozen[0]);
             console.log('currentFrozen[1]:', currentFrozen[1]);
-
             //这个选项的赔率
-            uint256 optionP = (allFrozen / optionNum) * (1 - ownerFee / 100 - platformFee / 100) + 1;
+            uint256 optionP = (allFrozen * (100 - ownerFee - platformFee) + optionNum * 100)/optionNum;
             console.log('optionP:', optionP);
             //调用生成ERC721 token的接口, option,optionNum,optionP,allFrozen,返回tokenId
             //可以考虑将这些信息放到uri这个字符串中
@@ -165,15 +157,15 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         for (uint8 i = 0; i < options.length; i++) {
             options[i].frozenNumber = options[i].frozenNumber + currentFrozen[i];
         }
-        console.log('begin transfer');
-        TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
         emit _placeGame(msg.sender, address(this), token, _options, _optionNum, tokenIds);
     }
 
     //p = (b + placeB) / (a + placeA)
-    function _calcOdd(OptionDataStruct memory a, OptionDataStruct memory b) private pure returns (uint256 p) {
+    function _calcOdd(OptionDataStruct memory a, OptionDataStruct memory b) private view returns (uint256 p) {
         uint256 sumA = a.placeNumber + a.marketNumber - a.frozenNumber;
-        uint256 sumB = b.placeNumber + b.marketNumber - b.frozenNumber;
+        uint256 sumB = (b.placeNumber + b.marketNumber - b.frozenNumber) * 100;
+        console.log('sumB:',sumB);
+        console.log('sumA:',sumA);
         p = sumB / sumA;
     }
 
