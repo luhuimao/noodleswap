@@ -45,7 +45,16 @@ let main = async () => {
     ethers.utils.formatEther(
       (
         await owner.estimateGas(
-          tmp1.getDeployTransaction(owner.address, owner.address, 'test', ['t0', 't1'], [1, 2], 'test', 1)
+          tmp1.getDeployTransaction(
+            owner.address,
+            owner.address,
+            'test',
+            ['t0', 't1'],
+            [1, 2],
+            'test',
+            1,
+            owner.address
+          )
         )
       ).mul(await owner.getGasPrice())
     )
