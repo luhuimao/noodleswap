@@ -28,6 +28,23 @@ let main = async () => {
     ethers.utils.formatEther((await owner.getBalance()).toString())
   );
 
+  let configAddress = await config.GetConfigAddressByGameFactoryAddress(
+    network.name,
+    config.getGameFactoryAddressByNetwork(network.name)
+  );
+  let instanceNDLToken: ERC20Faucet;
+  if (configAddress?.ndlToken) {
+    instanceNDLToken = (await ethers.getContractFactory('ERC20Faucet'))
+      .connect(owner)
+      .attach(configAddress.ndlToken) as ERC20Faucet;
+    console.log('new NoodleToken address:', instanceNDLToken.address);
+  } else {
+    instanceNDLToken = (await (await ethers.getContractFactory('ERC20Faucet'))
+      .connect(owner)
+      .deploy('NoodleToken', 'NDLT', 18)) as ERC20Faucet;
+    console.log('new NoodleToken address:', instanceNDLToken.address);
+  }
+
   let instanceERC20 = (await (
     await ethers.getContractFactory('ERC20Faucet')
   ).deploy('T0', 'Token 0', 18)) as ERC20Faucet;
@@ -38,7 +55,10 @@ let main = async () => {
   // 工厂合约
   let instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
     .connect(owner)
-    .deploy({ gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit })) as GameFactory;
+    .deploy(instanceNDLToken.address, {
+      gasPrice: 1,
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+    })) as GameFactory;
   // .attach('0xe8c76c0eca2f536abb99b356e9aada6b005f7af8')) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
   // 下注代币

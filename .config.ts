@@ -1,4 +1,5 @@
 import fetch, { Response } from 'node-fetch';
+import { ConfigAddress } from './generated/schema';
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_LOCALHOST = '0xc161F6fd99Cd7b8c19585121C1b0B0F575962897'; //REPLACE_FLAG
@@ -12,7 +13,7 @@ export const DEPLOY_ACCOUNT_HARDHAT = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb9226
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_DEVNET = '0x00EF386c58086a7Ef82d5775bfee560C90eda10f'; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_DEVNET = "0x8D90eA010D95C55b5767d14DB5cEcd842df6E97e"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = '0xF6C3D4E537aEeF6ef2873aC95635Fc4C56CE1F0a'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_DEVNET = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 // ConfigAddree 地址
@@ -166,7 +167,8 @@ export function getStartBlockNumber(name: string): number {
   }
   return 0;
 }
-export function GetConfigAddressByGameFactoryAddress(name: string, addr: string): Promise<Response> {
+//export function GetConfigAddressByGameFactoryAddress(name: string, addr: string): Promise<Response> {
+export async function GetConfigAddressByGameFactoryAddress(name: string, addr: string): Promise<ConfigAddress | null> {
   let where = '';
   if (addr != '') {
     where = 'where:{id:\\"' + addr.toLowerCase() + '\\"},';
@@ -183,7 +185,7 @@ export function GetConfigAddressByGameFactoryAddress(name: string, addr: string)
     case 'rinkeby':
     case 'mainnet':
   }
-  return fetch(url, {
+  let response = await fetch(url, {
     headers: {
       accept: 'application/json',
       'accept-language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
@@ -197,4 +199,6 @@ export function GetConfigAddressByGameFactoryAddress(name: string, addr: string)
     //}).then(response => {
     //    return JSON.parse(response.body.read().toString());
   });
+  let data = JSON.parse(response.body.read().toString());
+  return data.configAddresses ? (data.configAddresses[0] as ConfigAddress) : null;
 }

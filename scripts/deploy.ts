@@ -70,7 +70,7 @@ let main = async () => {
 
   const instanceNDLToken = (await (await ethers.getContractFactory('ERC20Faucet'))
     .connect(owner)
-    .deploy('NoodleToken', 'TDLT', 18)) as ERC20Faucet;
+    .deploy('NoodleToken', 'NDLT', 18)) as ERC20Faucet;
   console.log('new NoodleToken address:', instanceNDLToken.address);
 
   const instanceUSDT = (await (await ethers.getContractFactory('ERC20Faucet'))

@@ -1,6 +1,6 @@
 import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/ConfigAddress';
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
-import * as GamePairEvent from '../generated/templates/Game/Game';
+import * as GameEvent from '../generated/templates/Game/Game';
 import { ERC20Token, ConfigAddress, GameInfo, BetInfo, Game } from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
 import * as boutils from './boutils';
@@ -142,25 +142,47 @@ export function handleEventCreateGame(event: _GameCreated): void {
 //   bet.side = event.params.side;
 //   bet.save();
 // }
-export function handleTransfer(event: GamePairEvent.Approval): void {
+export function handleTransfer(event: GameEvent.Approval): void {
   // let pair = GamePair.load(event.address.toHex());
   // if (pair == null) {
   //   log.error('handleTransfer GamePair not find: {}', [event.address.toHex()]);
   //   return;
   // }
-  // let pairContract = GamePairEvent.GamePair.bind(event.address);
+  // let pairContract = GameEvent.GamePair.bind(event.address);
   // pair.title = pairContract.title();
   // pair.save();
 }
-export function handleApproval(event: GamePairEvent.Approval): void {
+export function handleApproval(event: GameEvent.Approval): void {
   // let pair = GamePair.load(event.address.toHex());
   // if (pair == null) {
   //   log.error('handleTransfer GamePair not find: {}', [event.address.toHex()]);
   //   return;
   // }
-  // let pairContract = GamePairEvent.GamePair.bind(event.address);
+  // let pairContract = GameEvent.GamePair.bind(event.address);
   // pair.title = pairContract.title();
   // pair.save();
+}
+export function handPlaceGame(event: GameEvent._placeGame): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:', []);
+  //
+}
+export function handAddLiquidity(event: GameEvent._addLiquidity): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handAddLiquidity:', []);
+  //
+}
+export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handRemoveLiquidity:', []);
+  //
+}
+export function handStakeGame(event: GameEvent._stakeGame): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handStakeGame:', []);
+  //
+}
+export function handChallengeGame(event: GameEvent._challengeGame): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:', []);
+}
+export function handOpenGame(event: GameEvent._openGame): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handOpenGame:', []);
 }
 export function handleBlock(block: ethereum.Block): void {
   let id = block.hash.toHex();

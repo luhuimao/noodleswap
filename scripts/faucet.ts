@@ -27,11 +27,14 @@ let main = async () => {
     ethers.utils.formatEther((await owner.getBalance()).toString())
   );
 
-  let response = await config.GetConfigAddressByGameFactoryAddress(
+  let configAddress = await config.GetConfigAddressByGameFactoryAddress(
     network.name,
     config.getGameFactoryAddressByNetwork(network.name)
   );
-  let configAddress = JSON.parse(response.body.read().toString()).data.configAddresses[0] as ConfigAddress;
+  if (!configAddress) {
+    console.log('configAddress null:');
+    return;
+  }
   const NDLTOKENFactory = await ethers.getContractFactory('ERC20Faucet');
   //address marketAddress, address omAddress, address adminAddress, address WETHAddress
   const instanceNDLTOKEN = NDLTOKENFactory.connect(owner).attach(
