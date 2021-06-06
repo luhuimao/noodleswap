@@ -59,6 +59,7 @@ type GameInfo @entity {
   id: ID!
 
   _token: ERC20Token! # 游戏代币币种
+  _owner: Bytes! # 用户地址
   _game: Game! # 游戏合约地址
   _gameName: String! # 标题
   _optionName: [String!]! # 选项名称

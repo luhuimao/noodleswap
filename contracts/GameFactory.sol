@@ -14,6 +14,7 @@ contract GameFactory is IGameFactory {
     event _GameCreated(
         address indexed _token,
         address indexed _game,
+        address indexed _owner,
         string _gameName,
         string[] _optionName,
         uint256[] _optionNum,
@@ -31,8 +32,8 @@ contract GameFactory is IGameFactory {
     ) public override ensure(_endTime) returns (address _game) {
         Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime);
         //取第一个option的金额作为liquidity
-        game.mint(msg.sender,_optionNum[0]);
-        _game =  address(game);
-        emit _GameCreated(_token, _game, _gameName, _optionName, _optionNum, _resultSource, _endTime);
+        game.mint(msg.sender, _optionNum[0]);
+        _game = address(game);
+        emit _GameCreated(_token, _game, msg.sender, _gameName, _optionName, _optionNum, _resultSource, _endTime);
     }
 }
