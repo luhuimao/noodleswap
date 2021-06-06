@@ -1,6 +1,7 @@
 import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/ConfigAddress';
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as GameEvent from '../generated/templates/Game/Game';
+import { Game as GameTemplate } from '../generated/templates';
 import { ERC20Token, ConfigAddress, GameInfo, BetInfo, Game } from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
 import * as boutils from './boutils';
@@ -12,8 +13,8 @@ export function handleUpsertConfig(event: UpsertConfig): void {
   let ndlToken = ERC20Token.load(event.params.ndlToken.toHexString());
   if (ndlToken == null) {
     ndlToken = new ERC20Token(event.params.ndlToken.toHexString());
-    ndlToken.name = event.params.networkName + ' GST';
-    ndlToken.symbol = 'GST';
+    ndlToken.name = event.params.networkName + ' NDL';
+    ndlToken.symbol = 'NDL';
     ndlToken.decimals = BigInt.fromI32(18);
     ndlToken.save();
   }
@@ -122,6 +123,7 @@ export function handleEventCreateGame(event: _GameCreated): void {
   gameInfo._endSec = event.params._endTime;
   gameInfo.timestamp = event.block.timestamp;
   gameInfo.save();
+  GameTemplate.create(event.params._game);
 }
 // export function handleEventBetForToken(event: EventBetForToken): void {
 //   let id = event.params.pair.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
