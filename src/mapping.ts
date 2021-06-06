@@ -111,6 +111,7 @@ export function handleEventCreateGame(event: _GameCreated): void {
   log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:2:{}', [id]);
   let gameInfo = new GameInfo(id);
   gameInfo._gameName = event.params._gameName;
+  gameInfo._owner = event.params._owner;
   gameInfo._token = event.params._token.toHex();
   gameInfo._game = game.id;
   gameInfo._resultSource = event.params._resultSource;
