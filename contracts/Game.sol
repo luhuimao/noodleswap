@@ -226,31 +226,31 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         returns (uint256 amount, uint256[] memory tokenIds)
     {
         //require(block.timestamp < endTime, 'NoodleSwap: Game End');
-        uint256 balance = balanceOf(address(msg.sender));
+        uint256 balance = balanceOf[address(msg.sender)];
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
         console.log('_liquidity:',_liquidity);
         _burn(msg.sender,_liquidity);
         //从池子里拿出的金额
-        uint256 k = _liquidity / totalSupply;
-        console.log('k:',k);
         uint256 sum = 0;
         uint256 frozenSum = 0;
+        uint256 initMarketNumber = options[0].marketNumber;
         for (uint8 i = 0; i < options.length; i++) {
-            sum += options[i].marketNumber * k;
-            options[i].marketNumber = options[i].marketNumber * (1 - k);
+            uint256 marketNumber = options[i].marketNumber * _liquidity /initMarketNumber;
+            sum += marketNumber;
+            options[i].marketNumber -= marketNumber;
 
             if (options[i].placeNumber > options[i].frozenNumber) {
-                frozenSum += (options[i].placeNumber - options[i].frozenNumber) * k;
-                options[i].frozenNumber += (options[i].placeNumber - options[i].frozenNumber) * k;
+                frozenSum += (options[i].placeNumber - options[i].frozenNumber) * _liquidity /initMarketNumber;
+                options[i].frozenNumber += (options[i].placeNumber - options[i].frozenNumber) * _liquidity /initMarketNumber;
             }
         }
         tokenIds = new uint256[](options.length);
         for (uint8 i = 0; i < options.length; i++) {
             if (options[i].placeNumber < options[i].frozenNumber) {
-                uint256 placeNumber = (options[i].frozenNumber - options[i].placeNumber) * k;
+                uint256 placeNumber = (options[i].frozenNumber - options[i].placeNumber) * _liquidity /initMarketNumber;
                 sum = sum - placeNumber;
                 options[i].placeNumber += placeNumber;
-                uint256 optionP = frozenSum / placeNumber + 1;
+                uint256 optionP = (frozenSum + placeNumber)*100 /placeNumber;
                 //调用生成ERC721 token的接口, i,placeNumber,optionP,frozenSum,返回tokenId
                 uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
                 PlayInfoStruct memory playInfo;
@@ -278,9 +278,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         returns (uint256 amount, uint256[] memory tokenIds)
     {
         //require(block.timestamp < endTime, 'NoodleSwap: Game End');
-        uint256 balance = balanceOf(address(msg.sender));
+        uint256 balance = balanceOf[address(msg.sender)];
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
-        permit(msg.sender, address(this), _liquidity, _endTime,v, r, s);
+        GameERC20(this).permit(msg.sender, address(this), _liquidity, _endTime,v, r, s);
         removeLiquidity(_liquidity,_endTime);
     }
 
