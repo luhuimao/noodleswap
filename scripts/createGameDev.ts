@@ -42,7 +42,16 @@ let main = async () => {
   // .attach('0xe8c76c0eca2f536abb99b356e9aada6b005f7af8')) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
   // 下注代币
-  let eventFilter = instanceGameFactory.filters._GameCreated(instanceERC20.address, null, null, null, null, null, null);
+  let eventFilter = instanceGameFactory.filters._GameCreated(
+    instanceERC20.address,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  );
   let gameAddress: string;
   instanceGameFactory.once(eventFilter, async (tokenaddr, gameaddr) => {
     gameAddress = gameaddr;
@@ -55,7 +64,12 @@ let main = async () => {
     console.log('creator liquidity:', await instanceGame.balanceOf(owner.address));
     //TODO 这里增加其他函数调用
     console.log('-------placeGame--------');
-    let tokenIds = await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('10')], Date.now() + 1000);
+    let tokenIds = await instanceGame.placeGame(
+      instanceERC20.address,
+      [0],
+      [ethers.utils.parseEther('10')],
+      Date.now() + 1000
+    );
     await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('15')], Date.now() + 1000);
     await instanceGame.placeGame(instanceERC20.address, [1], [ethers.utils.parseEther('20')], Date.now() + 1000);
     console.log('game optionNames[0]:', await instanceGame.options(0));
@@ -66,7 +80,7 @@ let main = async () => {
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------removeLiquidity--------');
-    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'),Date.now() + 1000);
+    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), Date.now() + 1000);
     console.log(amount);
   });
   await instanceGameFactory.createGame(
