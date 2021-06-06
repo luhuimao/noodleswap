@@ -110,19 +110,15 @@ export function handleEventCreateGame(event: _GameCreated): void {
   game.save();
   log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:2:{}', [id]);
   let gameInfo = new GameInfo(id);
-  gameInfo.title = event.params._gameName;
-  gameInfo.token = event.params._token.toHex();
-  gameInfo.gameAddress = game.id;
-  gameInfo.url = event.params._resultSource;
+  gameInfo._gameName = event.params._gameName;
+  gameInfo._token = event.params._token.toHex();
+  gameInfo._game = game.id;
+  gameInfo._resultSource = event.params._resultSource;
   let optionName = event.params._optionName;
-  gameInfo.options = optionName[0];
-  gameInfo.startSec = event.params._endTime;
-  gameInfo.endSec = event.params._endTime;
-  gameInfo.deadline = event.params._endTime;
-  gameInfo.initAmountsIn = event.params._optionNum;
-  gameInfo.amount = new BigInt(0);
+  gameInfo._optionName = optionName;
   let optionNum = event.params._optionNum;
-  gameInfo.side = optionNum[0];
+  gameInfo._optionNum = optionNum;
+  gameInfo._endSec = event.params._endTime;
   gameInfo.timestamp = event.block.timestamp;
   gameInfo.save();
 }

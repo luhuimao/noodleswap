@@ -58,17 +58,13 @@ type Game @entity {
 type GameInfo @entity {
   id: ID!
 
-  token: ERC20Token! # 游戏代币币种
-  gameAddress: Game! # 游戏合约地址
-  title: String! # 标题
-  url: String! # 结果网址
-  options: String! # 竞猜选项对应的顺序，用分号隔开，如三个比分选项  “2:1;1:1;1:2”
-  startSec: BigInt! # 游戏开始时间戳，也就是截止下注时间
-  endSec: BigInt! # 游戏结束时间戳，也就是结束时间到了才可输入结果
-  deadline: BigInt! # 允许的过期时间，秒级时间戳，建议设置为 当前时间戳+20min
-  initAmountsIn: [BigInt!]! # 初次提供流动性，对应选项需要的代币数，数组
-  amount: BigInt! # 初始的总金额数
-  side: BigInt! #  指定的某个选项序号
+  _token: ERC20Token! # 游戏代币币种
+  _game: Game! # 游戏合约地址
+  _gameName: String! # 标题
+  _optionName: [String!]! # 选项名称
+  _optionNum: [BigInt!]! # 选项数据
+  _resultSource: String! # 结果网址
+  _endSec: BigInt! # 游戏结束时间戳，也就是结束时间到了才可输入结果
   timestamp: BigInt! #  下注时间
   betInfos: [BetInfo!]! @derivedFrom(field: "gameInfo") # 下注记录
 }
