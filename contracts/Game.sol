@@ -308,11 +308,11 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     //抵押获取开奖资格
     function stakeGame(uint256 deadline) public override {
-        require(openAddress != address(0), 'NoodleSwap: the game has openAddress');
+        require(openAddress == address(0), 'NoodleSwap: the game has openAddress');
         uint256 balance = IERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
-        openAddress = msg.sender;
+        openAddress = address(msg.sender);
     }
 
     //开奖
