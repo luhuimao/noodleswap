@@ -49,6 +49,8 @@ let main = async () => {
     await ethers.getContractFactory('ERC20Faucet')
   ).deploy('T0', 'Token 0', 18)) as ERC20Faucet;
   // 领币
+  await instanceNDLToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
+  await instanceNDLToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   console.log('new ERC20Faucet address:', instanceERC20.address);
@@ -102,6 +104,7 @@ let main = async () => {
     //console.log('-------removeLiquidity--------');
     let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), Date.now() + 1000);
     console.log(amount);
+    await instanceGame.stakeGame(0);
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,

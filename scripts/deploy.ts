@@ -166,6 +166,8 @@ let main = async () => {
     .connect(owner)
     .deploy('Test BOST', 'BOST', 18)) as ERC20Faucet;
   console.log('GameERC20 address:', instanceERC20.address);
+  await instanceNDLToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
+  await instanceNDLToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
 
