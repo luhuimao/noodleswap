@@ -2,7 +2,16 @@ import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/Config
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as GameEvent from '../generated/templates/Game/Game';
 import { Game as GameTemplate } from '../generated/templates';
-import { ERC20Token, ConfigAddress, GameInfo, BetInfo, Game } from '../generated/schema';
+import {
+  ERC20Token,
+  ConfigAddress,
+  VoteUserInfo,
+  VoteInfo,
+  NFTInfo,
+  GameInfo,
+  BetInfo,
+  Game,
+} from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
 import * as boutils from './boutils';
 import { BigInt, ethereum, Bytes, log } from '@graphprotocol/graph-ts';
@@ -178,6 +187,16 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
     gameOptionNum[element] += optionNum[index];
   }
   gameInfo._optionNum = gameOptionNum;
+  for (let index = 0; index < tokenIds.length; index++) {
+    let element = tokenIds[index];
+    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    nftInfo.tokenId = element;
+    nftInfo.owner = event.params.sender;
+    nftInfo.game = gameInfo.id;
+    nftInfo.save();
+  }
+  // VoteUserInfo,
+  // VoteInfo,
   bet.save();
   gameInfo.save();
 }
@@ -192,19 +211,58 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
   //     uint256[] tokenIds
   // );
   //
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
+    log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+  let tokenIds = event.params.tokenIds;
+  for (let index = 0; index < tokenIds.length; index++) {
+    let element = tokenIds[index];
+    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    nftInfo.tokenId = element;
+    nftInfo.owner = event.params.sender;
+    nftInfo.game = gameInfo.id;
+    nftInfo.save();
+  }
 }
 export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   log.info('xxxxxxxxxxxxxxxxxx:handRemoveLiquidity:', []);
-  //
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
+    log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+  let tokenIds = event.params.tokenIds;
+  for (let index = 0; index < tokenIds.length; index++) {
+    let element = tokenIds[index];
+    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    nftInfo.tokenId = element;
+    nftInfo.owner = event.params.sender;
+    nftInfo.game = gameInfo.id;
+    nftInfo.save();
+  }
 }
 export function handStakeGame(event: GameEvent._stakeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handStakeGame:', []);
-  //
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
+    log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+  gameInfo._openAddress = event.params.sender;
+  gameInfo.save();
 }
 export function handChallengeGame(event: GameEvent._challengeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:', []);
 }
 export function handOpenGame(event: GameEvent._openGame): void {
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
+    log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+  gameInfo._winOption = event.params.option;
   log.info('xxxxxxxxxxxxxxxxxx:handOpenGame:', []);
 }
 export function handleBlock(block: ethereum.Block): void {

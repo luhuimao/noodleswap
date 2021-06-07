@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0x8a1f3AEd0b7FfAd4F10F8BC0D8c1372015e8835A" #{{GAMEFACTORY_ADDRESS}}
+      address: "0xD4DE1E104Dd3e986Ffd23a7CC99d066aEFF34F6F" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:

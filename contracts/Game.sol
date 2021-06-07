@@ -296,11 +296,11 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     //获得奖励
     function getAward(uint256 tokenId) private returns (uint256 amount) {
         //todo: 需要判断game是否结束
-        PlayInfoStruct memory playInfo = playInfoMap[tokenId];
+        PlayInfoStruct storage playInfo = playInfoMap[tokenId];
         require(msg.sender == PlayNFT(playNFT).ownerOf(tokenId), 'NoodleSwap: address have no right');
         if (playInfo.option == winOption) {
             //用户赢了，则将币转给用户
-            uint256 amount = playInfo.allFrozen;
+            amount = playInfo.allFrozen;
             TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
             playInfoMap[tokenId].option = 200; //表示已经领取
         }
@@ -317,7 +317,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     //开奖
     function openGame(uint8 _winOption) public override {
-        require(openAddress != msg.sender, 'NoodleSwap: cannot open game');
+        require(openAddress == msg.sender, 'NoodleSwap: cannot open game');
         winOption = _winOption;
     }
 

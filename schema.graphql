@@ -46,6 +46,11 @@ type ConfigAddress @entity {
   gameTokens: [ERC20Token!]!
 }
 
+# 用户信息
+type UserInfo @entity {
+  id: ID!
+}
+
 # 游戏列表
 type Game @entity {
   id: ID!
@@ -66,8 +71,21 @@ type GameInfo @entity {
   _optionNum: [BigInt!]! # 选项数据
   _resultSource: String! # 结果网址
   _endSec: BigInt! # 游戏结束时间戳，也就是结束时间到了才可输入结果
+  _openAddress: Bytes # 开奖者地址
+  _winOption: BigInt # 获胜选项
   timestamp: BigInt! #  下注时间
+  vote: VoteInfo! @derivedFrom(field: "game") # 投票地址
   betInfos: [BetInfo!]! @derivedFrom(field: "game") # 下注记录
+  nftInfos: [NFTInfo!]! @derivedFrom(field: "game") # 下注记录
+}
+
+# nft列表
+type NFTInfo @entity {
+  id: ID!
+
+  tokenId: BigInt! # token地址
+  owner: Bytes! # 用户地址
+  game: GameInfo! # 所属游戏
 }
 
 # 下注记录
@@ -80,6 +98,30 @@ type BetInfo @entity {
   options: [Int!]! # 选项数据
   optionNum: [BigInt!]! # 选项数据
   tokenIds: [BigInt!]! # 选项数据
+  timestamp: BigInt! #  下注时间
+}
+
+# 投票信息
+type VoteInfo @entity {
+  id: ID!
+
+  owner: Bytes! # 发起者地址
+  game: GameInfo! # 所属游戏
+  option: Int! # 同意选项
+  timestamp: BigInt! #  下注时间
+  voteUserInfos: [VoteUserInfo!]! @derivedFrom(field: "vote") # 下注记录
+  agrees: [Bytes!]! # 同意列表
+  optionNum: [BigInt!]! # 选项数据
+  tokenIds: [BigInt!]! # 选项数据
+}
+
+# 投票明细
+type VoteUserInfo @entity {
+  id: ID!
+
+  sender: Bytes! # 投票者地址
+  vote: VoteInfo! # 所属游戏
+  option: Int! # 投票选项
   timestamp: BigInt! #  下注时间
 }
 
