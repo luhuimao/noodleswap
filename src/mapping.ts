@@ -101,7 +101,7 @@ export function handleEventCreateGame(event: _GameCreated): void {
   log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:0:{}', [id]);
   var game = Game.load(id);
   if (game != null) {
-    log.info('GameInfo oready exist: {}', [id]);
+    log.info('GameInfo already exist: {}', [id]);
     return;
   }
   log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:1:{}', [id]);
@@ -125,25 +125,6 @@ export function handleEventCreateGame(event: _GameCreated): void {
   gameInfo.save();
   GameTemplate.create(event.params._game);
 }
-// export function handleEventBetForToken(event: EventBetForToken): void {
-//   let id = event.params.pair.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
-//   log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:{}', [id]);
-//   var bet = BetInfo.load(id);
-//   if (bet != null) {
-//     log.error('BetInfo oready exist: {}', [id]);
-//     return;
-//   }
-
-//   bet = new BetInfo(id);
-//   bet.sender = event.params.sender;
-//   bet.token = event.params.token;
-
-//   bet.gameInfo = event.params.pair.toHex();
-//   bet.amount = event.params.amount;
-//   bet.deadline = event.params.deadline;
-//   bet.side = event.params.side;
-//   bet.save();
-// }
 export function handleTransfer(event: GameEvent.Approval): void {
   // let pair = GamePair.load(event.address.toHex());
   // if (pair == null) {
@@ -165,8 +146,32 @@ export function handleApproval(event: GameEvent.Approval): void {
   // pair.save();
 }
 export function handPlaceGame(event: GameEvent._placeGame): void {
-  log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:', []);
-  //
+  let id = event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
+  log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:{}', [id]);
+  var bet = BetInfo.load(id);
+  if (bet != null) {
+    log.error('BetInfo already exist: {}', [id]);
+    return;
+  }
+  var game = Game.load(event.params.game.toHex());
+  if (game == null) {
+    log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+
+  bet = new BetInfo(id);
+  bet.sender = event.params.sender;
+  bet.token = event.params.token;
+
+  bet.game = game.id;
+  let optionNum = event.params.optionNum;
+  bet.optionNum = optionNum;
+  let options = event.params.options;
+  bet.options = options;
+  let tokenIds = event.params.tokenIds;
+  bet.tokenIds = tokenIds;
+  bet.timestamp = event.block.timestamp;
+  bet.save();
 }
 export function handAddLiquidity(event: GameEvent._addLiquidity): void {
   log.info('xxxxxxxxxxxxxxxxxx:handAddLiquidity:', []);

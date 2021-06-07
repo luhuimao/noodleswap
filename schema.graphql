@@ -67,7 +67,7 @@ type GameInfo @entity {
   _resultSource: String! # 结果网址
   _endSec: BigInt! # 游戏结束时间戳，也就是结束时间到了才可输入结果
   timestamp: BigInt! #  下注时间
-  betInfos: [BetInfo!]! @derivedFrom(field: "gameInfo") # 下注记录
+  betInfos: [BetInfo!]! @derivedFrom(field: "game") # 下注记录
 }
 
 # 下注记录
@@ -76,10 +76,11 @@ type BetInfo @entity {
 
   sender: Bytes! # 用户地址
   token: Bytes! # 代币合约地址
-  gameInfo: GameInfo! # 所属游戏
-  side: BigInt! #  指定的某个选项序号
-  amount: BigInt! # 指定某个选项的下注金额
-  deadline: BigInt! # 允许的过期时间，秒级时间戳，建议设置为 当前时间戳+20min
+  game: GameInfo! # 所属游戏
+  options: [Int!]! # 选项数据
+  optionNum: [BigInt!]! # 选项数据
+  tokenIds: [BigInt!]! # 选项数据
+  timestamp: BigInt! #  下注时间
 }
 
 type Token @entity {

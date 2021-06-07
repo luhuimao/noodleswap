@@ -36,8 +36,8 @@ let main = async () => {
   if (configAddress?.ndlToken) {
     instanceNDLToken = (await ethers.getContractFactory('ERC20Faucet'))
       .connect(owner)
-      .attach(configAddress.ndlToken) as ERC20Faucet;
-    console.log('new NoodleToken address:', instanceNDLToken.address);
+      .attach((configAddress.ndlToken as any).id) as ERC20Faucet;
+    console.log('NoodleToken address:', instanceNDLToken.address);
   } else {
     instanceNDLToken = (await (await ethers.getContractFactory('ERC20Faucet'))
       .connect(owner)
@@ -59,7 +59,7 @@ let main = async () => {
       gasPrice: 1,
       gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
     })) as GameFactory;
-  // .attach('0xe8c76c0eca2f536abb99b356e9aada6b005f7af8')) as GameFactory;
+  //.attach(config.getGameFactoryAddressByNetwork(network.name))) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
   // 下注代币
   let eventFilter = instanceGameFactory.filters._GameCreated(
