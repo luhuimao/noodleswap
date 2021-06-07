@@ -166,6 +166,8 @@ let main = async () => {
     .connect(owner)
     .deploy('Test BOST', 'BOST', 18)) as ERC20Faucet;
   console.log('GameERC20 address:', instanceERC20.address);
+  await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
+  await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
 
   await instanceConfigAddress.upsertGameToken(
     instanceGameFactory.address,
@@ -174,11 +176,53 @@ let main = async () => {
   );
   console.log('instanceConfigAddress.upsertGameToken:', instanceERC20.address, await instanceERC20.symbol());
   let deadline = Date.now() + 86400000;
+  // 下注代币
+  let eventFilter = instanceGameFactory.filters._GameCreated(
+    instanceERC20.address,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  );
+  let gameAddress: string;
+  instanceGameFactory.once(eventFilter, async (tokenaddr, gameaddr) => {
+    gameAddress = gameaddr;
+    console.log('new Game address:', gameAddress);
+    const instanceGame = (await ethers.getContractFactory('Game')).connect(owner).attach(gameAddress) as Game;
+    console.log('instanceGame.winOption:', await instanceGame.winOption());
+    console.log('game optionNames[0]:', await instanceGame.options(0));
+    console.log('game optionNames[1]:', await instanceGame.options(1));
+
+    console.log('creator liquidity:', await instanceGame.balanceOf(owner.address));
+    //TODO 这里增加其他函数调用
+    console.log('-------placeGame--------');
+    let tokenIds = await instanceGame.placeGame(
+      instanceERC20.address,
+      [0],
+      [ethers.utils.parseEther('10')],
+      Date.now() + 1000
+    );
+    await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('15')], Date.now() + 1000);
+    await instanceGame.placeGame(instanceERC20.address, [1], [ethers.utils.parseEther('20')], Date.now() + 1000);
+    console.log('game optionNames[0]:', await instanceGame.options(0));
+    console.log('game optionNames[1]:', await instanceGame.options(1));
+    //console.log('-------addLiquidity--------');
+    let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('102'));
+    console.log('add liquidity:');
+    console.log('game optionNames[0]:', await instanceGame.options(0));
+    console.log('game optionNames[1]:', await instanceGame.options(1));
+    //console.log('-------removeLiquidity--------');
+    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), Date.now() + 1000);
+    console.log(amount);
+  });
   await instanceGameFactory.createGame(
     instanceERC20.address,
     'Test T0',
     ['BIG', 'SMALL'],
-    [ethers.utils.parseEther('50'), ethers.utils.parseEther('50')],
+    [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
     'https://github.com/NoodleDAO/noodleswap',
     deadline
   );
