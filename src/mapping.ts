@@ -153,8 +153,8 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
     log.error('BetInfo already exist: {}', [id]);
     return;
   }
-  var game = Game.load(event.params.game.toHex());
-  if (game == null) {
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
     log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
     return;
   }
@@ -163,7 +163,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   bet.sender = event.params.sender;
   bet.token = event.params.token;
 
-  bet.game = game.id;
+  bet.game = gameInfo.id;
   let optionNum = event.params.optionNum;
   bet.optionNum = optionNum;
   let options = event.params.options;
@@ -171,10 +171,26 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   let tokenIds = event.params.tokenIds;
   bet.tokenIds = tokenIds;
   bet.timestamp = event.block.timestamp;
+  let gameOptionNum = gameInfo._optionNum;
+  for (let index = 0; index < options.length; index++) {
+    let element = options[index];
+    // log.info('xxxxxxxxxxxxxxxxxx:optionNum:{},{}', [String(gameOptionNum.length), element.toString())]);
+    gameOptionNum[element] += optionNum[index];
+  }
+  gameInfo._optionNum = gameOptionNum;
   bet.save();
+  gameInfo.save();
 }
 export function handAddLiquidity(event: GameEvent._addLiquidity): void {
   log.info('xxxxxxxxxxxxxxxxxx:handAddLiquidity:', []);
+  // event _addLiquidity(
+  //     address indexed game,
+  //     address indexed token,
+  //     address indexed sender,
+  //     uint256 amount,
+  //     uint256 liquidity,
+  //     uint256[] tokenIds
+  // );
   //
 }
 export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
