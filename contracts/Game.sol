@@ -2,12 +2,13 @@
 pragma solidity ^0.8.3;
 
 import './interfaces/IGame.sol';
+import './interfaces/IVote.sol';
 import './GameERC20.sol';
 import './libraries/SafeMath.sol';
+import './libraries/TransferHelper.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IGameFactory.sol';
 import './ConfigurableParametersContract.sol';
-import './Vote.sol';
 import './PlayNFT.sol';
 
 import 'hardhat/console.sol';
@@ -159,7 +160,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         for (uint8 i = 0; i < options.length; i++) {
             options[i].frozenNumber = options[i].frozenNumber + currentFrozen[i];
         }
-        emit _placeGame(address(this), token, msg.sender, _options, _optionNum, tokenIds,_getOptions());
+        emit _placeGame(address(this), token, msg.sender, _options, _optionNum, tokenIds, _getOptions());
     }
 
     //p = (b + placeB) / (a + placeA)
@@ -169,9 +170,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         p = sumB / sumA;
     }
 
-    function _getOptions() private view returns(uint256[] memory optionData){
+    function _getOptions() private view returns (uint256[] memory optionData) {
         optionData = new uint256[](options.length);
-        for(uint8 i = 0; i < options.length; i ++){
+        for (uint8 i = 0; i < options.length; i++) {
             optionData[i] = options[i].marketNumber + options[i].placeNumber - options[i].frozenNumber;
         }
     }
@@ -279,7 +280,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         console.log('amount:', amount);
         //转账需要处理approve
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
-        emit _removeLiquidity(address(this), msg.sender, _liquidity, amount, tokenIds,_getOptions());
+        emit _removeLiquidity(address(this), msg.sender, _liquidity, amount, tokenIds, _getOptions());
     }
 
     function removeLiquidityWithPermit(
@@ -304,10 +305,10 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function getAward(uint256[] memory tokenIds) private returns (uint256 amount) {
         //todo: 需要判断game是否结束
         uint256 amount = 0;
-        for(uint8 i = 0; i< tokenIds.length;i ++){
+        for (uint8 i = 0; i < tokenIds.length; i++) {
             PlayInfoStruct storage playInfo = playInfoMap[tokenIds[i]];
             require(msg.sender == PlayNFT(playNFT).ownerOf(tokenIds[i]), 'NoodleSwap: address have no right');
-            if(playInfo.option == 200){
+            if (playInfo.option == 200) {
                 continue;
             }
             if (playInfo.option == winOption) {
@@ -317,7 +318,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             playInfoMap[tokenIds[i]].option = 200; //表示已经领取
         }
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
-        emit _getAward(address(this), token, msg.sender, tokenIds,amount);
+        emit _getAward(address(this), token, msg.sender, tokenIds, amount);
     }
 
     //抵押获取开奖资格
@@ -338,16 +339,17 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //挑战，发起投票
-    function challengeGame(uint8 challengeOption) public override returns (address _vote) {
+    function challengeGame(uint8 challengeOption, address _vote) public override {
         require(openAddress != address(0), 'NoodleSwap: the game has openAddress');
         uint256 balance = IERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
-        vote = address(new Vote(address(this), address(msg.sender),winOption, challengeOption,block.timestamp));
-        emit _challengeGame(address(msg.sender),address(this),winOption,challengeOption,vote);
+        vote = _vote;
+        //vote = address(new Vote(address(this), address(msg.sender),winOption, challengeOption,block.timestamp));
+        emit _challengeGame(address(msg.sender), address(this), winOption, challengeOption, vote);
     }
 
     function openGameWithVote() public override {
-        winOption = Vote(vote).winOption();
+        winOption = IVote(vote).winOption();
     }
 }

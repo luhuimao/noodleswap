@@ -99,20 +99,21 @@ contract MockGame is IGame {
         returns (uint256 liquidity, uint256[] memory tokenIds)
     {}
 
-    function removeLiquidity(uint256 liquidity,uint256 _endTime)
+    function removeLiquidity(uint256 liquidity, uint256 _endTime)
         public
         override
         returns (uint256 amount, uint256[] memory tokenIds)
     {}
 
-    function removeLiquidityWithPermit(uint256 _liquidity,uint256 _endTime,
-        uint8 v, bytes32 r, bytes32 s)
-        public
-        override
-        returns (uint256 amount, uint256[] memory tokenIds)
-    {}
+    function removeLiquidityWithPermit(
+        uint256 _liquidity,
+        uint256 _endTime,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public override returns (uint256 amount, uint256[] memory tokenIds) {}
 
-    function mint(address _to,uint256 liquidity) public override {}
+    function mint(address _to, uint256 liquidity) public override {}
 
     function getAward(uint256 tokenId) private returns (uint256 amount) {}
 
@@ -120,7 +121,7 @@ contract MockGame is IGame {
 
     function openGame(uint8 _winOption) public override {}
 
-    function challengeGame(uint8 challengeOption) public override returns (address _vote) {}
+    function challengeGame(uint8 challengeOption, address _vote) public override {}
 
     function openGameWithVote() public override {}
 }

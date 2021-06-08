@@ -57,14 +57,16 @@ let main = async () => {
           )
         )
       ).mul(await owner.getGasPrice())
-    )
+    ),
+    tmp1.bytecode.length
   );
   const tmp2 = await ethers.getContractFactory('GameFactory');
   console.log(
     'deploy GameFactory gas:',
     ethers.utils.formatEther(
       await (await owner.estimateGas(tmp2.getDeployTransaction(owner.address))).mul(await owner.getGasPrice())
-    )
+    ),
+    tmp2.bytecode.length
   );
   let tokens = config.getTokensByNetwork(network.name);
   if (tokens == null) {
@@ -95,7 +97,7 @@ let main = async () => {
     .connect(owner)
     .deploy(instanceNDLToken.address, {
       gasPrice: 1,
-      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit.add(1),
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
     })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
 
