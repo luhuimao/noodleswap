@@ -30,11 +30,38 @@ contract Vote is ConfigurableParametersContract {
 
     mapping (address=>uint8) optionMap;
 
-    constructor(address _game,address _creator) {
-        game = _game;
-    }
+    event _addVote(
+        address indexed game,
+        address indexed vote,
+        address indexed sender,
+        uint8 option
+    );
 
-    // called once by the factory at time
+    event _confirmVote(
+        address indexed game,
+        address indexed vote,
+        address indexed sender,
+        uint8 voteOption
+    );
+
+    event _getAward(
+        address indexed game,
+        address indexed vote,
+        address indexed sender,
+        uint256 amount
+    );
+
+    constructor(address _game,
+        address _creator,
+        uint8 _originOption,
+        uint8 _challengeOption,
+        uint256 _endTime) {
+        game = _game;
+        creator = _creator;
+        originOption = _originOption;
+        challengeOption = _challengeOption;
+        endTime = _endTime;
+    }
 
     function add(uint8 option) public{
         require(endTime > block.timestamp, 'NoodleSwap: Vote end');
@@ -47,21 +74,16 @@ contract Vote is ConfigurableParametersContract {
         }else if(option == challengeOption){
             challengeVoteNumber += 1;
         }
-    }
-
-    function confirm() public{
-        require(endTime < block.timestamp, 'NoodleSwap: Vote cannot confirm before end');
         if(challengeVoteNumber > originVoteNumber * 2){
             winOption = challengeOption;
-            award = 500 ether/challengeVoteNumber;
         }else{
             winOption = originOption;
-            award = 500 ether/ originVoteNumber;
         }
+        emit _addVote(game,address(this),msg.sender,option);
     }
 
     function getAward() public{
-        require(endTime < block.timestamp, 'NoodleSwap: Vote cannot confirm before end');
+        //require(endTime < block.timestamp, 'NoodleSwap: Vote cannot confirm before end');
         uint8 option = optionMap[msg.sender];
         if(option == winOption){
             TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, award);
