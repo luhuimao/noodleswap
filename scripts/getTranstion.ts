@@ -1,10 +1,11 @@
 import { ethers, network } from 'hardhat';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import { getOwnerPrivateKey } from '../.privatekey';
+import * as boutils from './boutils';
 
 let main = async () => {
   console.log('network:', network.name);
-  let deadline = Date.now() + 8640000;
+  let deadline = boutils.GetUnixTimestamp() + 86400;
   let user;
   let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();

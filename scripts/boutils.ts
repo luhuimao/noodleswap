@@ -5,3 +5,6 @@ export function ReplaceLine(filename: string, srcStr: string, dstStr: string): a
   console.log(cmdStr);
   exec(cmdStr, function (err, stdout, stderr) {});
 }
+export function GetUnixTimestamp(): number {
+  return Math.floor(Date.now() / 1000);
+}

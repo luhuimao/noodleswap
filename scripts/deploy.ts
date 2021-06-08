@@ -177,7 +177,7 @@ let main = async () => {
     await instanceERC20.symbol()
   );
   console.log('instanceConfigAddress.upsertGameToken:', instanceERC20.address, await instanceERC20.symbol());
-  let deadline = Date.now() + 86400000;
+  let deadline = boutils.GetUnixTimestamp() + 86400;
   // 下注代币
   let eventFilter = instanceGameFactory.filters._GameCreated(
     instanceERC20.address,
@@ -205,10 +205,20 @@ let main = async () => {
       instanceERC20.address,
       [0],
       [ethers.utils.parseEther('10')],
-      Date.now() + 1000
+      boutils.GetUnixTimestamp() + 1000
     );
-    await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('15')], Date.now() + 1000);
-    await instanceGame.placeGame(instanceERC20.address, [1], [ethers.utils.parseEther('20')], Date.now() + 1000);
+    await instanceGame.placeGame(
+      instanceERC20.address,
+      [0],
+      [ethers.utils.parseEther('15')],
+      boutils.GetUnixTimestamp() + 1000
+    );
+    await instanceGame.placeGame(
+      instanceERC20.address,
+      [1],
+      [ethers.utils.parseEther('20')],
+      boutils.GetUnixTimestamp() + 1000
+    );
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------addLiquidity--------');
@@ -217,7 +227,7 @@ let main = async () => {
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------removeLiquidity--------');
-    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), Date.now() + 1000);
+    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), boutils.GetUnixTimestamp() + 1000);
     console.log(amount);
   });
   await instanceGameFactory.createGame(

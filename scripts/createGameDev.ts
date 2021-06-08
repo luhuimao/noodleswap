@@ -6,10 +6,11 @@ import { Game } from '../typechain/Game';
 
 import * as config from '../.config';
 import { getOwnerPrivateKey } from '../.privatekey';
+import * as boutils from './boutils';
 
 let main = async () => {
   console.log('network:', network.name);
-  let deadline = Date.now() + 8640000;
+  let deadline = boutils.GetUnixTimestamp() + 86400;
   let user;
   let owner = new ethers.Wallet(await getOwnerPrivateKey(network.name), ethers.provider);
   [, user] = await ethers.getSigners();
@@ -90,10 +91,20 @@ let main = async () => {
       instanceERC20.address,
       [0],
       [ethers.utils.parseEther('10')],
-      Date.now() + 1000
+      boutils.GetUnixTimestamp() + 1000
     );
-    await instanceGame.placeGame(instanceERC20.address, [0], [ethers.utils.parseEther('15')], Date.now() + 1000);
-    await instanceGame.placeGame(instanceERC20.address, [1], [ethers.utils.parseEther('20')], Date.now() + 1000);
+    await instanceGame.placeGame(
+      instanceERC20.address,
+      [0],
+      [ethers.utils.parseEther('15')],
+      boutils.GetUnixTimestamp() + 1000
+    );
+    await instanceGame.placeGame(
+      instanceERC20.address,
+      [1],
+      [ethers.utils.parseEther('20')],
+      boutils.GetUnixTimestamp() + 1000
+    );
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------addLiquidity--------');
@@ -102,7 +113,7 @@ let main = async () => {
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------removeLiquidity--------');
-    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), Date.now() + 1000);
+    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), boutils.GetUnixTimestamp() + 1000);
     console.log(amount);
     await instanceGame.stakeGame(0);
   });
