@@ -95,7 +95,7 @@ let main = async () => {
     .connect(owner)
     .deploy(instanceNDLToken.address, {
       gasPrice: 1,
-      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit.add(1),
     })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
 

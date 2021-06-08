@@ -180,13 +180,15 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   let tokenIds = event.params.tokenIds;
   bet.tokenIds = tokenIds;
   bet.timestamp = event.block.timestamp;
-  let gameOptionNum = gameInfo._optionNum;
-  for (let index = 0; index < options.length; index++) {
-    let element = options[index];
-    // log.info('xxxxxxxxxxxxxxxxxx:optionNum:{},{}', [String(gameOptionNum.length), element.toString())]);
-    gameOptionNum[element] += optionNum[index];
-  }
-  gameInfo._optionNum = gameOptionNum;
+  // let gameOptionNum = gameInfo._optionNum;
+  // for (let index = 0; index < options.length; index++) {
+  //   let element = options[index];
+  //   // log.info('xxxxxxxxxxxxxxxxxx:optionNum:{},{}', [String(gameOptionNum.length), element.toString())]);
+  //   gameOptionNum[element] += optionNum[index];
+  // }
+  // gameInfo._optionNum = gameOptionNum;
+  let optionData = event.params.optionData;
+  gameInfo._optionNum = optionData;
   for (let index = 0; index < tokenIds.length; index++) {
     let element = tokenIds[index];
     let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
@@ -225,6 +227,9 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
     nftInfo.game = gameInfo.id;
     nftInfo.save();
   }
+  let optionNum = event.params.optionData;
+  gameInfo._optionNum = optionNum;
+  gameInfo.save();
 }
 export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   log.info('xxxxxxxxxxxxxxxxxx:handRemoveLiquidity:', []);
@@ -242,6 +247,9 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
     nftInfo.game = gameInfo.id;
     nftInfo.save();
   }
+  let optionNum = event.params.optionData;
+  gameInfo._optionNum = optionNum;
+  gameInfo.save();
 }
 export function handStakeGame(event: GameEvent._stakeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handStakeGame:', []);

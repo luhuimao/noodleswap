@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0x00EF386c58086a7Ef82d5775bfee560C90eda10f" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x4C6Acde895704581F1742AC8A78485797663A34e" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0xD4DE1E104Dd3e986Ffd23a7CC99d066aEFF34F6F" #{{GAMEFACTORY_ADDRESS}}
+      address: "0xbc9f0AE44448EAed971694c51e111A42Ed4CB69d" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -91,11 +91,11 @@ templates:
           handler: handleTransfer
         - event: Approval(indexed address,indexed address,uint256)
           handler: handleApproval
-        - event: _placeGame(indexed address,indexed address,indexed address,uint8[],uint256[],uint256[])
+        - event: _placeGame(indexed address,indexed address,indexed address,uint8[],uint256[],uint256[],uint256[])
           handler: handPlaceGame
-        - event: _addLiquidity(indexed address,indexed address,indexed address,uint256,uint256,uint256[])
+        - event: _addLiquidity(indexed address,indexed address,indexed address,uint256,uint256,uint256[],uint256[])
           handler: handAddLiquidity
-        - event: _removeLiquidity(indexed address,indexed address,uint256,uint256,uint256[])
+        - event: _removeLiquidity(indexed address,indexed address,uint256,uint256,uint256[],uint256[])
           handler: handRemoveLiquidity
         - event: _stakeGame(indexed address,indexed address,indexed address,uint256)
           handler: handStakeGame
