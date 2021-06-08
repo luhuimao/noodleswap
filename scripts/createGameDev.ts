@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
+import { Vote } from '../typechain/Vote';
 import { GameFactory } from '../typechain/GameFactory';
 import { Game } from '../typechain/Game';
 
@@ -46,6 +47,12 @@ let main = async () => {
     console.log('new NoodleToken address:', instanceNDLToken.address);
   }
 
+  let voteToken: Vote;
+  voteToken = (await (await ethers.getContractFactory('Vote'))
+      .connect(owner)
+      .deploy(instanceNDLToken.address)) as Vote;
+    console.log('new Vote address:', voteToken.address);
+
   let instanceERC20 = (await (
     await ethers.getContractFactory('ERC20Faucet')
   ).deploy('T0', 'Token 0', 18)) as ERC20Faucet;
@@ -58,7 +65,7 @@ let main = async () => {
   // 工厂合约
   let instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
     .connect(owner)
-    .deploy(instanceNDLToken.address, {
+    .deploy(instanceNDLToken.address, voteToken.address, {
       gasPrice: 1,
       gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
     })) as GameFactory;
@@ -116,6 +123,13 @@ let main = async () => {
     let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), boutils.GetUnixTimestamp() + 1000);
     console.log(amount);
     await instanceGame.stakeGame(0);
+    await instanceGame.openGame(1);
+    await instanceGame.challengeGame(0);
+    await instanceGame.addVote(0);
+    await instanceGame.addVote(0);
+    await instanceGame.addVote(1);
+    await instanceGame.addVote(1);
+    await instanceGame.addVote(0);
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,
