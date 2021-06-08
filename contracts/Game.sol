@@ -294,16 +294,23 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //获得奖励
-    function getAward(uint256 tokenId) private returns (uint256 amount) {
+    function getAward(uint256[] memory tokenIds) private returns (uint256 amount) {
         //todo: 需要判断game是否结束
-        PlayInfoStruct storage playInfo = playInfoMap[tokenId];
-        require(msg.sender == PlayNFT(playNFT).ownerOf(tokenId), 'NoodleSwap: address have no right');
-        if (playInfo.option == winOption) {
-            //用户赢了，则将币转给用户
-            amount = playInfo.allFrozen;
-            TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
-            playInfoMap[tokenId].option = 200; //表示已经领取
+        uint256 amount = 0;
+        for(uint8 i = 0; i< tokenIds.length;i ++){
+            PlayInfoStruct storage playInfo = playInfoMap[tokenIds[i]];
+            require(msg.sender == PlayNFT(playNFT).ownerOf(tokenIds[i]), 'NoodleSwap: address have no right');
+            if(playInfo.option == 200){
+                continue;
+            }
+            if (playInfo.option == winOption) {
+                //用户赢了，则将币转给用户
+                amount += playInfo.allFrozen;
+            }
+            playInfoMap[tokenIds[i]].option = 200; //表示已经领取
         }
+        TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
+        emit _getAward(address(this), token, msg.sender, tokenIds,amount);
     }
 
     //抵押获取开奖资格
@@ -313,12 +320,14 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
         openAddress = address(msg.sender);
+        emit _stakeGame(address(this), token, openAddress, stakeNumber);
     }
 
     //开奖
     function openGame(uint8 _winOption) public override {
         require(openAddress == msg.sender, 'NoodleSwap: cannot open game');
         winOption = _winOption;
+        emit _openGame(address(this), address(msg.sender), winOption);
     }
 
     //挑战，发起投票
@@ -328,6 +337,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
         vote = address(new Vote(address(this), address(msg.sender)));
+        emit _challengeGame(address(msg.sender),address(this),winOption,challengeOption,vote);
     }
 
     function openGameWithVote() public override {

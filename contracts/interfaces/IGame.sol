@@ -56,8 +56,19 @@ interface IGame {
         uint256 amount,
         uint256[] tokenIds
     );
+
+    event _getAward(
+        address indexed game, 
+        address indexed token, 
+        address indexed sender, 
+        uint256[] tokenIds,
+        uint256 amount
+    );
+    
     event _stakeGame(address indexed game, address indexed token, address indexed sender, uint256 amount);
+    
     event _openGame(address indexed game, address indexed sender, uint256 option);
+    
     event _challengeGame(
         address indexed sender,
         address indexed game,
@@ -65,5 +76,6 @@ interface IGame {
         uint256 challengeOption,
         address vote
     );
+    
     event _openGameWithVote(address indexed game, address indexed sender, address vote, uint256 voteOption);
 }
