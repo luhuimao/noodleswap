@@ -1,4 +1,5 @@
 import fetch, { Response } from 'node-fetch';
+import { resolve } from 'path';
 //import { ConfigAddress } from './generated/schema';
 import { ConfigAddress } from './generated/schema';
 
@@ -14,7 +15,7 @@ export const DEPLOY_ACCOUNT_HARDHAT = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb9226
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_DEVNET = '0x00EF386c58086a7Ef82d5775bfee560C90eda10f'; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_DEVNET = "0xD4DE1E104Dd3e986Ffd23a7CC99d066aEFF34F6F"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = '0xD4DE1E104Dd3e986Ffd23a7CC99d066aEFF34F6F'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_DEVNET = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 // ConfigAddree 地址
@@ -199,7 +200,12 @@ export async function GetConfigAddressByGameFactoryAddress(name: string, addr: s
     method: 'POST',
     //}).then(response => {
     //    return JSON.parse(response.body.read().toString());
+  }).catch(() => {
+    return null;
   });
+  if (response == null) {
+    return null;
+  }
   let data = JSON.parse(response.body.read().toString()).data;
   return data.configAddresses ? (data.configAddresses[0] as ConfigAddress) : null;
 }
