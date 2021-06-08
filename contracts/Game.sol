@@ -343,7 +343,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 balance = IERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
-        vote = address(new Vote(address(this), address(msg.sender)));
+        vote = address(new Vote(address(this), address(msg.sender),winOption, challengeOption,block.timestamp));
         emit _challengeGame(address(msg.sender),address(this),winOption,challengeOption,vote);
     }
 

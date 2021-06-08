@@ -9,7 +9,7 @@ contract ConfigurableParametersContract {
 
     uint256 public stakeNumber = 100 ether;
 
-    uint256 public voteNumber = 1;
+    uint256 public voteNumber = 1 ether;
     
     //Market rake, A few ten thousandths - （Need to expand n(rakeMagnificationMultiple) times）
     uint16 public marketRake = 0;
