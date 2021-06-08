@@ -103,17 +103,14 @@ type BetInfo @entity {
 
 # 投票信息
 type VoteInfo @entity {
-  id: ID!
-
+  id: ID! #game地址作为key
+  vote: Bytes! # 投票合约地址
   owner: Bytes! # 发起者地址
   game: GameInfo! # 所属游戏
   winOption: BigInt! # 同意选项
   option: BigInt! # 同意选项
   timestamp: BigInt! #  下注时间
   voteUserInfos: [VoteUserInfo!]! @derivedFrom(field: "vote") # 下注记录
-  agrees: [Bytes!]! # 同意列表
-  optionNum: [BigInt!]! # 选项数据
-  tokenIds: [BigInt!]! # 选项数据
 }
 
 # 投票明细

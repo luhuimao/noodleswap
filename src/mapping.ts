@@ -1,8 +1,9 @@
 import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/ConfigAddress';
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as GameEvent from '../generated/templates/Game/Game';
+import * as VoteEvent from '../generated/templates/Vote/Vote';
 import { Game as GameTemplate } from '../generated/templates';
-import { Vote as VoteTemplate } from '../generated/templates';
+import { VoteInfo as VoteTemplate } from '../generated/templates';
 import {
   ERC20Token,
   ConfigAddress,
@@ -11,7 +12,6 @@ import {
   NFTInfo,
   GameInfo,
   BetInfo,
-  Vote,
   Game,
 } from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
@@ -63,14 +63,14 @@ export function handleUpsertConfig(event: UpsertConfig): void {
 }
 export function handleUpsertGameToken(event: UpsertGameToken): void {
   let id = event.params.factoryAddress.toHex();
-  log.info('xxxxxxxxxxxxxxxxxx:handleUpsertGameToken:', []);
+  log.info('xxxxxxxxxxxxxxxxxx:handleUpsertGameToken:0:', []);
   var config = ConfigAddress.load(id);
   if (config == null) {
     log.info('please UpsertConfig first: {}', [id]);
     return;
   }
   let tokenId = event.params.tokenAddress.toHexString();
-  let tokenName = boutils.getTokenSymbol(event.params.tokenAddress);
+  let tokenName = boutils.fetchTokenSymbol(event.params.tokenAddress);
   var index = -2; // -1竟然不行,对ts还不熟悉。。。
   let gameTokens = config.gameTokens; //这里必须先复制,否则就存不进去,太奇怪了
   for (let i = 0; i < gameTokens.length; i++) {
@@ -265,17 +265,19 @@ export function handStakeGame(event: GameEvent._stakeGame): void {
 }
 export function handChallengeGame(event: GameEvent._challengeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:', []);
-  var voteInfo = VoteInfo.load(event.params.vote.toHex());
+  var voteInfo = VoteInfo.load(event.params.game.toHex());
   if (voteInfo != null) {
-    log.error('VoteInfo game already exists: {}', [event.params.vote.toHex()]);
+    log.error('VoteInfo game already exists: {}', [event.params.game.toHex()]);
     return;
   }
-  voteInfo = new VoteInfo(event.params.vote.toHex());
+  voteInfo = new VoteInfo(event.params.game.toHex());
   voteInfo.game = event.params.game.toHex();
-  voteInfo.owner - event.params.sender;
+  voteInfo.vote = event.params.vote;
+  voteInfo.owner = event.params.sender;
   voteInfo.winOption = event.params.originOption;
   voteInfo.option = event.params.challengeOption;
   voteInfo.timestamp = event.block.timestamp;
+  voteInfo.save();
   VoteTemplate.create(event.params.vote);
 }
 export function handOpenGame(event: GameEvent._openGame): void {
@@ -285,6 +287,7 @@ export function handOpenGame(event: GameEvent._openGame): void {
     return;
   }
   gameInfo._winOption = event.params.option;
+  gameInfo.save();
   log.info('xxxxxxxxxxxxxxxxxx:handOpenGame:', []);
 }
 export function handleBlock(block: ethereum.Block): void {
@@ -292,4 +295,47 @@ export function handleBlock(block: ethereum.Block): void {
   log.info('xxxxxxxxxxxxxxxxxx:wwwwwwwww:' + id, []);
   //let entity = new Block(id)
   //entity.save()
+}
+export function handAddVote(event: VoteEvent._addVote): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handAddVote:', []);
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
+    log.error('GameInfo game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+  var voteInfo = VoteInfo.load(event.params.game.toHex());
+  if (voteInfo == null) {
+    log.error('VoteInfo vote not exists: {}', [event.params.vote.toHex()]);
+    return;
+  }
+  let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
+  var voteUserInfo = VoteUserInfo.load(id);
+  if (voteUserInfo != null) {
+    log.error('VoteUserInfo game already exists: {}', [id]);
+    return;
+  }
+  voteUserInfo = new VoteUserInfo(id);
+  voteUserInfo.option = event.params.option;
+  voteUserInfo.sender = event.params.sender;
+  voteUserInfo.vote = voteInfo.id;
+  voteUserInfo.timestamp = event.block.timestamp;
+  voteUserInfo.save();
+  voteInfo.save();
+  gameInfo.save();
+}
+export function handConfirmVote(event: VoteEvent._confirmVote): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handConfirmVote:', []);
+  var voteInfo = VoteInfo.load(event.params.vote.toHex());
+  if (voteInfo == null) {
+    log.error('VoteInfo game already exists: {}', [event.params.vote.toHex()]);
+    return;
+  }
+}
+export function handGetAward(event: VoteEvent._getAward): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handGetAward:', []);
+  var voteInfo = VoteInfo.load(event.params.vote.toHex());
+  if (voteInfo == null) {
+    log.error('VoteInfo game already exists: {}', [event.params.vote.toHex()]);
+    return;
+  }
 }

@@ -231,10 +231,14 @@ let main = async () => {
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------removeLiquidity--------');
     let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), boutils.GetUnixTimestamp() + 1000);
-    console.log(amount);
+    await instanceGame.stakeGame(1);
+    await instanceGame.openGame(0);
     let vote = (await (await ethers.getContractFactory('Vote'))
       .connect(owner)
-      .deploy(instanceGame.address, owner.address, instanceGame.winOption(), 1, boutils.GetUnixTimestamp())) as Vote;
+      .deploy(instanceGame.address, owner.address, await instanceGame.winOption(), 1, boutils.GetUnixTimestamp(), {
+        gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+      })) as Vote;
+    await vote.add(1, { gasLimit: (await ethers.provider.getBlock('latest')).gasLimit });
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,

@@ -14,8 +14,8 @@ export const GAMEFACTORY_ADDRESS_HARDHAT = '0xDc64a140Aa3E981100a9becA4E685f962f
 export const DEPLOY_ACCOUNT_HARDHAT = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'; //REPLACE_FLAG
 
 // ConfigAddree 地址
-export const CONFIGADDRESS_ADDRESS_DEVNET = "0x0c5B2fD98df9E5503c7f7a7C2a4C25B23817385b"; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_DEVNET = "0xD01339e20afaf24fC2D4202722B68233E0d3703e"; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_DEVNET = "0x1813e4E8CEc28488615bde67eEf95C86b782D6C8"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = "0x3824c69ea91E51167386AEFC0315Cb104447Eb06"; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_DEVNET = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
 
 // ConfigAddree 地址
@@ -23,7 +23,7 @@ export const CONFIGADDRESS_ADDRESS_GANACHE = '0x0895211038947699A86aCf643708F0aD
 export const GAMEFACTORY_ADDRESS_GANACHE = '0xB3C438FCAf29bD07E7f99e4F9E6761252DaD9820'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_GANACHE = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
-export const CONFIGADDRESS_ADDRESS_BSCTESTNET = '0x5Dd24EB6f115f58d26aF14Bd088aD6Bf2a1292E0'; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_BSCTESTNET = '0x16F19c1f4033F3979C60aC8B9363f206ae70d0E0'; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_BSCTESTNET = '0xd257766F6Ba54B6904009109a681487b31dEc51a'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_BSCTESTNET = '0x66f040c34C9bA21560952303AfF336dA12096ad2'; //REPLACE_FLAG
 
@@ -173,7 +173,7 @@ export function getStartBlockNumber(name: string): number {
 export async function GetConfigAddressByGameFactoryAddress(name: string, addr: string): Promise<ConfigAddress | null> {
   let where = '';
   if (addr != '') {
-    where = 'where:{id:\\"' + addr.toLowerCase() + '\\"},';
+    //where = 'where:{id:\\"' + addr.toLowerCase() + '\\"},';
   }
   let url = 'http://10.0.0.18:7000/subgraphs/name/fatter-bo/noodleswap';
   switch (name) {
@@ -200,10 +200,12 @@ export async function GetConfigAddressByGameFactoryAddress(name: string, addr: s
     method: 'POST',
     //}).then(response => {
     //    return JSON.parse(response.body.read().toString());
-  }).catch(() => {
+  }).catch((error) => {
+    console.log('GetConfigAddressByGameFactoryAddress error:', error);
     return null;
   });
   if (response == null) {
+    console.log('GetConfigAddressByGameFactoryAddress error:null');
     return null;
   }
   let data = JSON.parse(response.body.read().toString()).data;

@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: '0x0c5B2fD98df9E5503c7f7a7C2a4C25B23817385b' #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x1813e4E8CEc28488615bde67eEf95C86b782D6C8" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: '0xD01339e20afaf24fC2D4202722B68233E0d3703e' #{{GAMEFACTORY_ADDRESS}}
+      address: "0x3824c69ea91E51167386AEFC0315Cb104447Eb06" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -104,7 +104,7 @@ templates:
         - event: _challengeGame(indexed address,indexed address,uint256,uint256,address)
           handler: handChallengeGame
   - kind: ethereum/contract
-    name: Vote
+    name: VoteInfo
     network: mainnet #replace mainnet
     source:
       abi: Vote
@@ -114,7 +114,7 @@ templates:
       language: wasm/assemblyscript
       file: ./src/mapping.ts
       entities:
-        - Vote
+        - VoteInfo
       abis:
         - name: Vote
           file: ./abis/Vote.json

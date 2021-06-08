@@ -32,7 +32,7 @@ let main = async () => {
     config.getGameFactoryAddressByNetwork(network.name)
   );
   if (!configAddress) {
-    console.log('configAddress null:');
+    console.log('configAddress null:', network.name, config.getGameFactoryAddressByNetwork(network.name));
     return;
   }
   const NDLTOKENFactory = await ethers.getContractFactory('ERC20Faucet');
