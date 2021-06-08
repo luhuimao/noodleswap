@@ -90,6 +90,7 @@
     "graphql": "^15.5.0",
     "graphql-ws": "^4.5.0",
     "truffle": "^5.3.6",
+    "truffle-contract-size": "^2.0.1",
     "ws": "^7.4.5"
   }
 }
