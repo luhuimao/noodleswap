@@ -35,8 +35,11 @@ contract GameFactory is IGameFactory {
 
     address public noodleToken;
 
-    constructor(address _noodleToken) {
+    address public vote;
+
+    constructor(address _noodleToken,address _vote) {
         noodleToken = _noodleToken;
+        vote = _vote;
     }
 
     function createGame(
@@ -48,7 +51,7 @@ contract GameFactory is IGameFactory {
         uint256 _endTime
     ) public override ensure(_endTime) returns (address _game) {
         // Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime,noodleToken);
-        Game game = new Game(msg.sender, _token, _optionNum, _endTime,noodleToken);
+        Game game = new Game(msg.sender, _token, _optionNum, _endTime,noodleToken,vote);
         //取第一个option的金额作为liquidity
         game.mint(msg.sender, _optionNum[0]);
         _game = address(game);

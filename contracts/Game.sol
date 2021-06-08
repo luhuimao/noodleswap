@@ -2,7 +2,7 @@
 pragma solidity ^0.8.3;
 
 import './interfaces/IGame.sol';
-// import './interfaces/IVote.sol';
+import './interfaces/IVote.sol';
 import './GameERC20.sol';
 import './libraries/SafeMath.sol';
 import './libraries/TransferHelper.sol';
@@ -10,8 +10,7 @@ import './interfaces/IERC20.sol';
 import './ConfigurableParametersContract.sol';
 import './PlayNFT.sol';
 
-import './Vote.sol';
-
+// import './Vote.sol';
 import 'hardhat/console.sol';
 
 contract Game is IGame, GameERC20, ConfigurableParametersContract {
@@ -71,12 +70,14 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         address _token,
         uint256[] memory _optionNum,
         uint256 _endTime,
-        address _noodleToken
+        address _noodleToken,
+        address _vote
     ) {
         creator = _creator;
         token = _token;
         endTime = _endTime;
         noodleToken = _noodleToken;
+        vote = _vote;
         for (uint8 i = 0; i < _optionNum.length; i++) {
             OptionDataStruct memory option;
             option.marketNumber = _optionNum[i];
@@ -317,11 +318,16 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
         // vote = _vote;
-        vote = address(new Vote(address(this), address(msg.sender),winOption, challengeOption,block.timestamp));
+        IVote(vote).startVote(address(this), address(msg.sender),winOption, challengeOption,block.timestamp+100000);
+        // vote = address(new Vote(address(this), address(msg.sender),winOption, challengeOption,block.timestamp));
         emit _challengeGame(address(msg.sender), address(this), winOption, challengeOption, vote);
     }
 
+    function addVote(uint8 option) public override {
+        IVote(vote).add(address(this),msg.sender,option);
+    }
+
     function openGameWithVote() public override {
-        winOption = IVote(vote).winOption();
+        // winOption = Vote(vote).voteMap(address(this)).winOption;
     }
 }

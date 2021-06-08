@@ -12,63 +12,71 @@ import './libraries/TransferHelper.sol';
 contract Vote is IVote, ConfigurableParametersContract {
     using SafeMath for uint256;
 
-    address public creator;
-
-    address public game;
-    address public noodleGameToken;
-    uint256 public endTime;
-    uint8 public originOption;
-    uint256 public originVoteNumber;
-
-    uint8 public challengeOption;
-    uint256 public challengeVoteNumber;
-
-    uint8 public override winOption;
-
-    uint256 public award;
-
     address public noodleToken;
-
-    mapping(address => uint8) optionMap;
-
-    constructor(
-        address _game,
-        address _creator,
-        uint8 _originOption,
-        uint8 _challengeOption,
-        uint256 _endTime
-    ) {
-        game = _game;
-        creator = _creator;
-        originOption = _originOption;
-        challengeOption = _challengeOption;
-        endTime = _endTime;
+    struct VoteInfoStruct {
+        address creator;
+        bool start;
+        uint256 endTime;
+        uint8  originOption;
+        uint256  originVoteNumber;
+        uint8  challengeOption;
+        uint256  challengeVoteNumber;
+        uint8  winOption;
     }
 
-    function add(uint8 option) public {
-        require(endTime > block.timestamp, 'NoodleSwap: Vote end');
-        uint256 balance = IERC20(noodleToken).balanceOf(address(msg.sender));
-        require(balance >= voteNumber, 'NoodleSwap: address have not enough amount');
-        TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), voteNumber);
-        optionMap[msg.sender] = option;
-        if (option == originOption) {
-            originVoteNumber += 1;
-        } else if (option == challengeOption) {
-            challengeVoteNumber += 1;
+    mapping(address => VoteInfoStruct) public voteMap;
+
+    mapping(address => mapping(address => uint8)) public voteDataMap;
+
+    constructor(address _noodleToken) {
+        noodleToken = _noodleToken;
+    }
+
+    function startVote(address game,
+            address _creator,
+            uint8 _originOption,
+            uint8 _challengeOption,
+            uint256 _endTime) public  override {
+        VoteInfoStruct memory  voteInfo = voteMap[game];
+        require(voteInfo.start != true, 'NoodleSwap: Vote exist');
+        voteInfo.start = true;
+        voteInfo.creator = _creator;
+        voteInfo.endTime = _endTime;
+        voteInfo.originOption = _originOption;
+        voteInfo.originVoteNumber = 0;
+        voteInfo.challengeOption = _challengeOption;
+        voteInfo.challengeVoteNumber = 0;
+        emit _startVote(game, _creator, _originOption,_challengeOption,_endTime);
+    }
+
+    function add(address game,address sender,uint8 option) public payable override {
+        VoteInfoStruct memory  voteInfo = voteMap[game];
+        require(voteInfo.endTime > block.timestamp, 'NoodleSwap: Vote end');
+        uint256 balance = IERC20(noodleToken).balanceOf(sender);
+        require(balance >= voteNumber, 'NoodleSwap: vote address have not enough amount');
+        TransferHelper.safeTransferFrom(noodleToken, sender, address(this), voteNumber);
+        voteDataMap[sender][game] = option;
+        if (option == voteInfo.originOption) {
+            voteInfo.originVoteNumber += 1 ether;
+        } else if (option == voteInfo.challengeOption) {
+            voteInfo.challengeVoteNumber += 1 ether;
         }
-        if (challengeVoteNumber > originVoteNumber * 2) {
-            winOption = challengeOption;
+        if (voteInfo.challengeVoteNumber > voteInfo.originVoteNumber * 2) {
+            voteInfo.winOption = voteInfo.challengeOption;
         } else {
-            winOption = originOption;
+            voteInfo.winOption = voteInfo.originOption;
         }
-        emit _addVote(game, address(this), msg.sender, option);
+        emit _addVote(game, sender, option,voteInfo.originVoteNumber,voteInfo.challengeVoteNumber);
     }
 
-    function getAward() public {
+    function getAward(address game,address sender) public {
         //require(endTime < block.timestamp, 'NoodleSwap: Vote cannot confirm before end');
-        uint8 option = optionMap[msg.sender];
-        if (option == winOption) {
-            TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, award);
+        VoteInfoStruct memory  voteInfo = voteMap[game];
+        uint8 option = voteDataMap[sender][game];
+        if (option == voteMap[game].winOption) {
+            //calc award
+            uint256 award = 500 ether;
+            TransferHelper.safeTransferFrom(noodleToken, address(this), sender, award);
         }
     }
 }

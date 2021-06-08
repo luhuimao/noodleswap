@@ -2,11 +2,18 @@
 pragma solidity ^0.8.3;
 
 interface IVote {
-    function winOption() external view returns (uint8);
 
-    event _addVote(address indexed game, address indexed vote, address indexed sender, uint8 option);
+    event _startVote(address indexed game, address indexed sender,uint8  _originOption,uint8 _challengeOption,uint256 _endTime);
+    
+    event _addVote(address indexed game, address indexed sender, uint8 option,uint256 originVoteNumber,uint256 challengeVoteNumber);
 
-    event _confirmVote(address indexed game, address indexed vote, address indexed sender, uint8 voteOption);
-
-    event _getAward(address indexed game, address indexed vote, address indexed sender, uint256 amount);
+    function startVote(address game,
+            address _creator,
+            uint8 _originOption,
+            uint8 _challengeOption,
+            uint256 _endTime) external;
+    
+    function add(address game,
+            address sender,
+            uint8 option)  external payable;
 }
