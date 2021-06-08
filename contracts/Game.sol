@@ -2,13 +2,15 @@
 pragma solidity ^0.8.3;
 
 import './interfaces/IGame.sol';
-import './interfaces/IVote.sol';
+// import './interfaces/IVote.sol';
 import './GameERC20.sol';
 import './libraries/SafeMath.sol';
 import './libraries/TransferHelper.sol';
 import './interfaces/IERC20.sol';
 import './ConfigurableParametersContract.sol';
 import './PlayNFT.sol';
+
+import './Vote.sol';
 
 import 'hardhat/console.sol';
 
@@ -309,13 +311,13 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //挑战，发起投票
-    function challengeGame(uint8 challengeOption, address _vote) public override {
+    function challengeGame(uint8 challengeOption) public override {
         require(openAddress != address(0), 'NoodleSwap: the game has openAddress');
         uint256 balance = IERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
-        vote = _vote;
-        //vote = address(new Vote(address(this), address(msg.sender),winOption, challengeOption,block.timestamp));
+        // vote = _vote;
+        vote = address(new Vote(address(this), address(msg.sender),winOption, challengeOption,block.timestamp));
         emit _challengeGame(address(msg.sender), address(this), winOption, challengeOption, vote);
     }
 

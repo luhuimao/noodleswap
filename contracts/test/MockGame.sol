@@ -121,7 +121,7 @@ contract MockGame is IGame {
 
     function openGame(uint8 _winOption) public override {}
 
-    function challengeGame(uint8 challengeOption, address _vote) public override {}
+    function challengeGame(uint8 challengeOption) public override {}
 
     function openGameWithVote() public override {}
 }

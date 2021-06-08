@@ -2,7 +2,7 @@
 //
 pragma solidity ^0.8.3;
 
-import './interfaces/IGame.sol';
+// import './interfaces/IGame.sol';
 import './interfaces/IVote.sol';
 import './libraries/SafeMath.sol';
 import './interfaces/IERC20.sol';
@@ -43,7 +43,6 @@ contract Vote is IVote, ConfigurableParametersContract {
         originOption = _originOption;
         challengeOption = _challengeOption;
         endTime = _endTime;
-        IGame(game).challengeGame(_challengeOption, address(this));
     }
 
     function add(uint8 option) public {

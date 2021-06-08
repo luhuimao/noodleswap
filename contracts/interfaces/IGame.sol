@@ -31,7 +31,7 @@ interface IGame {
 
     function openGame(uint8 _winOption) external;
 
-    function challengeGame(uint8 challengeOption, address _vote) external;
+    function challengeGame(uint8 challengeOption) external;
 
     function openGameWithVote() external;
 
