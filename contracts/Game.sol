@@ -159,7 +159,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         for (uint8 i = 0; i < options.length; i++) {
             options[i].frozenNumber = options[i].frozenNumber + currentFrozen[i];
         }
-        emit _placeGame(address(this), msg.sender, token, _options, _optionNum, tokenIds);
+        emit _placeGame(address(this), token, msg.sender, _options, _optionNum, tokenIds,_getOptions());
     }
 
     //p = (b + placeB) / (a + placeA)
@@ -167,6 +167,13 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 sumA = a.placeNumber + a.marketNumber - a.frozenNumber;
         uint256 sumB = (b.placeNumber + b.marketNumber - b.frozenNumber) * 100;
         p = sumB / sumA;
+    }
+
+    function _getOptions() private view returns(uint256[] memory optionData){
+        optionData = new uint256[](options.length);
+        for(uint8 i = 0; i < options.length; i ++){
+            optionData[i] = options[i].marketNumber + options[i].placeNumber - options[i].frozenNumber;
+        }
     }
 
     function addLiquidity(address _token, uint256 amount)
@@ -219,7 +226,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         liquidity = (initOption0MarketNumber * amount) / sum;
         console.log('liquidity:', liquidity);
         _mint(msg.sender, liquidity);
-        emit _addLiquidity(address(this), token, msg.sender, amount, liquidity, tokenIds);
+        emit _addLiquidity(address(this), token, msg.sender, amount, liquidity, tokenIds, _getOptions());
     }
 
     function removeLiquidity(uint256 _liquidity, uint256 _endTime)
@@ -272,7 +279,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         console.log('amount:', amount);
         //转账需要处理approve
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
-        emit _removeLiquidity(address(this), msg.sender, _liquidity, amount, tokenIds);
+        emit _removeLiquidity(address(this), msg.sender, _liquidity, amount, tokenIds,_getOptions());
     }
 
     function removeLiquidityWithPermit(

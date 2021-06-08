@@ -39,7 +39,8 @@ interface IGame {
         address indexed sender,
         uint8[] options,
         uint256[] optionNum,
-        uint256[] tokenIds
+        uint256[] tokenIds,
+        uint256[] optionData
     );
     event _addLiquidity(
         address indexed game,
@@ -47,14 +48,16 @@ interface IGame {
         address indexed sender,
         uint256 amount,
         uint256 liquidity,
-        uint256[] tokenIds
+        uint256[] tokenIds,
+        uint256[] optionData
     );
     event _removeLiquidity(
         address indexed game,
         address indexed sender,
         uint256 liquidity,
         uint256 amount,
-        uint256[] tokenIds
+        uint256[] tokenIds,
+        uint256[] optionData
     );
 
     event _getAward(
