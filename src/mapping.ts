@@ -2,6 +2,7 @@ import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/Config
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as GameEvent from '../generated/templates/Game/Game';
 import { Game as GameTemplate } from '../generated/templates';
+import { Vote as VoteTemplate } from '../generated/templates';
 import {
   ERC20Token,
   ConfigAddress,
@@ -10,6 +11,7 @@ import {
   NFTInfo,
   GameInfo,
   BetInfo,
+  Vote,
   Game,
 } from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
@@ -263,6 +265,18 @@ export function handStakeGame(event: GameEvent._stakeGame): void {
 }
 export function handChallengeGame(event: GameEvent._challengeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:', []);
+  var voteInfo = VoteInfo.load(event.params.vote.toHex());
+  if (voteInfo != null) {
+    log.error('VoteInfo game already exists: {}', [event.params.vote.toHex()]);
+    return;
+  }
+  voteInfo = new VoteInfo(event.params.vote.toHex());
+  voteInfo.game = event.params.game.toHex();
+  voteInfo.owner - event.params.sender;
+  voteInfo.winOption = event.params.originOption;
+  voteInfo.option = event.params.challengeOption;
+  voteInfo.timestamp = event.block.timestamp;
+  VoteTemplate.create(event.params.vote);
 }
 export function handOpenGame(event: GameEvent._openGame): void {
   var gameInfo = GameInfo.load(event.params.game.toHex());

@@ -107,7 +107,8 @@ type VoteInfo @entity {
 
   owner: Bytes! # 发起者地址
   game: GameInfo! # 所属游戏
-  option: Int! # 同意选项
+  winOption: BigInt! # 同意选项
+  option: BigInt! # 同意选项
   timestamp: BigInt! #  下注时间
   voteUserInfos: [VoteUserInfo!]! @derivedFrom(field: "vote") # 下注记录
   agrees: [Bytes!]! # 同意列表

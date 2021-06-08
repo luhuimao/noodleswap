@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
 import { ConfigAddress } from '../typechain/ConfigAddress';
 import { Game } from '../typechain/Game';
+import { Vote } from '../typechain/Vote';
 import { GameFactory } from '../typechain/GameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import * as config from '../.config';
@@ -231,6 +232,9 @@ let main = async () => {
     //console.log('-------removeLiquidity--------');
     let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), boutils.GetUnixTimestamp() + 1000);
     console.log(amount);
+    let vote = (await (await ethers.getContractFactory('Vote'))
+      .connect(owner)
+      .deploy(instanceGame.address, owner.address, instanceGame.winOption(), 1, boutils.GetUnixTimestamp())) as Vote;
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,
