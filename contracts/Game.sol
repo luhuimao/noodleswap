@@ -134,6 +134,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             playInfo.allFrozen = allFrozen;
             playInfoMap[tokenId] = playInfo;
             tokenIds[i] = tokenId;
+            console.log('play tokenId:',tokenId);
         }
         for (uint8 i = 0; i < options.length; i++) {
             options[i].frozenNumber = options[i].frozenNumber + currentFrozen[i];
@@ -275,8 +276,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //获得奖励
-    function getAward(uint256[] memory tokenIds) private returns (uint256 amount) {
+    function getAward(uint256[] memory tokenIds) public returns (uint256 amount) {
         //todo: 需要判断game是否结束
+        console.log('winOption:',winOption);
         uint256 amount = 0;
         for (uint8 i = 0; i < tokenIds.length; i++) {
             PlayInfoStruct storage playInfo = playInfoMap[tokenIds[i]];
@@ -290,6 +292,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             }
             playInfoMap[tokenIds[i]].option = 200; //表示已经领取
         }
+        console.log('award amount:',amount);
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
         emit _getAward(address(this), token, msg.sender, tokenIds, amount);
     }
