@@ -36,7 +36,7 @@ services:
       - ./.data/ipfs:/data/ipfs
   postgres:
     image: postgres
-    user: postgres
+    #user: postgres #centeros下打开会有权限问题
     ports:
       - '5432:5432'
     command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
