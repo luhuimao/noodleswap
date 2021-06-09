@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0x3079B1d4607b32AC891DC279813ecc3619A49e61" #{{CONFIGADDRESS_ADDRESS}}
+      address: '0x3079B1d4607b32AC891DC279813ecc3619A49e61' #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0xbE507F57ec6aB8d0ac650773CB2636A5C8416b32" #{{GAMEFACTORY_ADDRESS}}
+      address: '0xbE507F57ec6aB8d0ac650773CB2636A5C8416b32' #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -69,6 +69,28 @@ dataSources:
         #- event: EventBetForToken(indexed address,indexed address,indexed address,uint256,uint256,uint256)
         #  handler: handleEventBetForToken
       file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: VoteInfo
+    network: mainnet #replace mainnet
+    source:
+      abi: Vote
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - VoteInfo
+      abis:
+        - name: Vote
+          file: ./abis/Vote.json
+      eventHandlers:
+        - event: _startVote(indexed address,indexed address,uint8,uint8,uint256)
+          handler: handStartVote
+        - event: _addVote(indexed address,indexed address,uint8,uint256,uint256)
+          handler: handAddVote
+        #- event: _getAward(indexed address,indexed address,indexed address,uint256)
+        #  handler: handGetAward
 
 templates:
   - kind: ethereum/contract
@@ -103,25 +125,3 @@ templates:
           handler: handOpenGame
         - event: _challengeGame(indexed address,indexed address,uint256,uint256,address)
           handler: handChallengeGame
-  - kind: ethereum/contract
-    name: VoteInfo
-    network: mainnet #replace mainnet
-    source:
-      abi: Vote
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      file: ./src/mapping.ts
-      entities:
-        - VoteInfo
-      abis:
-        - name: Vote
-          file: ./abis/Vote.json
-      eventHandlers:
-        - event: _addVote(indexed address,indexed address,indexed address,uint8)
-          handler: handAddVote
-        - event: _confirmVote(indexed address,indexed address,indexed address,uint8)
-          handler: handConfirmVote
-        - event: _getAward(indexed address,indexed address,indexed address,uint256)
-          handler: handGetAward

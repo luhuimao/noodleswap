@@ -3,7 +3,7 @@ import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as GameEvent from '../generated/templates/Game/Game';
 import * as VoteEvent from '../generated/templates/Vote/Vote';
 import { Game as GameTemplate } from '../generated/templates';
-import { VoteInfo as VoteTemplate } from '../generated/templates';
+// import { VoteInfo as VoteTemplate } from '../generated/templates';
 import {
   ERC20Token,
   ConfigAddress,
@@ -278,7 +278,7 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   voteInfo.option = event.params.challengeOption;
   voteInfo.timestamp = event.block.timestamp;
   voteInfo.save();
-  VoteTemplate.create(event.params.vote);
+  //VoteTemplate.create(event.params.vote);
 }
 export function handOpenGame(event: GameEvent._openGame): void {
   var gameInfo = GameInfo.load(event.params.game.toHex());
@@ -297,7 +297,7 @@ export function handleBlock(block: ethereum.Block): void {
   //entity.save()
 }
 export function handAddVote(event: VoteEvent._addVote): void {
-  log.info('xxxxxxxxxxxxxxxxxx:handAddVote:', []);
+  log.info('xxxxxxxxxxxxxxxxxx:handStartVote:', []);
   var gameInfo = GameInfo.load(event.params.game.toHex());
   if (gameInfo == null) {
     log.error('GameInfo game not found: {}', [event.params.game.toHex()]);
@@ -318,21 +318,14 @@ export function handAddVote(event: VoteEvent._addVote): void {
   voteUserInfo.option = event.params.option;
   voteUserInfo.sender = event.params.sender;
   voteUserInfo.vote = voteInfo.id;
+  voteUserInfo.game = gameInfo.id;
   voteUserInfo.timestamp = event.block.timestamp;
   voteUserInfo.save();
   voteInfo.save();
   gameInfo.save();
 }
-export function handConfirmVote(event: VoteEvent._confirmVote): void {
+export function handStartVote(event: VoteEvent._startVote): void {
   log.info('xxxxxxxxxxxxxxxxxx:handConfirmVote:', []);
-  var voteInfo = VoteInfo.load(event.params.vote.toHex());
-  if (voteInfo == null) {
-    log.error('VoteInfo game already exists: {}', [event.params.vote.toHex()]);
-    return;
-  }
-}
-export function handGetAward(event: VoteEvent._getAward): void {
-  log.info('xxxxxxxxxxxxxxxxxx:handGetAward:', []);
   var voteInfo = VoteInfo.load(event.params.vote.toHex());
   if (voteInfo == null) {
     log.error('VoteInfo game already exists: {}', [event.params.vote.toHex()]);
