@@ -14,13 +14,13 @@ export const GAMEFACTORY_ADDRESS_HARDHAT = '0xDc64a140Aa3E981100a9becA4E685f962f
 export const DEPLOY_ACCOUNT_HARDHAT = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'; //REPLACE_FLAG
 
 // ConfigAddree 地址
-export const CONFIGADDRESS_ADDRESS_DEVNET = "0x1813e4E8CEc28488615bde67eEf95C86b782D6C8"; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_DEVNET = "0x3824c69ea91E51167386AEFC0315Cb104447Eb06"; //REPLACE_FLAG
-export const DEPLOY_ACCOUNT_DEVNET = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_DEVNET = '0x1813e4E8CEc28488615bde67eEf95C86b782D6C8'; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = '0xE22D32f2a149487C61f35297646deeB85d1ba395'; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_DEVNET = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 // ConfigAddree 地址
-export const CONFIGADDRESS_ADDRESS_GANACHE = '0x0895211038947699A86aCf643708F0aDE55352f9'; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_GANACHE = '0xB3C438FCAf29bD07E7f99e4F9E6761252DaD9820'; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_GANACHE = '0x983a25f9BE3227D6216B3573e789f32640F7F032'; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_GANACHE = '0xCe5F6B9e3f507aF6B19F4c993B6DbaC48531C524'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_GANACHE = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 export const CONFIGADDRESS_ADDRESS_BSCTESTNET = '0x16F19c1f4033F3979C60aC8B9363f206ae70d0E0'; //REPLACE_FLAG
@@ -31,8 +31,8 @@ export const CONFIGADDRESS_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_BSC = ''; //REPLACE_FLAG
 
-export const CONFIGADDRESS_ADDRESS_RINKEBY = '0xD1E1E4EbCBeB57e015A8212aB7Cc779f3095Dd8C'; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_RINKEBY = '0xb83D957D5Acd4FE45CBe6f1605C1d7E6b3aB9946'; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_RINKEBY = '0x3824c69ea91E51167386AEFC0315Cb104447Eb06'; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_RINKEBY = '0x37D2cF9466Db988cca9DC0f15CeEeEc116EE5Fa0'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_RINKEBY = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 export const CONFIGADDRESS_ADDRESS_MAINNET = ''; //REPLACE_FLAG
@@ -185,6 +185,7 @@ export async function GetConfigAddressByGameFactoryAddress(name: string, addr: s
     case 'bsctestnet':
     case 'bsc':
     case 'rinkeby':
+      url = 'https://thegraph.com/explorer/subgraph/fatter-bo/noodlewap-rinkeby';
     case 'mainnet':
   }
   let response = await fetch(url, {
@@ -208,6 +209,60 @@ export async function GetConfigAddressByGameFactoryAddress(name: string, addr: s
     console.log('GetConfigAddressByGameFactoryAddress error:null');
     return null;
   }
-  let data = JSON.parse(response.body.read().toString()).data;
-  return data.configAddresses ? (data.configAddresses[0] as ConfigAddress) : null;
+  let rawdata = response.body.read();
+  if (rawdata == null) {
+    console.log('GetConfigAddressByGameFactoryAddress error:null');
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        console.info('waiting GetConfigAddressByGameFactoryAddress');
+        resolve(null);
+      }, 3000);
+    });
+    return GetConfigAddressByGameFactoryAddress(name, addr);
+  }
+  let data = JSON.parse(rawdata.toString()).data;
+  if (data.configAddresses) {
+    if (data.configAddresses.length == 0) {
+      console.log('GetConfigAddressByGameFactoryAddress error:null');
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          console.info('waiting GetConfigAddressByGameFactoryAddress');
+          resolve(null);
+        }, 2000);
+      });
+      return GetConfigAddressByGameFactoryAddress(name, addr);
+    }
+    return data.configAddresses[0] as ConfigAddress;
+  }
+  return null;
+}
+
+export function getRpcUrlByNetwork(name: string): string {
+  let ret = 'https://data-seed-prebsc-1-s1.binance.org:8545';
+  switch (name) {
+    case 'bsctestnet':
+      ret = 'https://data-seed-prebsc-2-s3.binance.org:8545';
+    case 'bsc':
+      ret = 'https://bscscan.com/';
+    case 'rinkeby':
+      ret = 'https://rinkeby.infura.io/v3/';
+    case 'mainnet':
+      ret = 'https://mainnet.infura.io/v3/';
+  }
+  return ret;
+}
+
+export function getBlockUrlByNetwork(name: string): string {
+  let ret = 'https://testnet.bscscan.com/';
+  switch (name) {
+    case 'bsctestnet':
+      ret = 'https://testnet.bscscan.com/';
+    case 'bsc':
+      ret = 'https://dataseed1.binance.org/';
+    case 'rinkeby':
+      ret = 'https://rinkeby.etherscan.io/';
+    case 'mainnet':
+      ret = 'https://etherscan.io/';
+  }
+  return ret;
 }

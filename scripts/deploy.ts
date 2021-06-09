@@ -40,22 +40,14 @@ let main = async () => {
       (await owner.estimateGas(tmp0.getDeployTransaction('WETH9', 'WETH9', 18))).mul(await owner.getGasPrice())
     )
   );
+  let deadline = boutils.GetUnixTimestamp() + 86400;
   let tmp1 = await ethers.getContractFactory('Game');
   console.log(
     'deploy Game gas:',
     ethers.utils.formatEther(
       (
         await owner.estimateGas(
-          tmp1.getDeployTransaction(
-            owner.address,
-            owner.address,
-            'test',
-            ['t0', 't1'],
-            [1, 2],
-            'test',
-            1,
-            owner.address
-          )
+          tmp1.getDeployTransaction(owner.address, owner.address, [1, 2], deadline, owner.address, owner.address)
         )
       ).mul(await owner.getGasPrice())
     ),
@@ -65,7 +57,9 @@ let main = async () => {
   console.log(
     'deploy GameFactory gas:',
     ethers.utils.formatEther(
-      await (await owner.estimateGas(tmp2.getDeployTransaction(owner.address))).mul(await owner.getGasPrice())
+      await (
+        await owner.estimateGas(tmp2.getDeployTransaction(owner.address, owner.address))
+      ).mul(await owner.getGasPrice())
     ),
     tmp2.bytecode.length
   );
@@ -85,6 +79,12 @@ let main = async () => {
     .deploy('NoodleToken', 'NDLT', 18)) as ERC20Faucet;
   console.log('new NoodleToken address:', instanceNDLToken.address);
 
+  let instaceVote: Vote;
+  instaceVote = (await (await ethers.getContractFactory('Vote'))
+    .connect(owner)
+    .deploy(instanceNDLToken.address)) as Vote;
+  console.log('new Vote address:', instaceVote.address);
+
   const instanceUSDT = (await (await ethers.getContractFactory('ERC20Faucet'))
     .connect(owner)
     .deploy('Test BUSDT', 'BUSDT', 6)) as ERC20Faucet;
@@ -96,8 +96,8 @@ let main = async () => {
 
   const instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
     .connect(owner)
-    .deploy(instanceNDLToken.address, {
-      gasPrice: 1,
+    .deploy(instanceNDLToken.address, instaceVote.address, {
+      gasPrice: await owner.getGasPrice(),
       gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
     })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
@@ -127,10 +127,10 @@ let main = async () => {
     instanceNDLToken.address,
     instanceWETH9.address,
     instanceUSDT.address,
-    'https://data-seed-prebsc-1-s1.binance.org:8545',
-    'https://testnet.bscscan.com',
+    config.getRpcUrlByNetwork(network.name),
+    config.getBlockUrlByNetwork(network.name),
     network.name,
-    { gasPrice: 1, gasLimit: (await ethers.provider.getBlock('latest')).gasLimit }
+    { gasPrice: await owner.getGasPrice(), gasLimit: (await ethers.provider.getBlock('latest')).gasLimit }
   );
   //).wait(1);
   //console.log('instanceConfigAddress.upsert:', ret.transactionHash);
@@ -141,7 +141,9 @@ let main = async () => {
   if (tokens != null) {
     for (let index = 0; index < tokens.length; index++) {
       const element = tokens[index];
-      await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, element.address, element.symbol);
+      await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, element.address, element.symbol, {
+        gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+      });
       console.log('instanceConfigAddress.upsertGameToken:', element.address, element.symbol);
     }
   }
@@ -153,7 +155,9 @@ let main = async () => {
       .connect(owner)
       .deploy('Test Token 0', 'T0', 6)) as ERC20Faucet;
     console.log('new T0 address:', t0.address);
-    await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, t0.address, await t0.symbol());
+    await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, t0.address, await t0.symbol(), {
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+    });
   }
   if (
     (await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T1')) ==
@@ -163,24 +167,28 @@ let main = async () => {
       .connect(owner)
       .deploy('Test Token 1', 'T1', 18)) as ERC20Faucet;
     console.log('new T1 address:', t1.address);
-    await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, t1.address, await t1.symbol());
+    await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, t1.address, await t1.symbol(), {
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+    });
   }
   let instanceERC20 = (await (await ethers.getContractFactory('ERC20Faucet'))
     .connect(owner)
     .deploy('Test BOST', 'BOST', 18)) as ERC20Faucet;
   console.log('GameERC20 address:', instanceERC20.address);
   await instanceNDLToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
-  await instanceNDLToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
-  await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
+  if (user) {
+    await instanceNDLToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
+    await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
+  }
 
   await instanceConfigAddress.upsertGameToken(
     instanceGameFactory.address,
     instanceERC20.address,
-    await instanceERC20.symbol()
+    await instanceERC20.symbol(),
+    { gasPrice: await owner.getGasPrice(), gasLimit: (await ethers.provider.getBlock('latest')).gasLimit }
   );
   console.log('instanceConfigAddress.upsertGameToken:', instanceERC20.address, await instanceERC20.symbol());
-  let deadline = boutils.GetUnixTimestamp() + 86400;
   // 下注代币
   let eventFilter = instanceGameFactory.filters._GameCreated(
     instanceERC20.address,
@@ -208,37 +216,47 @@ let main = async () => {
       instanceERC20.address,
       [0],
       [ethers.utils.parseEther('10')],
-      boutils.GetUnixTimestamp() + 1000
+      boutils.GetUnixTimestamp() + 1000,
+      {
+        gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+      }
     );
     await instanceGame.placeGame(
       instanceERC20.address,
       [0],
       [ethers.utils.parseEther('15')],
-      boutils.GetUnixTimestamp() + 1000
+      boutils.GetUnixTimestamp() + 1000,
+      {
+        gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+      }
     );
     await instanceGame.placeGame(
       instanceERC20.address,
       [1],
       [ethers.utils.parseEther('20')],
-      boutils.GetUnixTimestamp() + 1000
+      boutils.GetUnixTimestamp() + 1000,
+      {
+        gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+      }
     );
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------addLiquidity--------');
-    let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('102'));
+    let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('102'), {
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+    });
     console.log('add liquidity:');
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------removeLiquidity--------');
-    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), boutils.GetUnixTimestamp() + 1000);
+    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), boutils.GetUnixTimestamp() + 1000, {
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+    });
     await instanceGame.stakeGame(1);
     await instanceGame.openGame(0);
-    let vote = (await (await ethers.getContractFactory('Vote'))
-      .connect(owner)
-      .deploy(instanceGame.address, owner.address, await instanceGame.winOption(), 1, boutils.GetUnixTimestamp(), {
-        gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
-      })) as Vote;
-    await vote.add(1, { gasLimit: (await ethers.provider.getBlock('latest')).gasLimit });
+    await instaceVote.add(instanceGame.address, owner.address, 1, {
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+    });
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,
@@ -246,7 +264,10 @@ let main = async () => {
     ['BIG', 'SMALL'],
     [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
     'https://github.com/NoodleDAO/noodleswap',
-    deadline
+    deadline,
+    {
+      gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+    }
   );
 };
 
