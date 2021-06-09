@@ -11,9 +11,9 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0x896826683362361A66b894A681bfCB361950413a" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0xEf14EdDC621eb8F0F7bDE62E98DAFa0c1D436CF9" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8160000 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -49,9 +49,9 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0xE03D4A6896e8C664512626534ECE1c1Ec47F8fDe" #{{GAMEFACTORY_ADDRESS}}
+      address: "0xd257766F6Ba54B6904009109a681487b31dEc51a" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8160000 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -73,9 +73,9 @@ dataSources:
     name: VoteInfo
     network: mainnet #replace mainnet
     source:
-      address: "0xd88d908dC0Bc50c5BA43514E86eAbE7CbBE3a874" #{{VOTE_ADDRESS}}
+      address: "0xd257766F6Ba54B6904009109a681487b31dEc51a" #{{VOTE_ADDRESS}}
       abi: Vote
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8160000 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

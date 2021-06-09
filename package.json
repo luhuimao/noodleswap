@@ -20,7 +20,7 @@
     "graph:deploy-ganache": "graph deploy fatter-bo/noodleswap --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
     "graph:deploy-rinkeby": "graph deploy fatter-bo/noodlewap-rinkeby --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
     "graph:deploy-bsc": "graph deploy fatter-bo/noodleswap --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
-    "graph:deploy-bsctestnet": "graph deploy fatter-bo/noodleswap --ipfs http://10.0.0.90:5001 --node http://10.0.0.89:7020",
+    "graph:deploy-bsctestnet": "graph deploy fatter-bo/noodleswap --ipfs http://10.0.0.89:4001 --node http://10.0.0.89:7020",
     "graph:deploy-devnet": "graph deploy fatter-bo/noodleswap --ipfs http://10.0.0.89:5001 --node http://10.0.0.89:8020",
     "graph:watch-local": "graph deploy fatter-bo/noodleswap --watch --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
     "prettier:solidity": "./node_modules/.bin/prettier contracts/",
