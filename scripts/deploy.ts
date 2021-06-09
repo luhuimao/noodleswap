@@ -20,6 +20,10 @@ let main = async () => {
   let gasprice = (await owner.getGasPrice()).add(1);
   let blockGaslimit0 = (await ethers.provider.getBlock('latest')).gasLimit;
   let blockGaslimit = blockGaslimit0.div(4);
+  if (network.name == 'devnet') {
+    gasprice = gasprice.sub(gasprice).add(1);
+    blockGaslimit = blockGaslimit0;
+  }
   let blockNumber = await ethers.provider.getBlockNumber();
   console.log('gasPrice:', blockNumber, gasprice.toString(), ethers.utils.formatEther(gasprice));
   console.log(
@@ -48,9 +52,7 @@ let main = async () => {
   const tmp0 = await ethers.getContractFactory('ERC20Faucet');
   console.log(
     'deploy ERC20Faucet gas:',
-    ethers.utils.formatEther(
-      (await owner.estimateGas(tmp0.getDeployTransaction('WETH9', 'WETH9', 18))).mul(await owner.getGasPrice())
-    )
+    ethers.utils.formatEther((await owner.estimateGas(tmp0.getDeployTransaction('WETH9', 'WETH9', 18))).mul(gasprice))
   );
   let deadline = boutils.GetUnixTimestamp() + 86400;
   let tmp1 = await ethers.getContractFactory('Game');
@@ -61,7 +63,7 @@ let main = async () => {
         await owner.estimateGas(
           tmp1.getDeployTransaction(owner.address, owner.address, [1, 2], deadline, owner.address, owner.address)
         )
-      ).mul(await owner.getGasPrice())
+      ).mul(gasprice)
     ),
     tmp1.bytecode.length
   );
@@ -69,9 +71,7 @@ let main = async () => {
   console.log(
     'deploy GameFactory gas:',
     ethers.utils.formatEther(
-      await (
-        await owner.estimateGas(tmp2.getDeployTransaction(owner.address, owner.address))
-      ).mul(await owner.getGasPrice())
+      await (await owner.estimateGas(tmp2.getDeployTransaction(owner.address, owner.address))).mul(gasprice)
     ),
     tmp2.bytecode.length
   );
@@ -105,7 +105,7 @@ let main = async () => {
   const instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
     .connect(owner)
     .deploy(instanceNDLToken.address, instaceVote.address, {
-      gasPrice: await owner.getGasPrice(),
+      gasPrice: gasprice,
       gasLimit: blockGaslimit,
     })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
