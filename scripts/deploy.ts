@@ -91,11 +91,15 @@ let main = async () => {
     .deploy('NoodleToken', 'NDLT', 18)) as ERC20Faucet;
   console.log('new NoodleToken address:', instanceNDLToken.address);
 
-  let instaceVote: Vote;
-  instaceVote = (await (await ethers.getContractFactory('Vote'))
+  let instanceVote: Vote;
+  instanceVote = (await (await ethers.getContractFactory('Vote'))
     .connect(owner)
     .deploy(instanceNDLToken.address)) as Vote;
-  console.log('new Vote address:', instaceVote.address);
+  console.log('new Vote address:', instanceVote.address);
+
+  let flag = '\\/\\/REPLACE_FLAG';
+  let key = 'VOTE_ADDRESS_' + network.name.toUpperCase();
+  boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceVote.address + '"; ' + flag);
 
   const instanceUSDT = (await (await ethers.getContractFactory('ERC20Faucet'))
     .connect(owner)
@@ -104,14 +108,14 @@ let main = async () => {
 
   const instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
     .connect(owner)
-    .deploy(instanceNDLToken.address, instaceVote.address, {
+    .deploy(instanceNDLToken.address, instanceVote.address, {
       gasPrice: gasprice,
       gasLimit: blockGaslimit,
     })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
 
-  let flag = '\\/\\/REPLACE_FLAG';
-  let key = 'GAMEFACTORY_ADDRESS_' + network.name.toUpperCase();
+  flag = '\\/\\/REPLACE_FLAG';
+  key = 'GAMEFACTORY_ADDRESS_' + network.name.toUpperCase();
   boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceGameFactory.address + '"; ' + flag);
 
   const wethAddr = config.getTokenAddrBySymbol(tokens, 'WBNB');
@@ -133,6 +137,7 @@ let main = async () => {
     config.getRpcUrlByNetwork(network.name),
     config.getBlockUrlByNetwork(network.name),
     network.name,
+    instanceVote.address,
     { gasPrice: gasprice, gasLimit: blockGaslimit }
   );
   //).wait(1);
@@ -266,8 +271,12 @@ let main = async () => {
       gasLimit: blockGaslimit,
     });
     await instanceGame.stakeGame(1);
+    console.info('instanceGame.stakeGame:ok');
     await instanceGame.openGame(0);
-    await instaceVote.add(instanceGame.address, owner.address, 1, {
+    console.info('instanceGame.openGame:ok');
+    await instanceGame.challengeGame(0);
+    console.info('instanceGame.challengeGame:ok');
+    await instanceVote.add(instanceGame.address, owner.address, 1, {
       gasPrice: gasprice,
       gasLimit: blockGaslimit,
     });
@@ -293,6 +302,18 @@ let main = async () => {
   await ret1;
   console.log(ret1);
   console.log('-------instanceGameFactory.createGame--------end');
+  await instanceGameFactory.createGame(
+    instanceERC20.address,
+    'Test T1',
+    ['BIG', 'SMALL'],
+    [ethers.utils.parseEther('50'), ethers.utils.parseEther('50')],
+    'https://github.com/NoodleDAO/noodleswap',
+    deadline,
+    {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit0,
+    }
+  );
 };
 
 main();

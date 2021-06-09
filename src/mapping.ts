@@ -1,7 +1,7 @@
 import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/ConfigAddress';
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as GameEvent from '../generated/templates/Game/Game';
-import * as VoteEvent from '../generated/templates/Vote/Vote';
+import * as VoteEvent from '../generated/VoteInfo/Vote';
 import { Game as GameTemplate } from '../generated/templates';
 // import { VoteInfo as VoteTemplate } from '../generated/templates';
 import {
@@ -58,6 +58,7 @@ export function handleUpsertConfig(event: UpsertConfig): void {
   config.rpcUrl = event.params.rpcUrl;
   config.blockUrl = event.params.blockUrl;
   config.chainId = event.params.chainId;
+  config.voteAddress = event.params.voteAddress;
   config.timestamp = event.block.timestamp;
   config.save();
 }
@@ -297,7 +298,7 @@ export function handleBlock(block: ethereum.Block): void {
   //entity.save()
 }
 export function handAddVote(event: VoteEvent._addVote): void {
-  log.info('xxxxxxxxxxxxxxxxxx:handStartVote:', []);
+  log.info('xxxxxxxxxxxxxxxxxx:handAddVote:', []);
   var gameInfo = GameInfo.load(event.params.game.toHex());
   if (gameInfo == null) {
     log.error('GameInfo game not found: {}', [event.params.game.toHex()]);
@@ -305,7 +306,7 @@ export function handAddVote(event: VoteEvent._addVote): void {
   }
   var voteInfo = VoteInfo.load(event.params.game.toHex());
   if (voteInfo == null) {
-    log.error('VoteInfo vote not exists: {}', [event.params.vote.toHex()]);
+    log.error('VoteInfo vote not exists: {}', [event.params.game.toHex()]);
     return;
   }
   let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
@@ -314,11 +315,12 @@ export function handAddVote(event: VoteEvent._addVote): void {
     log.error('VoteUserInfo game already exists: {}', [id]);
     return;
   }
+  // event _addVote(address indexed game, address indexed sender, uint8 option,uint256 originVoteNumber,uint256 challengeVoteNumber);
   voteUserInfo = new VoteUserInfo(id);
   voteUserInfo.option = event.params.option;
   voteUserInfo.sender = event.params.sender;
   voteUserInfo.vote = voteInfo.id;
-  voteUserInfo.game = gameInfo.id;
+  // voteUserInfo.game = gameInfo.id;
   voteUserInfo.timestamp = event.block.timestamp;
   voteUserInfo.save();
   voteInfo.save();
@@ -326,9 +328,9 @@ export function handAddVote(event: VoteEvent._addVote): void {
 }
 export function handStartVote(event: VoteEvent._startVote): void {
   log.info('xxxxxxxxxxxxxxxxxx:handConfirmVote:', []);
-  var voteInfo = VoteInfo.load(event.params.vote.toHex());
+  var voteInfo = VoteInfo.load(event.params.game.toHex() + '3');
   if (voteInfo == null) {
-    log.error('VoteInfo game already exists: {}', [event.params.vote.toHex()]);
+    log.error('VoteInfo game already exists: {}', [event.params.game.toHex()]);
     return;
   }
 }

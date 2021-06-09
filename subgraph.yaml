@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: '0x3079B1d4607b32AC891DC279813ecc3619A49e61' #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x896826683362361A66b894A681bfCB361950413a" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -30,7 +30,7 @@ dataSources:
         - name: ERC20NameBytes
           file: ./abis/ERC20NameBytes.json
       eventHandlers:
-        - event: UpsertConfig(indexed address,indexed uint256,address,address,address,string,string,string)
+        - event: UpsertConfig(indexed address,indexed uint256,address,address,address,string,string,string,address)
           handler: handleUpsertConfig
         - event: UpsertGameToken(indexed address,indexed address,string)
           handler: handleUpsertGameToken
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: '0xbE507F57ec6aB8d0ac650773CB2636A5C8416b32' #{{GAMEFACTORY_ADDRESS}}
+      address: "0xE03D4A6896e8C664512626534ECE1c1Ec47F8fDe" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -73,7 +73,9 @@ dataSources:
     name: VoteInfo
     network: mainnet #replace mainnet
     source:
+      address: "0xd88d908dC0Bc50c5BA43514E86eAbE7CbBE3a874" #{{VOTE_ADDRESS}}
       abi: Vote
+      startBlock: 0 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

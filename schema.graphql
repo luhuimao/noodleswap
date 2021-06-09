@@ -18,6 +18,9 @@ type ConfigAddress @entity {
   # 工厂合约地址
   factoryAddress: Bytes!
 
+  # 投票合约地址
+  voteAddress: Bytes!
+
   # 保证金合约地址
   ndlToken: ERC20Token!
 
@@ -74,7 +77,7 @@ type GameInfo @entity {
   _openAddress: Bytes # 开奖者地址
   _winOption: BigInt # 获胜选项
   timestamp: BigInt! #  下注时间
-  vote: VoteUserInfo! @derivedFrom(field: "game") # 投票地址
+  vote: VoteInfo! @derivedFrom(field: "game") # 投票地址
   betInfos: [BetInfo!]! @derivedFrom(field: "game") # 下注记录
   nftInfos: [NFTInfo!]! @derivedFrom(field: "game") # 下注记录
 }
@@ -119,7 +122,6 @@ type VoteUserInfo @entity {
 
   sender: Bytes! # 投票者地址
   vote: VoteInfo! # 所属游戏
-  game: GameInfo! # 所属游戏
   option: Int! # 投票选项
   timestamp: BigInt! #  下注时间
 }

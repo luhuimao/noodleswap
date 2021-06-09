@@ -11,11 +11,14 @@ contract ConfigAddress {
         address usdtToken,
         string rpcUrl,
         string blockUrl,
-        string networkName
+        string networkName,
+        address voteAddress
     );
     struct Config {
         // 工厂合约地址
         address factoryAddress;
+        // 投票合约地址,治理代币
+        address voteAddress;
         // 保证金合约地址,治理代币
         address ndlToken;
         // WETH合约地址
@@ -51,7 +54,8 @@ contract ConfigAddress {
         address usdtToken,
         string memory rpcUrl,
         string memory blockUrl,
-        string memory networkName
+        string memory networkName,
+        address voteAddress
     ) public {
         require(_owner == msg.sender, 'only owner can upsert');
         require(factoryAddress != address(0), 'factoryAddress invalid');
@@ -67,7 +71,18 @@ contract ConfigAddress {
         config.rpcUrl = rpcUrl;
         config.networkName = networkName;
         config.chainId = chainId;
-        emit UpsertConfig(factoryAddress, chainId, ndlToken, wethToken, usdtToken, rpcUrl, blockUrl, networkName);
+        config.voteAddress = voteAddress;
+        emit UpsertConfig(
+            factoryAddress,
+            chainId,
+            ndlToken,
+            wethToken,
+            usdtToken,
+            rpcUrl,
+            blockUrl,
+            networkName,
+            voteAddress
+        );
     }
 
     /*
@@ -75,6 +90,21 @@ contract ConfigAddress {
     return config = configMap[factoryAddress];
   }
   // */
+
+    function updateVoteAddress(address factoryAddress, address voteAddress) public {
+        Config storage config = configMap[factoryAddress];
+        upsert(
+            config.factoryAddress,
+            config.chainId,
+            config.ndlToken,
+            config.wethToken,
+            config.usdtToken,
+            config.rpcUrl,
+            config.blockUrl,
+            config.networkName,
+            voteAddress
+        );
+    }
 
     function updateGstToken(address factoryAddress, address ndlToken) public {
         Config storage config = configMap[factoryAddress];
@@ -86,7 +116,8 @@ contract ConfigAddress {
             config.usdtToken,
             config.rpcUrl,
             config.blockUrl,
-            config.networkName
+            config.networkName,
+            config.voteAddress
         );
     }
 
@@ -100,7 +131,8 @@ contract ConfigAddress {
             config.usdtToken,
             config.rpcUrl,
             config.blockUrl,
-            config.networkName
+            config.networkName,
+            config.voteAddress
         );
     }
 
@@ -114,7 +146,8 @@ contract ConfigAddress {
             usdtToken,
             config.rpcUrl,
             config.blockUrl,
-            config.networkName
+            config.networkName,
+            config.voteAddress
         );
     }
 
@@ -128,7 +161,8 @@ contract ConfigAddress {
             config.usdtToken,
             rpcUrl,
             config.blockUrl,
-            config.networkName
+            config.networkName,
+            config.voteAddress
         );
     }
 
@@ -142,7 +176,8 @@ contract ConfigAddress {
             config.usdtToken,
             config.rpcUrl,
             blockUrl,
-            config.networkName
+            config.networkName,
+            config.voteAddress
         );
     }
 

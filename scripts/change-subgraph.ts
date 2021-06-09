@@ -19,7 +19,12 @@ let main = async () => {
 
   let factoryaddr = config.getGameFactoryAddressByNetwork(network.name);
   if (factoryaddr == null) {
-    console.error('gamerouter address null:', network.name);
+    console.error('factoryaddr address null:', network.name);
+    return;
+  }
+  let voteaddr = config.getVoteAddressByNetwork(network.name);
+  if (voteaddr == null) {
+    console.error('voteaddr address null:', network.name);
     return;
   }
   const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
@@ -35,6 +40,8 @@ let main = async () => {
   ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': "' + instanceConfigAddress.address + '" ' + flag);
   flag = '#{{GAMEFACTORY_ADDRESS}}';
   ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': "' + factoryaddr + '" ' + flag);
+  flag = '#{{VOTE_ADDRESS}}';
+  ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': "' + voteaddr + '" ' + flag);
   key = 'startBlock';
   flag = '#{{STARTBLOCK}}';
   ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': ' + config.getStartBlockNumber(network.name) + ' ' + flag);
