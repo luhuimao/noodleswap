@@ -6,29 +6,19 @@ import './interfaces/IVote.sol';
 import './GameERC20.sol';
 import './libraries/SafeMath.sol';
 import './libraries/TransferHelper.sol';
+import './libraries/LGame.sol';
 import './interfaces/IERC20.sol';
 import './ConfigurableParametersContract.sol';
-import './PlayNFT.sol';
+
+// import './PlayNFT.sol';
 
 // import './Vote.sol';
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 contract Game is IGame, GameERC20, ConfigurableParametersContract {
     using SafeMath for uint256;
-
-    struct OptionDataStruct {
-        uint256 marketNumber;
-        uint256 placeNumber;
-        uint256 frozenNumber;
-    }
-
-    //option,optionNum,optionP,allFrozen,返回tokenId
-    struct PlayInfoStruct {
-        uint8 option;
-        uint256 optionNum;
-        uint256 optionP;
-        uint256 allFrozen;
-    }
+    using LGame for LGame.PlayInfoStruct;
+    using LGame for mapping(uint256 => LGame.PlayInfoStruct);
 
     modifier ensure(uint256 _endTime) {
         require(_endTime >= block.timestamp, 'NoodleSwapGame: EXPIRED');
@@ -45,9 +35,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     address public token;
     uint256 public endTime;
 
-    OptionDataStruct[] public options;
+    LGame.OptionDataStruct[] public options;
 
-    mapping(uint256 => PlayInfoStruct) public playInfoMap;
+    mapping(uint256 => LGame.PlayInfoStruct) public playInfoMap;
 
     //创建者手续费
     uint256 public ownerFee = 0;
@@ -79,13 +69,14 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         noodleToken = _noodleToken;
         vote = _vote;
         for (uint8 i = 0; i < _optionNum.length; i++) {
-            OptionDataStruct memory option;
+            LGame.OptionDataStruct memory option;
             option.marketNumber = _optionNum[i];
             option.placeNumber = 0;
             option.frozenNumber = 0;
             options.push(option);
         }
-        playNFT = address(new PlayNFT());
+        playNFT = LGame.createNFT();
+        // playNFT = address(new PlayNFT());
     }
 
     //下单
@@ -104,49 +95,8 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }
         require(balance >= sum, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
-        for (uint8 i = 0; i < _options.length; i++) {
-            options[_options[i]].placeNumber += _optionNum[i];
-        }
-        uint256[] memory currentFrozen = new uint256[](options.length);
-        tokenIds = new uint256[](_options.length);
-        for (uint8 i = 0; i < _options.length; i++) {
-            uint8 optionId = _options[i];
-            uint256 optionNum = _optionNum[i];
-            uint256 allFrozen = 0;
-            for (uint8 j = 0; j < options.length; j++) {
-                if (j != optionId) {
-                    //计算optionId 和 j 池子的赔率
-                    uint256 p = _calcOdd(options[optionId], options[j]);
-                    uint256 frozenJ = (optionNum * p) / 100;
-                    currentFrozen[j] = frozenJ;
-                    allFrozen += frozenJ;
-                }
-            }
-            //这个选项的赔率
-            uint256 optionP = (allFrozen * (100 - ownerFee - platformFee) + optionNum * 100) / optionNum;
-            //调用生成ERC721 token的接口, option,optionNum,optionP,allFrozen,返回tokenId
-            //可以考虑将这些信息放到uri这个字符串中
-            uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
-            PlayInfoStruct memory playInfo;
-            playInfo.option = optionId;
-            playInfo.optionNum = optionNum;
-            playInfo.optionP = optionP;
-            playInfo.allFrozen = allFrozen;
-            playInfoMap[tokenId] = playInfo;
-            tokenIds[i] = tokenId;
-            console.log('play tokenId:', tokenId);
-        }
-        for (uint8 i = 0; i < options.length; i++) {
-            options[i].frozenNumber = options[i].frozenNumber + currentFrozen[i];
-        }
+        tokenIds = playInfoMap.update(options, _options, _optionNum, playNFT, ownerFee, platformFee);
         emit _placeGame(address(this), token, msg.sender, _options, _optionNum, tokenIds, _getOptions());
-    }
-
-    //p = (b + placeB) / (a + placeA)
-    function _calcOdd(OptionDataStruct memory a, OptionDataStruct memory b) private pure returns (uint256 p) {
-        uint256 sumA = a.placeNumber + a.marketNumber - a.frozenNumber;
-        uint256 sumB = (b.placeNumber + b.marketNumber - b.frozenNumber) * 100;
-        p = sumB / sumA;
     }
 
     function _getOptions() private view returns (uint256[] memory optionData) {
@@ -166,41 +116,10 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 balance = IERC20(token).balanceOf(address(msg.sender));
         require(balance >= amount, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
+        uint256 initOption0MarketNumber = options[0].marketNumber;
         uint256 sum = 0;
         uint256 frozenSum = 0;
-        uint256 initOption0MarketNumber = options[0].marketNumber;
-        for (uint8 i = 0; i < options.length; i++) {
-            sum += options[i].marketNumber;
-            if (options[i].placeNumber > options[i].frozenNumber) {
-                sum += (options[i].placeNumber - options[i].frozenNumber);
-            } else {
-                frozenSum += (options[i].frozenNumber - options[i].placeNumber);
-            }
-        }
-        tokenIds = new uint256[](options.length);
-        //放入到做市池子里的金额：
-        for (uint8 i = 0; i < options.length; i++) {
-            options[i].marketNumber += (options[i].marketNumber * amount) / sum;
-            if (options[i].placeNumber > options[i].frozenNumber) {
-                //下单的金额
-                uint256 placeNumber = ((options[i].placeNumber - options[i].frozenNumber) * amount) / sum;
-                options[i].placeNumber += placeNumber;
-                uint256 optionP = (frozenSum * 100) / placeNumber;
-                //调用生成ERC721 token的接口, i,placeNumber,optionP,frozenSum,返回tokenId
-                uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
-                PlayInfoStruct memory playInfo;
-                playInfo.option = i;
-                playInfo.optionNum = placeNumber;
-                playInfo.optionP = optionP;
-                playInfo.allFrozen = frozenSum;
-                playInfoMap[tokenId] = playInfo;
-                tokenIds[i] = tokenId;
-                console.log(tokenId);
-            } else {
-                //冻结的金额
-                options[i].frozenNumber += ((options[i].frozenNumber - options[i].placeNumber) * amount) / sum;
-            }
-        }
+        (tokenIds, sum, frozenSum) = playInfoMap.addLiquidity(options, playNFT, amount);
         //以第一个池子的数来计算生成的做市币数量
         liquidity = (initOption0MarketNumber * amount) / sum;
         _mint(msg.sender, liquidity);
@@ -217,40 +136,10 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
         _burn(msg.sender, _liquidity);
         //从池子里拿出的金额
+        uint256 initMarketNumber = options[0].marketNumber;
         uint256 sum = 0;
         uint256 frozenSum = 0;
-        uint256 initMarketNumber = options[0].marketNumber;
-        for (uint8 i = 0; i < options.length; i++) {
-            uint256 marketNumber = (options[i].marketNumber * _liquidity) / initMarketNumber;
-            sum += marketNumber;
-            options[i].marketNumber -= marketNumber;
-
-            if (options[i].placeNumber > options[i].frozenNumber) {
-                frozenSum += ((options[i].placeNumber - options[i].frozenNumber) * _liquidity) / initMarketNumber;
-                options[i].frozenNumber +=
-                    ((options[i].placeNumber - options[i].frozenNumber) * _liquidity) /
-                    initMarketNumber;
-            }
-        }
-        tokenIds = new uint256[](options.length);
-        for (uint8 i = 0; i < options.length; i++) {
-            if (options[i].placeNumber < options[i].frozenNumber) {
-                uint256 placeNumber =
-                    ((options[i].frozenNumber - options[i].placeNumber) * _liquidity) / initMarketNumber;
-                sum = sum - placeNumber;
-                options[i].placeNumber += placeNumber;
-                uint256 optionP = ((frozenSum + placeNumber) * 100) / placeNumber;
-                //调用生成ERC721 token的接口, i,placeNumber,optionP,frozenSum,返回tokenId
-                uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
-                PlayInfoStruct memory playInfo;
-                playInfo.option = i;
-                playInfo.optionNum = placeNumber;
-                playInfo.optionP = optionP;
-                playInfo.allFrozen = frozenSum;
-                playInfoMap[tokenId] = playInfo;
-                tokenIds[i] = tokenId;
-            }
-        }
+        (tokenIds, sum, frozenSum) = playInfoMap.removeLiquidity(options, playNFT, initMarketNumber, _liquidity);
         amount = sum;
         //转账需要处理approve
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
@@ -278,21 +167,11 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     //获得奖励
     function getAward(uint256[] memory tokenIds) public returns (uint256 amount) {
         //todo: 需要判断game是否结束
-        console.log('winOption:', winOption);
-        uint256 amount = 0;
+        // console.log('winOption:', winOption);
         for (uint8 i = 0; i < tokenIds.length; i++) {
-            PlayInfoStruct storage playInfo = playInfoMap[tokenIds[i]];
-            require(msg.sender == PlayNFT(playNFT).ownerOf(tokenIds[i]), 'NoodleSwap: address have no right');
-            if (playInfo.option == 200) {
-                continue;
-            }
-            if (playInfo.option == winOption) {
-                //用户赢了，则将币转给用户
-                amount += playInfo.allFrozen;
-            }
-            playInfoMap[tokenIds[i]].option = 200; //表示已经领取
+            amount += playInfoMap[tokenIds[i]].getAward(tokenIds[i], winOption, playNFT);
         }
-        console.log('award amount:', amount);
+        // console.log('award amount:', amount);
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
         emit _getAward(address(this), token, msg.sender, tokenIds, amount);
     }

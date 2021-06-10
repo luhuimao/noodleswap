@@ -31,13 +31,13 @@ contract GameFactory is IGameFactory {
         uint256 _endTime
     );
 
-    mapping(address => GameStruct) public gameMap;
+    // mapping(address => GameStruct) public gameMap;
 
     address public noodleToken;
 
     address public vote;
 
-    constructor(address _noodleToken,address _vote) {
+    constructor(address _noodleToken, address _vote) {
         noodleToken = _noodleToken;
         vote = _vote;
     }
@@ -51,7 +51,7 @@ contract GameFactory is IGameFactory {
         uint256 _endTime
     ) public override ensure(_endTime) returns (address _game) {
         // Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime,noodleToken);
-        Game game = new Game(msg.sender, _token, _optionNum, _endTime,noodleToken,vote);
+        Game game = new Game(msg.sender, _token, _optionNum, _endTime, noodleToken, vote);
         //取第一个option的金额作为liquidity
         game.mint(msg.sender, _optionNum[0]);
         _game = address(game);
@@ -62,7 +62,7 @@ contract GameFactory is IGameFactory {
         gameStruct.resultSource = _resultSource;
         gameStruct.endTime = _endTime;
         gameStruct.optionName = _optionName;
-        gameMap[_game] = gameStruct;
+        // gameMap[_game] = gameStruct;
         emit _GameCreated(_token, _game, msg.sender, _gameName, _optionName, _optionNum, _resultSource, _endTime);
     }
 }
