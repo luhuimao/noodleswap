@@ -51,6 +51,7 @@ export function handleUpsertConfig(event: UpsertConfig): void {
     config.gameTokens = [];
   }
   config.factoryAddress = event.params.factoryAddress;
+  config.configAddress = event.params.configAddress;
   config.ndlToken = ndlToken.id;
   config.wethToken = wethToken.id;
   config.usdtToken = usdtToken.id;

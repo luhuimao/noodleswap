@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.3;
 
+import 'hardhat/console.sol';
+
 contract ERC20Faucet {
     string public name;
     string public symbol;
@@ -30,6 +32,7 @@ contract ERC20Faucet {
     }
 
     function faucet(address addr, uint256 wad) public {
+        console.log('aaaaaaaaa:', addr, wad);
         balanceOf[addr] += wad;
         totalSupply += wad;
         emit Transfer(address(0), addr, wad);

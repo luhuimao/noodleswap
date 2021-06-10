@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import { GameFactory } from '../typechain/GameFactory';
+import { ConfigAddress } from '../typechain/ConfigAddress';
 import * as config from '../.config';
 import { BigNumber, Contract, utils } from 'ethers';
 //import { TransactionReceipt } from 'web3-eth';
@@ -11,7 +12,7 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { TransactionResponse } from '@ethersproject/abstract-provider';
 import * as boutils from './boutils';
 import { GameERC20 } from '../typechain';
-import { ConfigAddress, ERC20Token } from '../generated/schema';
+import { ConfigAddress as ConfigAddreeEvent, ERC20Token } from '../generated/schema';
 
 const abi: AbiCoder = require('web3-eth-abi');
 let main = async () => {
@@ -42,6 +43,11 @@ let main = async () => {
   ) as ERC20Faucet;
   console.log('ndlToken address:', instanceNDLTOKEN.address);
 
+  const instanceConfigAddress = (await ethers.getContractFactory('ConfigAddress'))
+    .connect(owner)
+    .attach(configAddress.configAddress.toString()) as ConfigAddress;
+  console.log('configAddress address:', instanceConfigAddress.address);
+
   // await (
   //   await instanceNDLTOKEN.approve(configAddress.factoryAddress.toString(), ethers.utils.parseEther('100000'))
   // ).wait();
@@ -56,6 +62,18 @@ let main = async () => {
       });
       console.log('fauct eth:', (await ethers.provider.getBalance(faucet_addr)).toString());
     }
+    let tmpc = await instanceConfigAddress['faucetAll(address,address,uint256)'](
+      configAddress.factoryAddress.toString(),
+      faucet_addr,
+      ethers.utils.parseEther('100000')
+    );
+    console.log(
+      'GameFactory address:',
+      configAddress.factoryAddress.toString(),
+      await instanceConfigAddress.getLen(configAddress.factoryAddress.toString(), 0)
+    );
+    console.log('GameFactory address:', await instanceConfigAddress.configMap(configAddress.factoryAddress.toString()));
+    //await instanceConfigAddress.faucet(instanceNDLTOKEN.address, faucet_addr, 1);
 
     await instanceNDLTOKEN['faucet(address,uint256)'](faucet_addr, ethers.utils.parseEther('100000'));
     //await (await instanceNDLTOKEN.transfer(faucet_addr, ethers.utils.parseEther('100000'))).wait();
@@ -66,12 +84,12 @@ let main = async () => {
       (await instanceNDLTOKEN.balanceOf(faucet_addr)).toString()
     );
 
-    let faucet_num = ethers.utils.parseEther('100000000.1');
+    let faucet_num = ethers.utils.parseEther('1000000000.1');
     if (configAddress.usdtToken != '') {
       let tmpToken = configAddress.usdtToken as any as ERC20Faucet;
       const USDTFactory = await ethers.getContractFactory('ERC20Faucet');
       let instanceUSDT = USDTFactory.connect(owner).attach(tmpToken.id) as ERC20Faucet;
-      if ((await instanceUSDT.balanceOf(faucet_addr)) < faucet_num) {
+      if ((await instanceUSDT.balanceOf(faucet_addr)) < faucet_num.mul(100)) {
         await (await instanceUSDT['faucet(address,uint256)'](faucet_addr, faucet_num)).wait();
         console.log(
           'faucet:',
@@ -94,27 +112,28 @@ let main = async () => {
       const element = configAddress.gameTokens[index] as any as ERC20Faucet;
       const ERC20Factory = await ethers.getContractFactory('ERC20Faucet');
       let instanceERC20 = ERC20Factory.connect(owner).attach(element.id) as ERC20Faucet;
-      if ((await instanceERC20.symbol()) == 'BOST') {
-        if ((await instanceERC20.balanceOf(faucet_addr)) < faucet_num) {
-          await (
-            await instanceERC20['faucet(address,uint256)'](faucet_addr, ethers.utils.parseEther('100000000.1'))
-          ).wait();
-          //await instanceERC20['faucet(address,uint256)'](owner.address,1e19);
-          console.log(
-            'faucet:',
-            instanceERC20.address,
-            faucet_addr,
-            (await instanceERC20.symbol()) + ' balance:',
-            (await instanceERC20.balanceOf(faucet_addr)).toString()
-          );
-        } else {
-          console.log(
-            instanceERC20.address,
-            faucet_addr,
-            (await instanceERC20.symbol()) + ' balance:',
-            (await instanceERC20.balanceOf(faucet_addr)).toString()
-          );
-        }
+      let tmpb = await instanceERC20.balanceOf(faucet_addr);
+      if (tmpb.lt(faucet_num.mul(100))) {
+        await (
+          await instanceERC20['faucet(address,uint256)'](faucet_addr, ethers.utils.parseEther('100000000.1'))
+        ).wait();
+        //await instanceERC20['faucet(address,uint256)'](owner.address,1e19);
+        console.log(
+          'game token faucet:0:',
+          instanceERC20.address,
+          faucet_addr,
+          (await instanceERC20.symbol()) + ' balance:',
+          tmpb.toString()
+        );
+      } else {
+        console.log(
+          'game token:0:',
+          instanceERC20.address,
+          faucet_addr,
+          (await instanceERC20.symbol()) + ' balance:',
+          tmpb.toString(),
+          faucet_num.mul(100).toString()
+        );
       }
     }
   }

@@ -15,6 +15,9 @@ type ConfigAddress @entity {
   # factory address
   id: ID!
 
+  # 配置文件合约地址
+  configAddress: Bytes!
+
   # 工厂合约地址
   factoryAddress: Bytes!
 

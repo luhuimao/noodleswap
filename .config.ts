@@ -4,10 +4,10 @@ import { resolve } from 'path';
 import { ConfigAddress } from './generated/schema';
 
 // ConfigAddree 地址
-export const CONFIGADDRESS_ADDRESS_LOCALHOST = '0xc161F6fd99Cd7b8c19585121C1b0B0F575962897'; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_LOCALHOST = "0x2b9666Bf63c2A80148b9890a25668D4f77c82532"; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_LOCALHOST = '0xbc9f0AE44448EAed971694c51e111A42Ed4CB69d'; //REPLACE_FLAG
-export const VOTE_ADDRESS_LOCALHOST = '0xbc9f0AE44448EAed971694c51e111A42Ed4CB69d'; //REPLACE_FLAG
-export const DEPLOY_ACCOUNT_LOCALHOST = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
+export const VOTE_ADDRESS_LOCALHOST = "0xbc9f0AE44448EAed971694c51e111A42Ed4CB69d"; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_LOCALHOST = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_HARDHAT = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; //REPLACE_FLAG
@@ -16,9 +16,9 @@ export const VOTE_ADDRESS_HARDHAT = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
 export const DEPLOY_ACCOUNT_HARDHAT = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'; //REPLACE_FLAG
 
 // ConfigAddree 地址
-export const CONFIGADDRESS_ADDRESS_DEVNET = "0x896826683362361A66b894A681bfCB361950413a"; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_DEVNET = "0x5E349E45Aa1eA3C9543F8f7882A97724e4284CE7"; //REPLACE_FLAG
-export const VOTE_ADDRESS_DEVNET = "0xFC4D0033f14988a0e3c2383eC76805b9cA245074"; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_DEVNET = "0xEe819503F54d31bad12C7Fba3d9771AbC8a662Ad"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = "0xf3Ba0DA45E9c9cf5c6FB6f3CB0B1695C45cD987a"; //REPLACE_FLAG
+export const VOTE_ADDRESS_DEVNET = "0xA31c8dcBD38696A8b8DBc6EbA2130e0005eEC268"; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_DEVNET = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
 
 // ConfigAddree 地址
@@ -27,10 +27,10 @@ export const GAMEFACTORY_ADDRESS_GANACHE = '0xCe5F6B9e3f507aF6B19F4c993B6DbaC485
 export const VOTE_ADDRESS_GANACHE = '0xCe5F6B9e3f507aF6B19F4c993B6DbaC48531C524'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_GANACHE = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
-export const CONFIGADDRESS_ADDRESS_BSCTESTNET = "0xEf14EdDC621eb8F0F7bDE62E98DAFa0c1D436CF9"; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_BSCTESTNET = '0xEf14EdDC621eb8F0F7bDE62E98DAFa0c1D436CF9'; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_BSCTESTNET = '0xd257766F6Ba54B6904009109a681487b31dEc51a'; //REPLACE_FLAG
 export const VOTE_ADDRESS_BSCTESTNET = '0xd257766F6Ba54B6904009109a681487b31dEc51a'; //REPLACE_FLAG
-export const DEPLOY_ACCOUNT_BSCTESTNET = "0x66f040c34C9bA21560952303AfF336dA12096ad2"; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_BSCTESTNET = '0x66f040c34C9bA21560952303AfF336dA12096ad2'; //REPLACE_FLAG
 
 export const CONFIGADDRESS_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_BSC = ''; //REPLACE_FLAG
@@ -278,7 +278,7 @@ export async function GetConfigAddressByGameFactoryAddress(
     body:
       '{"query":"{configAddresses(' +
       where +
-      'subgraphError:allow,orderBy:timestamp,orderDirection:desc,first:2){id  factoryAddress ndlToken{id} wethToken{id} usdtToken{id} networkName  blockUrl  gameTokens{    id    symbol  }}}","variables":null,"operationName":null}',
+      'subgraphError:allow,orderBy:timestamp,orderDirection:desc,first:2){id  factoryAddress configAddress ndlToken{id} wethToken{id} usdtToken{id} networkName  blockUrl  gameTokens{    id    symbol  }}}","variables":null,"operationName":null}',
     method: 'POST',
     //}).then(response => {
     //    return JSON.parse(response.body.read().toString());

@@ -201,6 +201,7 @@ contract ConfigAddress {
         for (uint256 index = 0; index < config.gameTokenList.length; index++) {
             if (config.gameTokenList[index] == tokenAddress) {
                 ok = true;
+                break;
             }
         }
         if (ok == false) {
@@ -214,12 +215,17 @@ contract ConfigAddress {
         return config.gameTokenMap[tokenSymbol];
     }
 
+    function getLen(address factoryAddress, uint256 index) public view returns (address) {
+        Config storage config = configMap[factoryAddress];
+        return config.gameTokenList[index];
+    }
+
     function faucetAll(
-        address configAddress,
+        address factoryAddress,
         address to,
         uint256 wad
     ) public {
-        Config storage config = configMap[configAddress];
+        Config storage config = configMap[factoryAddress];
         if (config.wethToken != address(0)) {
             faucet(config.wethToken, to, wad);
         }
