@@ -49,7 +49,7 @@ let main = async () => {
     const faucet_addr = config.FAUCET_ADDRESSES[index];
     const [, _, user] = await ethers.getSigners();
     let balance = await ethers.provider.getBalance(faucet_addr);
-    if (balance.toString() <= '1') {
+    if (user && balance.toString() <= '1') {
       await user.sendTransaction({
         value: ethers.utils.parseEther('10'),
         to: faucet_addr,
