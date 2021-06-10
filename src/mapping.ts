@@ -277,6 +277,8 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   voteInfo.owner = event.params.sender;
   voteInfo.winOption = event.params.originOption;
   voteInfo.option = event.params.challengeOption;
+  voteInfo.agreeNum = new BigInt(0);
+  voteInfo.disAgreeNum = new BigInt(0);
   voteInfo.timestamp = event.block.timestamp;
   voteInfo.save();
   //VoteTemplate.create(event.params.vote);
