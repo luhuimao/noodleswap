@@ -277,8 +277,8 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   voteInfo.owner = event.params.sender;
   voteInfo.winOption = event.params.originOption;
   voteInfo.option = event.params.challengeOption;
-  voteInfo.agreeNum = new BigInt(0);
-  voteInfo.disAgreeNum = new BigInt(0);
+  voteInfo.agreeNum = 0;
+  voteInfo.disAgreeNum = 0;
   voteInfo.timestamp = event.block.timestamp;
   voteInfo.save();
   //VoteTemplate.create(event.params.vote);
@@ -324,6 +324,11 @@ export function handAddVote(event: VoteEvent._addVote): void {
   voteUserInfo.vote = voteInfo.id;
   // voteUserInfo.game = gameInfo.id;
   voteUserInfo.timestamp = event.block.timestamp;
+  if (voteInfo.option.toI32() == voteUserInfo.option) {
+    voteInfo.agreeNum = voteInfo.agreeNum + 1;
+  } else {
+    voteInfo.disAgreeNum = voteInfo.disAgreeNum + 1;
+  }
   voteUserInfo.save();
   voteInfo.save();
   gameInfo.save();

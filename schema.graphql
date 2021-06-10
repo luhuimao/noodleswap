@@ -112,8 +112,8 @@ type VoteInfo @entity {
   game: GameInfo! # 所属游戏
   winOption: BigInt! # 同意选项
   option: BigInt! # 同意选项
-  agreeNum: BigInt! # 同意数
-  disAgreeNum: BigInt! # 不同意数
+  agreeNum: Int! # 同意数
+  disAgreeNum: Int! # 不同意数
   timestamp: BigInt! #  下注时间
   voteUserInfos: [VoteUserInfo!]! @derivedFrom(field: "vote") # 下注记录
 }
