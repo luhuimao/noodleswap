@@ -99,7 +99,7 @@ type BetInfo @entity {
   id: ID!
 
   sender: Bytes! # 用户地址
-  token: Bytes! # 代币合约地址
+  token: ERC20Token! # 代币合约地址
   game: GameInfo! # 所属游戏
   options: [Int!]! # 选项数据
   optionNum: [BigInt!]! # 选项数据

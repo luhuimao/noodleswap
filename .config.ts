@@ -17,8 +17,8 @@ export const DEPLOY_ACCOUNT_HARDHAT = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb9226
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_DEVNET = '0xdf576048fC55239a6545a4b55A75e098ea8c7C85'; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_DEVNET = '0x2f3e1C15776Ce3774a5CFE3F2cfc0db96dB05a6d'; //REPLACE_FLAG
-export const VOTE_ADDRESS_DEVNET = '0x825dD9c25861a1ab5716Bf75dF09EdDdDCC6BFb4'; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = "0xaB958162fd1bc2bA477666450F4595AD06C23F1f"; //REPLACE_FLAG
+export const VOTE_ADDRESS_DEVNET = "0xFD6A74EaA059bbB833DE292B63c68542a24ecCbB"; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_DEVNET = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 // ConfigAddree 地址
@@ -372,3 +372,25 @@ export function getBlockUrlByNetwork(name: string): string {
   }
   return ret;
 }
+// type NetWorkInfo = {
+// symbol:string
+// blockUrl:string
+// }
+// export function getNetWorkInfoByNetworkName(name: string): { blockUrl:string } {
+//   let ret = 'https://testnet.bscscan.com/';
+//   switch (name) {
+//     case 'bsctestnet':
+//       ret = 'https://testnet.bscscan.com/';
+//       break;
+//     case 'bsc':
+//       ret = 'https://dataseed1.binance.org/';
+//       break;
+//     case 'rinkeby':
+//       ret = 'https://rinkeby.etherscan.io/';
+//       break;
+//     case 'mainnet':
+//       ret = 'https://etherscan.io/';
+//       break;
+//   }
+//   return ret;
+// }

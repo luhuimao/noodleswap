@@ -174,7 +174,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
 
   bet = new BetInfo(id);
   bet.sender = event.params.sender;
-  bet.token = event.params.token;
+  bet.token = event.params.token.toString();
 
   bet.game = gameInfo.id;
   let optionNum = event.params.optionNum;
@@ -231,9 +231,24 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
     nftInfo.game = gameInfo.id;
     nftInfo.save();
   }
+  let id = event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
+
   let optionNum = event.params.optionData;
   gameInfo._optionNum = optionNum;
   gameInfo.save();
+
+  let bet = new BetInfo(id);
+  bet.sender = event.params.sender;
+  bet.token = event.params.token.toString();
+  bet.game = gameInfo.id;
+  bet.optionNum = optionNum;
+  bet.options = [];
+  for (let index = 0; index < optionNum.length; index++) {
+    bet.options.push(index);
+  }
+  bet.tokenIds = tokenIds;
+  bet.timestamp = event.block.timestamp;
+  bet.save();
 }
 export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   log.info('xxxxxxxxxxxxxxxxxx:handRemoveLiquidity:', []);
@@ -254,6 +269,19 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   let optionNum = event.params.optionData;
   gameInfo._optionNum = optionNum;
   gameInfo.save();
+
+  let id = event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
+  let bet = new BetInfo(id);
+  bet.sender = event.params.sender;
+  bet.token = gameInfo._token;
+  bet.game = gameInfo.id;
+  bet.optionNum = optionNum;
+  bet.options = [];
+  for (let index = 0; index < optionNum.length; index++) {
+    bet.options.push(index);
+  }
+  bet.tokenIds = tokenIds;
+  bet.timestamp = event.block.timestamp;
 }
 export function handStakeGame(event: GameEvent._stakeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handStakeGame:', []);
