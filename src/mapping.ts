@@ -86,7 +86,7 @@ export function handleUpsertGameToken(event: UpsertGameToken): void {
   if (index != -2) {
     config.gameTokens.slice(index, 1);
   }
-  let token = ERC20Token.load(event.params.tokenSymbol);
+  let token = ERC20Token.load(event.params.tokenAddress.toHex());
   if (token == null) {
     token = new ERC20Token(event.params.tokenAddress.toHex());
     //TODO 这里需要去合约里取token信息
@@ -159,7 +159,8 @@ export function handleApproval(event: GameEvent.Approval): void {
   // pair.save();
 }
 export function handPlaceGame(event: GameEvent._placeGame): void {
-  let id = event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
+  let id =
+    event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString() + '-1';
   log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:{}', [id]);
   var bet = BetInfo.load(id);
   if (bet != null) {
@@ -171,10 +172,26 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
     log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
     return;
   }
+  // let tokenId = event.params.token.toHexString();
+  // let token = ERC20Token.load(tokenId);
+  // if (token == null) {
+  //   let tokenName = boutils.fetchTokenSymbol(event.params.token);
+  //   if (tokenName == '') {
+  //     log.error('token not found : {}', [event.params.token.toHex()]);
+  //     return;
+  //   }
+  //   token = new ERC20Token(tokenId);
+  //   //TODO 这里需要去合约里取token信息
+  //   token.name = 'Tmp ' + tokenName;
+  //   token.symbol = tokenName; //event.params.tokenSymbol.toString();
+  //   token.decimals = boutils.getTokenDecimals(event.params.token);
+  //   token.save();
+  // }
 
   bet = new BetInfo(id);
   bet.sender = event.params.sender;
-  bet.token = event.params.token.toString();
+  //bet.token = event.params.token.toString();
+  bet.token = gameInfo._token;
 
   bet.game = gameInfo.id;
   let optionNum = event.params.optionNum;
@@ -222,6 +239,21 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
     log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
     return;
   }
+  // let tokenId = event.params.token.toHexString();
+  // let token = ERC20Token.load(tokenId);
+  // if (token == null) {
+  //   let tokenName = boutils.fetchTokenSymbol(event.params.token);
+  //   if (tokenName == '') {
+  //     log.error('token not found : {}', [event.params.token.toHex()]);
+  //     return;
+  //   }
+  //   token = new ERC20Token(tokenId);
+  //   //TODO 这里需要去合约里取token信息
+  //   token.name = 'Tmp ' + tokenName;
+  //   token.symbol = tokenName; //event.params.tokenSymbol.toString();
+  //   token.decimals = boutils.getTokenDecimals(event.params.token);
+  //   token.save();
+  // }
   let tokenIds = event.params.tokenIds;
   for (let index = 0; index < tokenIds.length; index++) {
     let element = tokenIds[index];
@@ -231,7 +263,8 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
     nftInfo.game = gameInfo.id;
     nftInfo.save();
   }
-  let id = event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
+  let id =
+    event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString() + '-2';
 
   let optionNum = event.params.optionData;
   gameInfo._optionNum = optionNum;
@@ -239,7 +272,7 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
 
   let bet = new BetInfo(id);
   bet.sender = event.params.sender;
-  bet.token = event.params.token.toString();
+  bet.token = gameInfo._token;
   bet.game = gameInfo.id;
   bet.optionNum = optionNum;
   bet.options = [];
@@ -270,7 +303,8 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   gameInfo._optionNum = optionNum;
   gameInfo.save();
 
-  let id = event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString();
+  let id =
+    event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString() + '-3';
   let bet = new BetInfo(id);
   bet.sender = event.params.sender;
   bet.token = gameInfo._token;
@@ -282,6 +316,7 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   }
   bet.tokenIds = tokenIds;
   bet.timestamp = event.block.timestamp;
+  bet.save();
 }
 export function handStakeGame(event: GameEvent._stakeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handStakeGame:', []);

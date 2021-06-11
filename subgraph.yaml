@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0xdf576048fC55239a6545a4b55A75e098ea8c7C85" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x1d920d3Ca5cc168C9804a3472E7032836886Ef09" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0xaB958162fd1bc2bA477666450F4595AD06C23F1f" #{{GAMEFACTORY_ADDRESS}}
+      address: "0x06b6A57E35320666a98aBe8F9B5971B4E8b929AE" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -73,7 +73,7 @@ dataSources:
     name: VoteInfo
     network: mainnet #replace mainnet
     source:
-      address: "0xFD6A74EaA059bbB833DE292B63c68542a24ecCbB" #{{VOTE_ADDRESS}}
+      address: "0x207e160dc1421801625a924076C4E79F0186C748" #{{VOTE_ADDRESS}}
       abi: Vote
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
