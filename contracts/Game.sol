@@ -168,9 +168,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function getAward(uint256[] memory tokenIds) public returns (uint256 amount) {
         //todo: 需要判断game是否结束
         // console.log('winOption:', winOption);
-        for (uint8 i = 0; i < tokenIds.length; i++) {
-            amount += playInfoMap[tokenIds[i]].getAward(tokenIds[i], winOption, playNFT);
-        }
+        amount = playInfoMap.getAward(tokenIds, winOption, playNFT);
         // console.log('award amount:', amount);
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
         emit _getAward(address(this), token, msg.sender, tokenIds, amount);

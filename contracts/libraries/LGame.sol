@@ -34,22 +34,25 @@ library LGame {
         return address(new PlayNFT());
     }
 
-    function getAward(         
-        PlayInfoStruct storage self,
-        uint256 tokenId,
+    function getAward(
+        mapping(uint256 => LGame.PlayInfoStruct) storage self,
+        uint256[] memory tokenIds,
         uint8 winOption,
         address playNFT
     ) public returns (uint256 amount) {
-        require(msg.sender == PlayNFT(playNFT).ownerOf(tokenId), 'NoodleSwap: address have no right');
-        if (self.option == 200) {
-            amount = 0;
-            return amount;
+        for (uint8 i = 0; i < tokenIds.length; i++) {
+            PlayInfoStruct storage playInfo = self[i];
+            uint256 tokenId = tokenIds[i];
+            require(msg.sender == PlayNFT(playNFT).ownerOf(tokenId), 'NoodleSwap: address have no right');
+            if (playInfo.option == 200) {
+                continue;
+            }
+            if (playInfo.option == winOption) {
+                //用户赢了，则将币转给用户
+                amount += playInfo.allFrozen;
+            }
+            playInfo.option = 200; //表示已经领取
         }
-        if (self.option == winOption) {
-            //用户赢了，则将币转给用户
-            amount += self.allFrozen;
-        }
-        self.option = 200; //表示已经领取
     }
 
     function removeLiquidity(
