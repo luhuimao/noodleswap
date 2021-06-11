@@ -37,10 +37,10 @@ export const GAMEFACTORY_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const VOTE_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_BSC = ''; //REPLACE_FLAG
 
-export const CONFIGADDRESS_ADDRESS_RINKEBY = "0xc83Ad5e320F1849bbb27026F20B0FbBEEAda6603"; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_RINKEBY = "0x532E76dCF4eEa3B721Db88adcD57D05361374B6F"; //REPLACE_FLAG
-export const VOTE_ADDRESS_RINKEBY = "0x499E7Dfc2246F87f146530aceC6ec258681D3c68"; //REPLACE_FLAG
-export const DEPLOY_ACCOUNT_RINKEBY = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_RINKEBY = '0xCCC1355aa12dE668E3a6421b62eB10D937cE2DeA'; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_RINKEBY = '0x4B9953FF492E6766ab03eF67445dfb3fB08508C3'; //REPLACE_FLAG
+export const VOTE_ADDRESS_RINKEBY = '0x5C7F46CF20e9BF9cD13dD779C8744C8C231B55C4'; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_RINKEBY = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 export const CONFIGADDRESS_ADDRESS_MAINNET = ''; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_MAINNET = ''; //REPLACE_FLAG
@@ -210,6 +210,16 @@ export function getGameFactoryAddressByNetwork(name: string): string {
   }
   return GAMEFACTORY_ADDRESS_BSCTESTNET;
 }
+
+export function getIndexingNetWorkName(name: string): string {
+  let ret = 'mainnet';
+  switch (name) {
+    case 'rinkeby':
+      ret = 'rinkeby';
+      break;
+  }
+  return ret;
+}
 export function getStartBlockNumber(name: string): number {
   //let blockNumber = await ethers.provider.getBlockNumber()
   switch (name) {
@@ -282,6 +292,8 @@ export async function GetConfigAddressByGameFactoryAddress(
     method: 'POST',
     //}).then(response => {
     //    return JSON.parse(response.body.read().toString());
+  }).catch((err) => {
+    console.log('xxxxxxx:', err);
   });
   if (response == null) {
     console.log('GetConfigAddressByGameFactoryAddress error:null');
