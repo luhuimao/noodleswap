@@ -45,6 +45,15 @@ let main = async () => {
   key = 'startBlock';
   flag = '#{{STARTBLOCK}}';
   ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': ' + config.getStartBlockNumber(network.name) + ' ' + flag);
+
+  // 指定索引网络
+  key = 'network';
+  flag = '#replace mainnet';
+  ReplaceLine(
+    'subgraph.yaml',
+    key + '.*' + flag,
+    key + ': ' + config.getIndexingNetWorkName(network.name) + ' ' + flag
+  );
 };
 
 main();
