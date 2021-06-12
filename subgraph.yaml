@@ -9,11 +9,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ConfigAddress
-    network: mainnet #replace mainnet
+    network: rinkeby #replace mainnet
     source:
-      address: "0x1d920d3Ca5cc168C9804a3472E7032836886Ef09" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x46283C18b0a131263F0Bc06D97D622257cC5A5ab" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8471670 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -47,11 +47,11 @@ dataSources:
   # GameFactory合约
   - kind: ethereum/contract
     name: GameFactory
-    network: mainnet #replace mainnet
+    network: rinkeby #replace mainnet
     source:
-      address: "0x06b6A57E35320666a98aBe8F9B5971B4E8b929AE" #{{GAMEFACTORY_ADDRESS}}
+      address: "0x4Cc43a932e721f6Eb98f33c1375b37c880D8Bd83" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8471670 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -61,6 +61,10 @@ dataSources:
       abis:
         - name: GameFactory
           file: ./abis/GameFactory.json
+        - name: Game
+          file: ./abis/Game.json
+        - name: LGame
+          file: ./abis/LGame.json
       eventHandlers:
         # 创建游戏事件
         - event: _GameCreated(indexed address,indexed address,indexed address,string,string[],uint256[],string,uint256)
@@ -71,11 +75,11 @@ dataSources:
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: VoteInfo
-    network: mainnet #replace mainnet
+    network: rinkeby #replace mainnet
     source:
-      address: "0x207e160dc1421801625a924076C4E79F0186C748" #{{VOTE_ADDRESS}}
+      address: "0xc913bc12D352e9bD812f47Df3a37B980E7715d3f" #{{VOTE_ADDRESS}}
       abi: Vote
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8471670 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -97,7 +101,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: Game
-    network: mainnet #replace mainnet
+    network: rinkeby #replace mainnet
     source:
       abi: Game
     mapping:

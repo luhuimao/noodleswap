@@ -3,6 +3,7 @@ import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as GameEvent from '../generated/templates/Game/Game';
 import * as VoteEvent from '../generated/VoteInfo/Vote';
 import { Game as GameTemplate } from '../generated/templates';
+import { Game as GameContract } from '../generated/GameFactory/Game';
 // import { VoteInfo as VoteTemplate } from '../generated/templates';
 import {
   ERC20Token,
@@ -160,7 +161,13 @@ export function handleApproval(event: GameEvent.Approval): void {
 }
 export function handPlaceGame(event: GameEvent._placeGame): void {
   let id =
-    event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString() + '-1';
+    event.params.game.toHex() +
+    '-' +
+    event.params.sender.toHex() +
+    '-' +
+    event.block.timestamp.toString() +
+    '-1' +
+    '-0';
   log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:{}', [id]);
   var bet = BetInfo.load(id);
   if (bet != null) {
@@ -263,25 +270,42 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
     nftInfo.game = gameInfo.id;
     nftInfo.save();
   }
-  let id =
-    event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString() + '-2';
 
   let optionNum = event.params.optionData;
   gameInfo._optionNum = optionNum;
   gameInfo.save();
 
-  let bet = new BetInfo(id);
-  bet.sender = event.params.sender;
-  bet.token = gameInfo._token;
-  bet.game = gameInfo.id;
-  bet.optionNum = optionNum;
-  bet.options = [];
-  for (let index = 0; index < optionNum.length; index++) {
-    bet.options.push(index);
+  // let tmp: i32[] = [];
+  let instanceGame = GameContract.bind(event.params.game);
+  for (let index = 0; index < tokenIds.length; index++) {
+    let element = tokenIds[index];
+    let id =
+      event.params.game.toHex() +
+      '-' +
+      event.params.sender.toHex() +
+      '-' +
+      event.block.timestamp.toString() +
+      '-2' +
+      '-' +
+      index.toString();
+    let bet = new BetInfo(id);
+    bet.sender = event.params.sender;
+    bet.token = gameInfo._token;
+    bet.game = gameInfo.id;
+    // let tmp: i32[];
+    // tmp = [];
+    // tmp.push(instanceGame.playInfoMap(element).value0);
+    // bet.options = tmp;
+    bet.options = [instanceGame.playInfoMap(element).value0];
+    // let tmp1: BigInt[];
+    // tmp1 = [];
+    // tmp1.push(instanceGame.playInfoMap(element).value1);
+    // bet.optionNum = tmp1;
+    bet.optionNum = [instanceGame.playInfoMap(element).value1];
+    bet.tokenIds = tokenIds;
+    bet.timestamp = event.block.timestamp;
+    bet.save();
   }
-  bet.tokenIds = tokenIds;
-  bet.timestamp = event.block.timestamp;
-  bet.save();
 }
 export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   log.info('xxxxxxxxxxxxxxxxxx:handRemoveLiquidity:', []);
@@ -303,20 +327,36 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   gameInfo._optionNum = optionNum;
   gameInfo.save();
 
-  let id =
-    event.params.game.toHex() + '-' + event.params.sender.toHex() + '-' + event.block.timestamp.toString() + '-3';
-  let bet = new BetInfo(id);
-  bet.sender = event.params.sender;
-  bet.token = gameInfo._token;
-  bet.game = gameInfo.id;
-  bet.optionNum = optionNum;
-  bet.options = [];
-  for (let index = 0; index < optionNum.length; index++) {
-    bet.options.push(index);
+  let instanceGame = GameContract.bind(event.params.game);
+  for (let index = 0; index < tokenIds.length; index++) {
+    let element = tokenIds[index];
+    let id =
+      event.params.game.toHex() +
+      '-' +
+      event.params.sender.toHex() +
+      '-' +
+      event.block.timestamp.toString() +
+      '-3' +
+      '-' +
+      index.toString();
+    let bet = new BetInfo(id);
+    bet.sender = event.params.sender;
+    bet.token = gameInfo._token;
+    bet.game = gameInfo.id;
+    // let tmp: i32[];
+    // tmp = [];
+    // tmp.push(instanceGame.playInfoMap(element).value0);
+    // bet.options = tmp;
+    bet.options = [instanceGame.playInfoMap(element).value0];
+    // let tmp1: BigInt[];
+    // tmp1 = [];
+    // tmp1.push(instanceGame.playInfoMap(element).value1);
+    // bet.optionNum = tmp1;
+    bet.optionNum = [instanceGame.playInfoMap(element).value1];
+    bet.tokenIds = tokenIds;
+    bet.timestamp = event.block.timestamp;
+    bet.save();
   }
-  bet.tokenIds = tokenIds;
-  bet.timestamp = event.block.timestamp;
-  bet.save();
 }
 export function handStakeGame(event: GameEvent._stakeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handStakeGame:', []);
