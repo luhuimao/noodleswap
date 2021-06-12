@@ -99,6 +99,10 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         emit _placeGame(address(this), token, msg.sender, _options, _optionNum, tokenIds, _getOptions());
     }
 
+    function getOptions() public view returns (uint256[] memory optionData) {
+        return _getOptions();
+    }
+
     function _getOptions() private view returns (uint256[] memory optionData) {
         optionData = new uint256[](options.length);
         for (uint8 i = 0; i < options.length; i++) {

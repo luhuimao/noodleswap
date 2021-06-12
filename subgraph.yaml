@@ -9,11 +9,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ConfigAddress
-    network: rinkeby #replace mainnet
+    network: mainnet #replace mainnet
     source:
-      address: "0x46283C18b0a131263F0Bc06D97D622257cC5A5ab" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x1f94C1E0dd1b3bB0f9e24df0727c41002c1b051f" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
-      startBlock: 8471670 #{{STARTBLOCK}}
+      startBlock: 0 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -47,11 +47,11 @@ dataSources:
   # GameFactory合约
   - kind: ethereum/contract
     name: GameFactory
-    network: rinkeby #replace mainnet
+    network: mainnet #replace mainnet
     source:
-      address: "0x4Cc43a932e721f6Eb98f33c1375b37c880D8Bd83" #{{GAMEFACTORY_ADDRESS}}
+      address: "0xC17F8852B289e4E0A4122E61D1A8f7D90D205455" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
-      startBlock: 8471670 #{{STARTBLOCK}}
+      startBlock: 0 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -75,11 +75,11 @@ dataSources:
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: VoteInfo
-    network: rinkeby #replace mainnet
+    network: mainnet #replace mainnet
     source:
-      address: "0xc913bc12D352e9bD812f47Df3a37B980E7715d3f" #{{VOTE_ADDRESS}}
+      address: "0x391BA6aa61AC098F3D62709bf6022404c1A9BfF5" #{{VOTE_ADDRESS}}
       abi: Vote
-      startBlock: 8471670 #{{STARTBLOCK}}
+      startBlock: 0 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -101,7 +101,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: Game
-    network: rinkeby #replace mainnet
+    network: mainnet #replace mainnet
     source:
       abi: Game
     mapping:

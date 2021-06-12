@@ -215,8 +215,11 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   //   gameOptionNum[element] += optionNum[index];
   // }
   // gameInfo._optionNum = gameOptionNum;
-  let optionData = event.params.optionData;
-  gameInfo._optionNum = optionData;
+  let instanceGame = GameContract.bind(event.params.game);
+  let ret = instanceGame.try_getOptions();
+  if (!ret.reverted) {
+    gameInfo._optionNum = ret.value;
+  }
   for (let index = 0; index < tokenIds.length; index++) {
     let element = tokenIds[index];
     let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
@@ -271,12 +274,14 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
     nftInfo.save();
   }
 
-  let optionNum = event.params.optionData;
-  gameInfo._optionNum = optionNum;
+  let instanceGame = GameContract.bind(event.params.game);
+  let ret = instanceGame.try_getOptions();
+  if (!ret.reverted) {
+    gameInfo._optionNum = ret.value;
+  }
   gameInfo.save();
 
   // let tmp: i32[] = [];
-  let instanceGame = GameContract.bind(event.params.game);
   for (let index = 0; index < tokenIds.length; index++) {
     let element = tokenIds[index];
     let id =
@@ -323,11 +328,13 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
     nftInfo.game = gameInfo.id;
     nftInfo.save();
   }
-  let optionNum = event.params.optionData;
-  gameInfo._optionNum = optionNum;
+  let instanceGame = GameContract.bind(event.params.game);
+  let ret = instanceGame.try_getOptions();
+  if (!ret.reverted) {
+    gameInfo._optionNum = ret.value;
+  }
   gameInfo.save();
 
-  let instanceGame = GameContract.bind(event.params.game);
   for (let index = 0; index < tokenIds.length; index++) {
     let element = tokenIds[index];
     let id =
