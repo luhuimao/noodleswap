@@ -21,6 +21,7 @@ truffle-config.js
 !deployments/*.log
 *~
 *.swp
+*.swo
 
 typechain
 yarn.lock
