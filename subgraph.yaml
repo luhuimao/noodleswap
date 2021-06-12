@@ -95,8 +95,6 @@ dataSources:
           handler: handStartVote
         - event: _addVote(indexed address,indexed address,uint8,uint256,uint256)
           handler: handAddVote
-        #- event: _getAward(indexed address,indexed address,indexed address,uint256)
-        #  handler: handGetAward
 
 templates:
   - kind: ethereum/contract
@@ -131,3 +129,5 @@ templates:
           handler: handOpenGame
         - event: _challengeGame(indexed address,indexed address,uint256,uint256,address)
           handler: handChallengeGame
+        - event: _getAward(indexed address,indexed address,indexed address,uint256[],uint256)
+          handler: handGetAward

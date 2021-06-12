@@ -12,6 +12,7 @@ import {
   VoteInfo,
   NFTInfo,
   GameInfo,
+  GameUserInfo,
   BetInfo,
   Game,
 } from '../generated/schema';
@@ -451,4 +452,24 @@ export function handStartVote(event: VoteEvent._startVote): void {
     log.error('VoteInfo game already exists: {}', [event.params.game.toHex()]);
     return;
   }
+}
+
+export function handGetAward(event: GameEvent._getAward): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handGetAward:', []);
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
+    log.error('GetAward game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+  let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
+  var gameUserInfo = GameUserInfo.load(id);
+  if (!gameUserInfo) {
+    gameUserInfo = new GameUserInfo(id);
+    gameUserInfo.game = gameInfo.id;
+    gameUserInfo.timestamp = event.block.timestamp;
+  }
+  gameUserInfo.sender = event.params.sender;
+  gameUserInfo.finishReward = event.params.amount;
+  gameUserInfo.save();
+  //VoteTemplate.create(event.params.vote);
 }

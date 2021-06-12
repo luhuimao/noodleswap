@@ -83,6 +83,17 @@ type GameInfo @entity {
   vote: VoteInfo! @derivedFrom(field: "game") # 投票地址
   betInfos: [BetInfo!]! @derivedFrom(field: "game") # 下注记录
   nftInfos: [NFTInfo!]! @derivedFrom(field: "game") # 下注记录
+  gameUserInfos: [GameUserInfo!]! @derivedFrom(field: "game") # 用户列表
+}
+
+# 游戏用户信息
+type GameUserInfo @entity {
+  id: ID!
+
+  sender: Bytes! # 用户地址
+  game: GameInfo! # 所属游戏
+  finishReward: BigInt # 是否已领奖,非空表示已领
+  timestamp: BigInt! #  更新时间
 }
 
 # nft列表
