@@ -7,8 +7,8 @@ import './libraries/SafeMath.sol';
 contract GameERC20 is INoodleGameERC20 {
     using SafeMath for uint256;
 
-    string public constant name = 'NoodleGame';
-    string public constant symbol = 'NoodleGame';
+    string public name;
+    string public symbol;
     uint8 public constant decimals = 18;
     uint256 public totalSupply = 0;
     mapping(address => uint256) public balanceOf;
@@ -18,6 +18,11 @@ contract GameERC20 is INoodleGameERC20 {
 
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
+
+    constructor(string memory _symbol){
+        name = _symbol;
+        symbol = _symbol;
+    }
 
     function _mint(address to, uint256 value) internal {
         totalSupply = totalSupply.add(value);

@@ -31,7 +31,6 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     address public creator;
-
     address public token;
     uint256 public endTime;
 
@@ -58,11 +57,12 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     constructor(
         address _creator,
         address _token,
+        string memory _shortGameName,
         uint256[] memory _optionNum,
         uint256 _endTime,
         address _noodleToken,
         address _vote
-    ) {
+    )  GameERC20(_shortGameName){
         creator = _creator;
         token = _token;
         endTime = _endTime;

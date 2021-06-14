@@ -10,6 +10,7 @@ library LGameFactory {
         address creator;
         address token;
         string gameName;
+        string shortGameName;
         string resultSource;
         uint256 endTime;
         string[] optionName;
@@ -19,6 +20,7 @@ library LGameFactory {
         mapping(address => LGameFactory.GameStruct) storage gameMap,
         address _token,
         string memory _gameName,
+        string memory _shortGameName,
         string[] memory _optionName,
         uint256[] memory _optionNum,
         string memory _resultSource,
@@ -27,7 +29,7 @@ library LGameFactory {
         address vote
     ) public returns (address _game) {
         // Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime,noodleToken);
-        Game game = new Game(msg.sender, _token, _optionNum, _endTime, noodleToken, vote);
+        Game game = new Game(msg.sender, _token, _shortGameName,_optionNum, _endTime, noodleToken, vote);
         //取第一个option的金额作为liquidity
         game.mint(msg.sender, _optionNum[0]);
         _game = address(game);
@@ -35,6 +37,7 @@ library LGameFactory {
         gameStruct.creator = msg.sender;
         gameStruct.token = _token;
         gameStruct.gameName = _gameName;
+        gameStruct.shortGameName = _shortGameName;
         gameStruct.resultSource = _resultSource;
         gameStruct.endTime = _endTime;
         gameStruct.optionName = _optionName;

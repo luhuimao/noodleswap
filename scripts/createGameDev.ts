@@ -93,6 +93,7 @@ let main = async () => {
     null,
     null,
     null,
+    null,
     null
   );
   let gameAddress: string;
@@ -148,6 +149,7 @@ let main = async () => {
   await instanceGameFactory.createGame(
     instanceERC20.address,
     'Test T0',
+    'TST0',
     ['BIG', 'SMALL'],
     [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
     'https://github.com/NoodleDAO/noodleswap',

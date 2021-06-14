@@ -16,6 +16,7 @@ contract GameFactory is IGameFactory {
         address indexed _game,
         address indexed _owner,
         string _gameName,
+        string _shortGameName,
         string[] _optionName,
         uint256[] _optionNum,
         string _resultSource,
@@ -23,6 +24,7 @@ contract GameFactory is IGameFactory {
     );
 
     using LGameFactory for mapping(address => LGameFactory.GameStruct);
+    
     mapping(address => LGameFactory.GameStruct) public gameMap;
 
     address public noodleToken;
@@ -37,6 +39,7 @@ contract GameFactory is IGameFactory {
     function createGame(
         address _token,
         string memory _gameName,
+        string memory _shortGameName,
         string[] memory _optionName,
         uint256[] memory _optionNum,
         string memory _resultSource,
@@ -45,6 +48,7 @@ contract GameFactory is IGameFactory {
         _game = gameMap.createGame(
             _token,
             _gameName,
+            _shortGameName,
             _optionName,
             _optionNum,
             _resultSource,
@@ -52,6 +56,6 @@ contract GameFactory is IGameFactory {
             noodleToken,
             vote
         );
-        emit _GameCreated(_token, _game, msg.sender, _gameName, _optionName, _optionNum, _resultSource, _endTime);
+        emit _GameCreated(_token, _game, msg.sender, _gameName,_shortGameName, _optionName, _optionNum, _resultSource, _endTime);
     }
 }
