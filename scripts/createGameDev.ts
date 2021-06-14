@@ -1,5 +1,7 @@
 import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
+import { LGame } from '../typechain/LGame';
+import { LGameFactory } from '../typechain/LGameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import { Vote } from '../typechain/Vote';
 import { GameFactory } from '../typechain/GameFactory';
@@ -30,6 +32,15 @@ let main = async () => {
     ethers.utils.formatEther((await owner.getBalance()).toString())
   );
 
+  const instanceLGame = (await (await ethers.getContractFactory('LGame')).connect(owner).deploy()) as LGame;
+  console.log('new LGame address:', instanceLGame.address);
+  const instanceLGameFactory = (await (
+    await ethers.getContractFactory('LGameFactory', { libraries: { LGame: instanceLGame.address } })
+  )
+    .connect(owner)
+    .deploy()) as LGameFactory;
+  console.log('new LGameFactory address:', instanceLGameFactory.address);
+
   let configAddress = await config.GetConfigAddressByGameFactoryAddress(
     network.name,
     config.getGameFactoryAddressByNetwork(network.name)
@@ -48,10 +59,8 @@ let main = async () => {
   }
 
   let voteToken: Vote;
-  voteToken = (await (await ethers.getContractFactory('Vote'))
-      .connect(owner)
-      .deploy(instanceNDLToken.address)) as Vote;
-    console.log('new Vote address:', voteToken.address);
+  voteToken = (await (await ethers.getContractFactory('Vote')).connect(owner).deploy(instanceNDLToken.address)) as Vote;
+  console.log('new Vote address:', voteToken.address);
 
   let instanceERC20 = (await (
     await ethers.getContractFactory('ERC20Faucet')
@@ -63,7 +72,11 @@ let main = async () => {
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   console.log('new ERC20Faucet address:', instanceERC20.address);
   // 工厂合约
-  let instanceGameFactory = (await (await ethers.getContractFactory('GameFactory'))
+  let instanceGameFactory = (await (
+    await ethers.getContractFactory('GameFactory', {
+      libraries: { LGameFactory: instanceLGameFactory.address },
+    })
+  )
     .connect(owner)
     .deploy(instanceNDLToken.address, voteToken.address, {
       gasPrice: 1,
@@ -86,7 +99,9 @@ let main = async () => {
   instanceGameFactory.once(eventFilter, async (tokenaddr, gameaddr) => {
     gameAddress = gameaddr;
     console.log('new Game address:', gameAddress);
-    const instanceGame = (await ethers.getContractFactory('Game')).connect(owner).attach(gameAddress) as Game;
+    const instanceGame = (await ethers.getContractFactory('Game', { libraries: { LGame: instanceLGame.address } }))
+      .connect(owner)
+      .attach(gameAddress) as Game;
     console.log('instanceGame.winOption:', await instanceGame.winOption());
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
