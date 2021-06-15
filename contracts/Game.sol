@@ -13,7 +13,7 @@ import './ConfigurableParametersContract.sol';
 // import './PlayNFT.sol';
 
 // import './Vote.sol';
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 contract Game is IGame, GameERC20, ConfigurableParametersContract {
     using SafeMath for uint256;
@@ -96,6 +96,8 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         require(balance >= sum, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
         tokenIds = playInfoMap.update(options, _options, _optionNum, playNFT, ownerFee, platformFee);
+        console.log('tokenIds:',tokenIds.length);
+        console.log('id:',tokenIds[0]);
         emit _placeGame(address(this), token, msg.sender, _options, _optionNum, tokenIds, _getOptions());
     }
 
@@ -145,6 +147,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 frozenSum = 0;
         (tokenIds, sum, frozenSum) = playInfoMap.removeLiquidity(options, playNFT, initMarketNumber, _liquidity);
         amount = sum;
+        console.log('remove:',amount);
         //转账需要处理approve
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
         emit _removeLiquidity(address(this), msg.sender, _liquidity, amount, tokenIds, _getOptions());
@@ -171,9 +174,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     //获得奖励
     function getAward(uint256[] memory tokenIds) public returns (uint256 amount) {
         //todo: 需要判断game是否结束
-        // console.log('winOption:', winOption);
+        console.log('winOption:', winOption);
         amount = playInfoMap.getAward(tokenIds, winOption, playNFT);
-        // console.log('award amount:', amount);
+        console.log('award amount:', amount);
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
         emit _getAward(address(this), token, msg.sender, tokenIds, amount);
     }

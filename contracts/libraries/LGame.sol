@@ -2,7 +2,7 @@
 pragma solidity ^0.8.3;
 
 import '../PlayNFT.sol';
-
+import 'hardhat/console.sol';
 // a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)
 
 library LGame {
@@ -41,17 +41,16 @@ library LGame {
         address playNFT
     ) public returns (uint256 amount) {
         for (uint8 i = 0; i < tokenIds.length; i++) {
-            PlayInfoStruct storage playInfo = self[i];
-            uint256 tokenId = tokenIds[i];
-            require(msg.sender == PlayNFT(playNFT).ownerOf(tokenId), 'NoodleSwap: address have no right');
-            if (playInfo.option == 200) {
+            require(msg.sender == PlayNFT(playNFT).ownerOf(tokenIds[i]), 'NoodleSwap: address have no right');
+            console.log('play info:',self[tokenIds[i]].option);
+            if (self[tokenIds[i]].option == 200) {
                 continue;
             }
-            if (playInfo.option == winOption) {
+            if (self[tokenIds[i]].option == winOption) {
                 //用户赢了，则将币转给用户
-                amount += playInfo.allFrozen;
+                amount += self[tokenIds[i]].allFrozen;
             }
-            playInfo.option = 200; //表示已经领取
+            self[tokenIds[i]].option = 200; //表示已经领取
         }
     }
 
@@ -178,11 +177,11 @@ library LGame {
             //调用生成ERC721 token的接口, option,optionNum,optionP,allFrozen,返回tokenId
             //可以考虑将这些信息放到uri这个字符串中
             uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
-            LGame.PlayInfoStruct memory playInfo = self[tokenId];
-            playInfo.option = optionId;
-            playInfo.optionNum = optionNum;
-            playInfo.optionP = optionP;
-            playInfo.allFrozen = allFrozen;
+            // LGame.PlayInfoStruct memory playInfo = self[tokenId];
+            self[tokenId].option = optionId;
+            self[tokenId].optionNum = optionNum;
+            self[tokenId].optionP = optionP;
+            self[tokenId].allFrozen = allFrozen;
             tokenIds[i] = tokenId;
         }
         for (uint8 i = 0; i < options.length; i++) {
