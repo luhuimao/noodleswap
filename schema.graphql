@@ -65,6 +65,15 @@ type Game @entity {
   locked: BigInt! # 是否解锁状态
 }
 
+# 选项信息
+type OptionInfo @entity {
+  id: ID!
+  marketNumber: BigInt!
+  placeNumber: BigInt!
+  frozenNumber: BigInt!
+  game: GameInfo! # 所属游戏
+}
+
 # 游戏列表
 type GameInfo @entity {
   id: ID!
@@ -73,6 +82,7 @@ type GameInfo @entity {
   _owner: Bytes! # 用户地址
   _game: Game! # 游戏合约地址
   _gameName: String! # 标题
+  _shortGameName: String! # 标题
   _optionName: [String!]! # 选项名称
   _optionNum: [BigInt!]! # 选项数据
   _resultSource: String! # 结果网址
@@ -83,6 +93,7 @@ type GameInfo @entity {
   vote: VoteInfo! @derivedFrom(field: "game") # 投票地址
   betInfos: [BetInfo!]! @derivedFrom(field: "game") # 下注记录
   nftInfos: [NFTInfo!]! @derivedFrom(field: "game") # 下注记录
+  _optionInfos: [OptionInfo!]! @derivedFrom(field: "game") # 选项列表
   gameUserInfos: [GameUserInfo!]! @derivedFrom(field: "game") # 用户列表
 }
 

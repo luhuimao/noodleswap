@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0x1f94C1E0dd1b3bB0f9e24df0727c41002c1b051f" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x4a8fa9c9fDdCaEbb09e22BdB54efb62334479d41" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0xC17F8852B289e4E0A4122E61D1A8f7D90D205455" #{{GAMEFACTORY_ADDRESS}}
+      address: "0xE446a047CC645eA07EBFc519c87F814bA4b2dbc1" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -67,7 +67,7 @@ dataSources:
           file: ./abis/LGame.json
       eventHandlers:
         # 创建游戏事件
-        - event: _GameCreated(indexed address,indexed address,indexed address,string,string[],uint256[],string,uint256)
+        - event: _GameCreated(indexed address,indexed address,indexed address,string,string,string[],uint256[],string,uint256)
           handler: handleEventCreateGame
         # 下单事件
         #- event: EventBetForToken(indexed address,indexed address,indexed address,uint256,uint256,uint256)
@@ -77,7 +77,7 @@ dataSources:
     name: VoteInfo
     network: mainnet #replace mainnet
     source:
-      address: "0x391BA6aa61AC098F3D62709bf6022404c1A9BfF5" #{{VOTE_ADDRESS}}
+      address: "0xA014b6611B458b8F67518371292B09527ac8Ddf7" #{{VOTE_ADDRESS}}
       abi: Vote
       startBlock: 0 #{{STARTBLOCK}}
     mapping:

@@ -12,13 +12,14 @@ import {
   VoteInfo,
   NFTInfo,
   GameInfo,
+  OptionInfo,
   GameUserInfo,
   BetInfo,
   Game,
 } from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
 import * as boutils from './boutils';
-import { BigInt, ethereum, Bytes, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum, Bytes, log } from '@graphprotocol/graph-ts';
 
 export function handleUpsertConfig(event: UpsertConfig): void {
   let id = event.params.factoryAddress.toHex();
@@ -127,18 +128,51 @@ export function handleEventCreateGame(event: _GameCreated): void {
   log.info('xxxxxxxxxxxxxxxxxx:handleEventCreateGame:2:{}', [id]);
   let gameInfo = new GameInfo(id);
   gameInfo._gameName = event.params._gameName;
+  gameInfo._shortGameName = event.params._shortGameName;
   gameInfo._owner = event.params._owner;
   gameInfo._token = event.params._token.toHex();
   gameInfo._game = game.id;
   gameInfo._resultSource = event.params._resultSource;
-  let optionName = event.params._optionName;
-  gameInfo._optionName = optionName;
+  updateGameInfos(gameInfo as GameInfo);
   let optionNum = event.params._optionNum;
   gameInfo._optionNum = optionNum;
+  // let ret = instanceGame.try_options();
+  // if (!ret.reverted) {
+  // }
+  let optionName = event.params._optionName;
+  gameInfo._optionName = optionName;
   gameInfo._endSec = event.params._endTime;
   gameInfo.timestamp = event.block.timestamp;
   gameInfo.save();
   GameTemplate.create(event.params._game);
+}
+function updateGameInfos(gameInfo: GameInfo): void {
+  let instanceGame = GameContract.bind(Address.fromString(gameInfo.id));
+  let try_len = instanceGame.try_getOptionsLength();
+  let tmp: string[] = [];
+  for (let index = 0; index < try_len.value.toI32(); index++) {
+    let element = instanceGame.try_options(BigInt.fromI32(index));
+    if (!element.reverted) {
+      let oid = gameInfo.id + '-' + index.toString();
+      var optionInfo = OptionInfo.load(oid);
+      if (!optionInfo) {
+        optionInfo = new OptionInfo(oid);
+      }
+      optionInfo.game = gameInfo.id;
+      optionInfo.marketNumber = element.value.value0;
+      optionInfo.placeNumber = element.value.value1;
+      optionInfo.frozenNumber = element.value.value2;
+      // let v = element.value as any as OptionInfo;
+      // optionInfo.marketNumber = v.marketNumber;
+      // optionInfo.placeNumber = v.placeNumber;
+      // optionInfo.frozenNumber = v.frozenNumber;
+      optionInfo.save();
+      // tmp.push(oid);
+    } else {
+      break;
+    }
+  }
+  // gameInfo._optionInfos = tmp;
 }
 export function handleTransfer(event: GameEvent.Approval): void {
   // let pair = GamePair.load(event.address.toHex());
@@ -221,6 +255,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   if (!ret.reverted) {
     gameInfo._optionNum = ret.value;
   }
+  updateGameInfos(gameInfo as GameInfo);
   for (let index = 0; index < tokenIds.length; index++) {
     let element = tokenIds[index];
     let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
@@ -280,6 +315,7 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
   if (!ret.reverted) {
     gameInfo._optionNum = ret.value;
   }
+  updateGameInfos(gameInfo as GameInfo);
   gameInfo.save();
 
   // let tmp: i32[] = [];
@@ -334,6 +370,7 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   if (!ret.reverted) {
     gameInfo._optionNum = ret.value;
   }
+  updateGameInfos(gameInfo as GameInfo);
   gameInfo.save();
 
   for (let index = 0; index < tokenIds.length; index++) {

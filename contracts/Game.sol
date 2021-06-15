@@ -62,7 +62,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 _endTime,
         address _noodleToken,
         address _vote
-    )  GameERC20(_shortGameName){
+    ) GameERC20(_shortGameName) {
         creator = _creator;
         token = _token;
         endTime = _endTime;
@@ -96,9 +96,13 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         require(balance >= sum, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
         tokenIds = playInfoMap.update(options, _options, _optionNum, playNFT, ownerFee, platformFee);
-        console.log('tokenIds:',tokenIds.length);
-        console.log('id:',tokenIds[0]);
+        console.log('tokenIds:', tokenIds.length);
+        console.log('id:', tokenIds[0]);
         emit _placeGame(address(this), token, msg.sender, _options, _optionNum, tokenIds, _getOptions());
+    }
+
+    function getOptionsLength() public view returns (uint256 len) {
+        len = options.length;
     }
 
     function getOptions() public view returns (uint256[] memory optionData) {
@@ -147,7 +151,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 frozenSum = 0;
         (tokenIds, sum, frozenSum) = playInfoMap.removeLiquidity(options, playNFT, initMarketNumber, _liquidity);
         amount = sum;
-        console.log('remove:',amount);
+        console.log('remove:', amount);
         //转账需要处理approve
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
         emit _removeLiquidity(address(this), msg.sender, _liquidity, amount, tokenIds, _getOptions());

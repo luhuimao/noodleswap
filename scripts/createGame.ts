@@ -2,6 +2,8 @@ import { exec } from 'child_process';
 import { ethers, network } from 'hardhat';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import { GameFactory } from '../typechain/GameFactory';
+import { LGame } from '../typechain/LGame';
+import { LGameFactory } from '../typechain/LGameFactory';
 import { Game } from '../typechain/Game';
 import * as config from '../.config';
 import { getOwnerPrivateKey } from '../.privatekey';
@@ -27,6 +29,15 @@ let main = async () => {
     ethers.utils.formatEther((await owner.getBalance()).toString())
   );
 
+  const instanceLGame = (await (await ethers.getContractFactory('LGame')).connect(owner).deploy()) as LGame;
+  console.log('new LGame address:', instanceLGame.address);
+  const instanceLGameFactory = (await (
+    await ethers.getContractFactory('LGameFactory', { libraries: { LGame: instanceLGame.address } })
+  )
+    .connect(owner)
+    .deploy()) as LGameFactory;
+  console.log('new LGameFactory address:', instanceLGameFactory.address);
+
   // 工厂合约
   let instanceGameFactory = (await (await ethers.getContractFactory('GameFactory')).deploy()) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
@@ -38,7 +49,16 @@ let main = async () => {
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   console.log('new ERC20Faucet address:', instanceERC20.address);
-  let eventFilter = instanceGameFactory.filters._GameCreated(instanceERC20.address, null, null, null, null, null, null);
+  let eventFilter = instanceGameFactory.filters._GameCreated(
+    instanceERC20.address,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  );
   let gameAddress: string;
   instanceGameFactory.once(eventFilter, async (tokenaddr, gameaddr) => {
     gameAddress = gameaddr;

@@ -20,13 +20,13 @@ let main = async () => {
 
   console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));
   const instanceLGame = (await (await ethers.getContractFactory('LGame')).connect(owner).deploy()) as LGame;
-  console.log('new WETH9 address:', instanceLGame.address);
+  console.log('new LGame address:', instanceLGame.address);
   const instanceLGameFactory = (await (
     await ethers.getContractFactory('LGameFactory', { libraries: { LGame: instanceLGame.address } })
   )
     .connect(owner)
     .deploy()) as LGameFactory;
-  console.log('new WETH9 address:', instanceLGameFactory.address);
+  console.log('new LGameFactory address:', instanceLGameFactory.address);
 
   let gasprice = (await owner.getGasPrice()).add(1);
   let blockGaslimit0 = (await ethers.provider.getBlock('latest')).gasLimit;
@@ -237,6 +237,7 @@ let main = async () => {
     null,
     null,
     null,
+    null,
     null
   );
   let gameAddress: string;
@@ -342,15 +343,19 @@ let main = async () => {
   let ret1 = instanceGameFactory.createGame(
     instanceERC20.address,
     'Test T0',
+    'T0',
     ['BIG', 'SMALL'],
     [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
     'https://github.com/NoodleDAO/noodleswap',
     deadline,
     {
       gasPrice: gasprice.add(1),
-      gasLimit: await instanceGameFactory.estimateGas['createGame(address,string,string[],uint256[],string,uint256)'](
+      gasLimit: await instanceGameFactory.estimateGas[
+        'createGame(address,string,string,string[],uint256[],string,uint256)'
+      ](
         instanceERC20.address,
         'Test T0',
+        'T0',
         ['BIG', 'SMALL'],
         [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
         'https://github.com/NoodleDAO/noodleswap',
