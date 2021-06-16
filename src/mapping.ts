@@ -329,7 +329,7 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
       event.block.timestamp.toString() +
       '-2' +
       '-' +
-      index.toString();
+      element.toString();
     let bet = new BetInfo(id);
     bet.sender = event.params.sender;
     bet.token = gameInfo._token;
@@ -383,7 +383,7 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
       event.block.timestamp.toString() +
       '-3' +
       '-' +
-      index.toString();
+      element.toString();
     let bet = new BetInfo(id);
     bet.sender = event.params.sender;
     bet.token = gameInfo._token;
@@ -414,21 +414,40 @@ export function handStakeGame(event: GameEvent._stakeGame): void {
   gameInfo.save();
 }
 export function handChallengeGame(event: GameEvent._challengeGame): void {
-  log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:', []);
+  log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:0:', []);
   var voteInfo = VoteInfo.load(event.params.game.toHex());
   if (voteInfo != null) {
     log.error('VoteInfo game already exists: {}', [event.params.game.toHex()]);
     return;
   }
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
+    log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+  if (!gameInfo._winOption) {
+    log.error('has not open game: {}', [event.params.game.toHex()]);
+    return;
+  }
+  log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:1:', []);
   voteInfo = new VoteInfo(event.params.game.toHex());
   voteInfo.game = event.params.game.toHex();
+  // voteInfo.vote = Address.fromString(gameInfo.vote);
+  log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:2:', []);
+  // if (gameInfo._winOption) {
+  //   voteInfo.winOption = gameInfo._winOption;
+  // } else {
+  //   voteInfo.winOption = BigInt.fromI32(0);
+  // }
   voteInfo.vote = event.params.vote;
   voteInfo.owner = event.params.sender;
   voteInfo.winOption = event.params.originOption;
   voteInfo.option = event.params.challengeOption;
+  log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:3:', []);
   voteInfo.agreeNum = 0;
   voteInfo.disAgreeNum = 0;
   voteInfo.timestamp = event.block.timestamp;
+  log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:4:', []);
   voteInfo.save();
   //VoteTemplate.create(event.params.vote);
 }

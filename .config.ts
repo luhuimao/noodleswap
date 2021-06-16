@@ -2,6 +2,8 @@ import fetch, { Response } from 'node-fetch';
 import { resolve } from 'path';
 //import { ConfigAddress } from './generated/schema';
 import { ConfigAddress } from './generated/schema';
+import zlib from 'zlib';
+import Stream, { PassThrough, pipeline as pump } from 'stream';
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_LOCALHOST = '0x2b9666Bf63c2A80148b9890a25668D4f77c82532'; //REPLACE_FLAG
@@ -11,15 +13,15 @@ export const DEPLOY_ACCOUNT_LOCALHOST = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be5
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_HARDHAT = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_HARDHAT = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"; //REPLACE_FLAG
-export const VOTE_ADDRESS_HARDHAT = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_HARDHAT = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'; //REPLACE_FLAG
+export const VOTE_ADDRESS_HARDHAT = '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_HARDHAT = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'; //REPLACE_FLAG
 
 // ConfigAddree 地址
-export const CONFIGADDRESS_ADDRESS_DEVNET = "0x4a8fa9c9fDdCaEbb09e22BdB54efb62334479d41"; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_DEVNET = "0x446ba8cabcDeF8d530EebCC8f0faa1c9DEE70541"; //REPLACE_FLAG
-export const VOTE_ADDRESS_DEVNET = "0xA014b6611B458b8F67518371292B09527ac8Ddf7"; //REPLACE_FLAG
-export const DEPLOY_ACCOUNT_DEVNET = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_DEVNET = '0x4a8fa9c9fDdCaEbb09e22BdB54efb62334479d41'; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = '0xF8d7264Aab6ff0D9a0aADECB7c822A8624c6b8f9'; //REPLACE_FLAG
+export const VOTE_ADDRESS_DEVNET = '0x98A8AC545756F713dc78F1E47c62d6CB8E49CC32'; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_DEVNET = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_GANACHE = '0x983a25f9BE3227D6216B3573e789f32640F7F032'; //REPLACE_FLAG
@@ -37,10 +39,10 @@ export const GAMEFACTORY_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const VOTE_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_BSC = ''; //REPLACE_FLAG
 
-export const CONFIGADDRESS_ADDRESS_RINKEBY = "0x46283C18b0a131263F0Bc06D97D622257cC5A5ab"; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_RINKEBY = "0x7BA2fEF0Ee4a557589Ce7b221c51219845FCc741"; //REPLACE_FLAG
-export const VOTE_ADDRESS_RINKEBY = "0xb0F9D9b49Ac5502Fe69C8ee1811DFb97d836B4E4"; //REPLACE_FLAG
-export const DEPLOY_ACCOUNT_RINKEBY = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_RINKEBY = '0x46283C18b0a131263F0Bc06D97D622257cC5A5ab'; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_RINKEBY = '0x7BA2fEF0Ee4a557589Ce7b221c51219845FCc741'; //REPLACE_FLAG
+export const VOTE_ADDRESS_RINKEBY = '0xb0F9D9b49Ac5502Fe69C8ee1811DFb97d836B4E4'; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_RINKEBY = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
 export const CONFIGADDRESS_ADDRESS_MAINNET = ''; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_MAINNET = ''; //REPLACE_FLAG
@@ -279,27 +281,62 @@ export async function GetConfigAddressByGameFactoryAddress(
     case 'mainnet':
       break;
   }
-  let response = await fetch(url, {
+  const options = {
+    method: 'POST',
+    mode: 'cors',
     headers: {
       accept: 'application/json',
       'accept-language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
       'content-type': 'application/json',
+      'Accept-Encoding': 'gzip',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-site': 'same-site',
     },
+    compress: false,
     body:
       '{"query":"{configAddresses(' +
       where +
       'subgraphError:allow,orderBy:timestamp,orderDirection:desc,first:2){id  factoryAddress configAddress ndlToken{id} wethToken{id} usdtToken{id} networkName  blockUrl  gameTokens{    id    symbol  }}}","variables":null,"operationName":null}',
-    method: 'POST',
-    //}).then(response => {
-    //    return JSON.parse(response.body.read().toString());
-  }).catch((err) => {
+  };
+  let response = await fetch(url, options).catch((err) => {
     console.log('xxxxxxx:', err);
   });
   if (response == null) {
     console.log('GetConfigAddressByGameFactoryAddress error:null');
     return null;
   }
-  let rawdata = response.body.read();
+  let isGzip: boolean = false;
+  let rawdata;
+  let encoding = response.headers.get('Content-Encoding');
+  switch (encoding) {
+    case 'gzip':
+      let body = response.body as zlib.Gunzip;
+      body.on('data', (data) => {
+        rawdata = data;
+        // console.log(data);
+      });
+      // await body.read();
+      // console.log('xxxxxx:', body.read());
+      // zlib.unzip(await response.buffer(), (err, data) => {
+      //   console.log('wwwwwwwwww:', err, data.toString());
+      // });
+      // response.body.pipe(zlib.createGunzip());
+      // console.log('wwwwwwwww:', await response.buffer());
+      // console.log('wwwwwwwww:', await response.json());
+      // zlib.gunzip(await response.arrayBuffer(), (err, data) => {
+      //   console.log('wwwwwwwwww:', err, data);
+      // });
+      // zlib.gzip(await response.buffer(), (err, data) => {
+      //   console.log('wwwwwwwwww:', err, data.toString());
+      // });
+
+      break;
+
+    default:
+      rawdata = response.body.read();
+      break;
+  }
   if (rawdata == null) {
     if (num < 10) {
       console.log('GetConfigAddressByGameFactoryAddress rawdata:null', addr, num);
