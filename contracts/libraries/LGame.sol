@@ -30,9 +30,9 @@ library LGame {
         p = sumB / sumA;
     }
 
-    function createNFT() public returns (address) {
-        return address(new PlayNFT());
-    }
+    // function createNFT() public returns (address) {
+    //     return address(new PlayNFT());
+    // }
 
     function getAward(
         mapping(uint256 => LGame.PlayInfoStruct) storage self,

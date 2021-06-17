@@ -20,8 +20,8 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     using LGame for LGame.PlayInfoStruct;
     using LGame for mapping(uint256 => LGame.PlayInfoStruct);
 
-    modifier ensure(uint256 _endTime) {
-        require(_endTime >= block.timestamp, 'NoodleSwapGame: EXPIRED');
+    modifier ensure(uint256 deadline) {
+        require(deadline >= block.timestamp, 'NoodleSwapGame: EXPIRED');
         _;
     }
 
@@ -61,7 +61,8 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256[] memory _optionNum,
         uint256 _endTime,
         address _noodleToken,
-        address _vote
+        address _vote,
+        address _playNFT
     ) GameERC20(_shortGameName) {
         creator = _creator;
         token = _token;
@@ -75,19 +76,17 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             option.frozenNumber = 0;
             options.push(option);
         }
-        playNFT = LGame.createNFT();
+        playNFT = _playNFT;
         // playNFT = address(new PlayNFT());
     }
 
     //下单
     function placeGame(
-        address _token,
         uint8[] memory _options,
         uint256[] memory _optionNum,
-        uint256 _endTime
-    ) public payable override ensure(_endTime) gameEndCheck(endTime) returns (uint256[] memory tokenIds) {
-        //require(token == _token, 'NoodleSwap: Forbidden');
-        //require(block.timestamp < endTime, 'NoodleSwap: Game End');
+        uint256 _spread,
+        uint256 _deadline
+    ) public payable override ensure(_deadline) gameEndCheck(endTime) returns (uint256[] memory tokenIds) {
         uint256 balance = IERC20(token).balanceOf(address(msg.sender));
         uint256 sum = 0;
         for (uint8 i = 0; i < _optionNum.length; i++) {
@@ -116,13 +115,15 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }
     }
 
-    function addLiquidity(address _token, uint256 amount)
-        public
-        override
+    function addLiquidity(uint256 amount,
+        uint256 _spread,
+        uint256 _deadline)
+        public payable
+        override 
+        ensure(_deadline)
+        gameEndCheck(endTime)
         returns (uint256 liquidity, uint256[] memory tokenIds)
     {
-        //require(token == _token, 'NoodleSwap: Forbidden');
-        //require(block.timestamp < endTime, 'NoodleSwap: Game End');
         uint256 balance = IERC20(token).balanceOf(address(msg.sender));
         require(balance >= amount, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
@@ -136,12 +137,14 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         emit _addLiquidity(address(this), token, msg.sender, amount, liquidity, tokenIds, _getOptions());
     }
 
-    function removeLiquidity(uint256 _liquidity, uint256 _endTime)
-        public
+    function removeLiquidity(uint256 _liquidity, 
+        uint256 _spread,
+        uint256 _deadline)
+        public payable
         override
+        ensure(_deadline)
         returns (uint256 amount, uint256[] memory tokenIds)
     {
-        //require(block.timestamp < endTime, 'NoodleSwap: Game End');
         uint256 balance = balanceOf[address(msg.sender)];
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
         _burn(msg.sender, _liquidity);
@@ -158,17 +161,21 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     function removeLiquidityWithPermit(
-        uint256 _liquidity,
-        uint256 _endTime,
+        uint256 _liquidity, 
+        uint256 _spread,
+        uint256 _deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) public override returns (uint256 amount, uint256[] memory tokenIds) {
-        //require(block.timestamp < endTime, 'NoodleSwap: Game End');
+    )   public payable
+        override 
+        ensure(_deadline)
+        returns (uint256 amount, uint256[] memory tokenIds) 
+    {
         uint256 balance = balanceOf[address(msg.sender)];
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
-        GameERC20(this).permit(msg.sender, address(this), _liquidity, _endTime, v, r, s);
-        removeLiquidity(_liquidity, _endTime);
+        GameERC20(this).permit(msg.sender, address(this), _liquidity, _deadline, v, r, s);
+        removeLiquidity(_liquidity, _spread,_deadline);
     }
 
     function mint(address to, uint256 value) public override {

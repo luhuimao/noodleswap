@@ -31,9 +31,12 @@ contract GameFactory is IGameFactory {
 
     address public vote;
 
-    constructor(address _noodleToken, address _vote) {
+    address public playNFT;
+
+    constructor(address _noodleToken, address _vote,address _playNFT) {
         noodleToken = _noodleToken;
         vote = _vote;
+        playNFT = _playNFT;
     }
 
     function createGame(
@@ -54,7 +57,8 @@ contract GameFactory is IGameFactory {
             _resultSource,
             _endTime,
             noodleToken,
-            vote
+            vote,
+            playNFT
         );
         emit _GameCreated(_token, _game, msg.sender, _gameName,_shortGameName, _optionName, _optionNum, _resultSource, _endTime);
     }

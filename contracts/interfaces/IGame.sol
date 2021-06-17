@@ -3,27 +3,32 @@ pragma solidity ^0.8.3;
 
 interface IGame {
     function placeGame(
-        address _token,
         uint8[] memory _options,
         uint256[] memory _optionNum,
-        uint256 _endTime
+        uint256 spread,
+        uint256 deadline
     ) external payable returns (uint256[] memory tokenIds);
 
-    function addLiquidity(address _token, uint256 amount)
-        external
-        returns (uint256 liquidity, uint256[] memory tokenIds);
+    function addLiquidity(
+        uint256 amount,
+        uint256 spread,
+        uint256 deadline
+    )external payable returns (uint256 liquidity, uint256[] memory tokenIds);
 
-    function removeLiquidity(uint256 liquidity, uint256 _endTime)
-        external
-        returns (uint256 amount, uint256[] memory tokenIds);
+    function removeLiquidity(
+        uint256 _liquidity, 
+        uint256 spread,
+        uint256 deadline
+    )external  payable returns (uint256 amount, uint256[] memory tokenIds);
 
     function removeLiquidityWithPermit(
-        uint256 _liquidity,
-        uint256 _endTime,
+        uint256 _liquidity, 
+        uint256 spread,
+        uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external returns (uint256 amount, uint256[] memory tokenIds);
+    ) external payable returns (uint256 amount, uint256[] memory tokenIds);
 
     function mint(address _to, uint256 liquidity) external;
 
