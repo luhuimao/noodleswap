@@ -63,6 +63,7 @@ export function handleUpsertConfig(event: UpsertConfig): void {
   config.blockUrl = event.params.blockUrl;
   config.chainId = event.params.chainId;
   config.voteAddress = event.params.voteAddress;
+  config.playNFTAddress = event.params.playNFTAddress;
   config.timestamp = event.block.timestamp;
   config.save();
 }

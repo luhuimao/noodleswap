@@ -24,6 +24,9 @@ type ConfigAddress @entity {
   # 投票合约地址
   voteAddress: Bytes!
 
+  # NFT合约地址
+  playNFTAddress: Bytes!
+
   # 保证金合约地址
   ndlToken: ERC20Token!
 

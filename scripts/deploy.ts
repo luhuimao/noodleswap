@@ -5,6 +5,7 @@ import { Game } from '../typechain/Game';
 import { LGame } from '../typechain/LGame';
 import { LGameFactory } from '../typechain/LGameFactory';
 import { Vote } from '../typechain/Vote';
+import { PlayNFT } from '../typechain/PlayNFT';
 import { GameFactory } from '../typechain/GameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import * as config from '../.config';
@@ -110,6 +111,10 @@ let main = async () => {
     .deploy(instanceNDLToken.address)) as Vote;
   console.log('new Vote address:', instanceVote.address);
 
+  let instancePlayNFT: PlayNFT;
+  instancePlayNFT = (await (await ethers.getContractFactory('PlayNFT')).connect(owner).deploy()) as PlayNFT;
+  console.log('new PlayNFT address:', instancePlayNFT.address);
+
   let flag = '\\/\\/REPLACE_FLAG';
   let key = 'VOTE_ADDRESS_' + network.name.toUpperCase();
   boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceVote.address + '"; ' + flag);
@@ -125,7 +130,7 @@ let main = async () => {
     })
   )
     .connect(owner)
-    .deploy(instanceNDLToken.address, instanceVote.address, {
+    .deploy(instanceNDLToken.address, instanceVote.address, instancePlayNFT.address, {
       gasPrice: gasprice,
       gasLimit: blockGaslimit,
     })) as GameFactory;
@@ -155,6 +160,7 @@ let main = async () => {
     config.getBlockUrlByNetwork(network.name),
     network.name,
     instanceVote.address,
+    instancePlayNFT.address,
     { gasPrice: gasprice, gasLimit: blockGaslimit }
   );
   //).wait(1);
@@ -255,67 +261,66 @@ let main = async () => {
     //TODO 这里增加其他函数调用
     console.log('-------placeGame--------');
     let tokenIds = await instanceGame.placeGame(
-      instanceERC20.address,
       [0],
       [ethers.utils.parseEther('10')],
+      0,
       boutils.GetUnixTimestamp() + 1000,
       {
         gasPrice: gasprice,
-        gasLimit: await instanceGame.estimateGas['placeGame(address,uint8[],uint256[],uint256)'](
-          instanceERC20.address,
+        gasLimit: await instanceGame.estimateGas['placeGame(uint8[],uint256[],uint256,uint256)'](
           [0],
           [ethers.utils.parseEther('10')],
+          0,
           boutils.GetUnixTimestamp() + 1000
         ),
       }
     );
-    await instanceGame.placeGame(
-      instanceERC20.address,
-      [0],
-      [ethers.utils.parseEther('15')],
-      boutils.GetUnixTimestamp() + 1000,
-      {
-        gasPrice: gasprice,
-        gasLimit: blockGaslimit,
-      }
-    );
-    await instanceGame.placeGame(
-      instanceERC20.address,
-      [1],
-      [ethers.utils.parseEther('20')],
-      boutils.GetUnixTimestamp() + 1000,
-      {
-        gasPrice: gasprice,
-        gasLimit: await instanceGame.estimateGas['placeGame(address,uint8[],uint256[],uint256)'](
-          instanceERC20.address,
-          [1],
-          [ethers.utils.parseEther('20')],
-          boutils.GetUnixTimestamp() + 1000
-        ),
-      }
-    );
+    await instanceGame.placeGame([0], [ethers.utils.parseEther('15')], 0, boutils.GetUnixTimestamp() + 1000, {
+      gasPrice: gasprice,
+      gasLimit: blockGaslimit,
+    });
+    await instanceGame.placeGame([1], [ethers.utils.parseEther('20')], 0, boutils.GetUnixTimestamp() + 1000, {
+      gasPrice: gasprice,
+      gasLimit: await instanceGame.estimateGas['placeGame(uint8[],uint256[],uint256,uint256)'](
+        [1],
+        [ethers.utils.parseEther('20')],
+        0,
+        boutils.GetUnixTimestamp() + 1000
+      ),
+    });
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------addLiquidity--------');
-    let liquidity = await instanceGame.addLiquidity(instanceERC20.address, ethers.utils.parseEther('102'), {
-      gasPrice: gasprice,
-      gasLimit: await instanceGame.estimateGas['addLiquidity(address,uint256)'](
-        instanceERC20.address,
-        ethers.utils.parseEther('102')
-      ),
-    });
+    let liquidity = await instanceGame.addLiquidity(
+      ethers.utils.parseEther('102'),
+      0,
+      boutils.GetUnixTimestamp() + 1000,
+      {
+        gasPrice: gasprice,
+        gasLimit: await instanceGame.estimateGas['addLiquidity(uint256,uint256,uint256)'](
+          ethers.utils.parseEther('102'),
+          0,
+          boutils.GetUnixTimestamp() + 1000
+        ),
+      }
+    );
     console.log('add liquidity:');
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
     //console.log('-------removeLiquidity--------');
-    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), boutils.GetUnixTimestamp() + 1000, {
-      gasPrice: gasprice,
-      gasLimit: blockGaslimit,
-      // gasLimit: await instanceGame.estimateGas['removeLiquidity(uint256,uint256)'](
-      //   ethers.utils.parseEther('20'),
-      //   boutils.GetUnixTimestamp() + 1000
-      // ),
-    });
+    let amount = await instanceGame.removeLiquidity(
+      ethers.utils.parseEther('20'),
+      0,
+      boutils.GetUnixTimestamp() + 1000,
+      {
+        gasPrice: gasprice,
+        gasLimit: blockGaslimit,
+        // gasLimit: await instanceGame.estimateGas['removeLiquidity(uint256,uint256)'](
+        //   ethers.utils.parseEther('20'),
+        //   boutils.GetUnixTimestamp() + 1000
+        // ),
+      }
+    );
     await instanceGame.stakeGame(1, {
       gasLimit: await instanceGame.estimateGas['stakeGame(uint256)'](1),
     });

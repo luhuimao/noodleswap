@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0x4a8fa9c9fDdCaEbb09e22BdB54efb62334479d41" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x913778074f6C67D94cA273c7350EA47F11F80cF0" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -30,7 +30,7 @@ dataSources:
         - name: ERC20NameBytes
           file: ./abis/ERC20NameBytes.json
       eventHandlers:
-        - event: UpsertConfig(indexed address,indexed uint256,address,address,address,string,string,string,address,address)
+        - event: UpsertConfig(indexed address,indexed uint256,address,address,address,string,string,string,address,address,address)
           handler: handleUpsertConfig
         - event: UpsertGameToken(indexed address,indexed address,string)
           handler: handleUpsertGameToken
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0xF8d7264Aab6ff0D9a0aADECB7c822A8624c6b8f9" #{{GAMEFACTORY_ADDRESS}}
+      address: "0x789F3F168EA7feb9485139D473B39d505e64E7FA" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -77,7 +77,7 @@ dataSources:
     name: VoteInfo
     network: mainnet #replace mainnet
     source:
-      address: "0x98A8AC545756F713dc78F1E47c62d6CB8E49CC32" #{{VOTE_ADDRESS}}
+      address: "0x7f17e082f0eaA4C69495a76eE532cBD2d8D4b779" #{{VOTE_ADDRESS}}
       abi: Vote
       startBlock: 0 #{{STARTBLOCK}}
     mapping:

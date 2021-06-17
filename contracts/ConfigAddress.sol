@@ -13,6 +13,7 @@ contract ConfigAddress {
         string blockUrl,
         string networkName,
         address voteAddress,
+        address playNFTAddress,
         address configAddress
     );
     struct Config {
@@ -22,6 +23,8 @@ contract ConfigAddress {
         address factoryAddress;
         // 投票合约地址,治理代币
         address voteAddress;
+        // NFT合约地址
+        address playNFTAddress;
         // 水龙头合约地址
         address faucetAddress;
         // 保证金合约地址,治理代币
@@ -61,7 +64,8 @@ contract ConfigAddress {
         string memory rpcUrl,
         string memory blockUrl,
         string memory networkName,
-        address voteAddress
+        address voteAddress,
+        address playNFTAddress
     ) public {
         require(_owner == msg.sender, 'only owner can upsert');
         require(factoryAddress != address(0), 'factoryAddress invalid');
@@ -78,6 +82,7 @@ contract ConfigAddress {
         config.networkName = networkName;
         config.chainId = chainId;
         config.voteAddress = voteAddress;
+        config.playNFTAddress = playNFTAddress;
         config.configAddress = address(this);
         emit UpsertConfig(
             factoryAddress,
@@ -89,6 +94,7 @@ contract ConfigAddress {
             blockUrl,
             networkName,
             voteAddress,
+            playNFTAddress,
             address(this)
         );
     }
@@ -110,7 +116,24 @@ contract ConfigAddress {
             config.rpcUrl,
             config.blockUrl,
             config.networkName,
-            voteAddress
+            voteAddress,
+            config.playNFTAddress
+        );
+    }
+
+    function updatePlayNFTAddress(address factoryAddress, address playNFTAddress) public {
+        Config storage config = configMap[factoryAddress];
+        upsert(
+            config.factoryAddress,
+            config.chainId,
+            config.ndlToken,
+            config.wethToken,
+            config.usdtToken,
+            config.rpcUrl,
+            config.blockUrl,
+            config.networkName,
+            config.voteAddress,
+            playNFTAddress
         );
     }
 
@@ -125,7 +148,8 @@ contract ConfigAddress {
             config.rpcUrl,
             config.blockUrl,
             config.networkName,
-            config.voteAddress
+            config.voteAddress,
+            config.playNFTAddress
         );
     }
 
@@ -140,7 +164,8 @@ contract ConfigAddress {
             config.rpcUrl,
             config.blockUrl,
             config.networkName,
-            config.voteAddress
+            config.voteAddress,
+            config.playNFTAddress
         );
     }
 
@@ -155,7 +180,8 @@ contract ConfigAddress {
             config.rpcUrl,
             config.blockUrl,
             config.networkName,
-            config.voteAddress
+            config.voteAddress,
+            config.playNFTAddress
         );
     }
 
@@ -170,7 +196,8 @@ contract ConfigAddress {
             rpcUrl,
             config.blockUrl,
             config.networkName,
-            config.voteAddress
+            config.voteAddress,
+            config.playNFTAddress
         );
     }
 
@@ -185,7 +212,8 @@ contract ConfigAddress {
             config.rpcUrl,
             blockUrl,
             config.networkName,
-            config.voteAddress
+            config.voteAddress,
+            config.playNFTAddress
         );
     }
 
