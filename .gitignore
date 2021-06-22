@@ -28,4 +28,6 @@ yarn.lock
 package-lock.json
 .privatekey.ts
 *-e
+abis/_*
+abis/hardhat*
 

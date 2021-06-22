@@ -4,7 +4,7 @@ FILE=${1##*/}
 FILE=${FILE%.*}
 echo $FILE
 
-npx solc  --abi -o abis/ $1
+npx solc  --base-path contracts --abi -o abis/ $1
 
-mv abis/contracts_${FILE}_sol_${FILE}.abi abis/${FILE}.json
+mv abis/*_${FILE}_sol_${FILE}.abi abis/${FILE}.json
 
