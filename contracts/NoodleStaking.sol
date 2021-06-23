@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.3;
 
+import 'hardhat/console.sol';
+
 import './libraries/openzeppelin/contracts/utils/math/SafeMath.sol';
 import './interfaces/INoodleGameERC20.sol';
 
@@ -22,7 +24,7 @@ contract NoodleStaking {
     // The NOODLE TOKEN!
     INoodleGameERC20 public noodle;
     // NOODLE tokens created per block.
-    IGameFactory public factory;
+    address public owner;
     // The migrator contract. It has a lot of power. Can only be set through governance (owner).
     // Info of each pool.
     // INoodleGameERC20 lpToken; // gameToken
@@ -33,15 +35,16 @@ contract NoodleStaking {
     event Withdraw(address indexed user, address indexed lpToken, uint256 amount);
     event EmergencyWithdraw(address indexed user, address indexed lpToken, uint256 amount);
 
-    constructor(INoodleGameERC20 _noodle, IGameFactory _factory) {
+    constructor(INoodleGameERC20 _noodle, address _owner) {
         noodle = _noodle;
-        factory = _factory;
+        owner = _owner;
     }
 
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     function add(INoodleGameERC20 lpToken, uint256 _noodlePerBlock) public {
-        // require(msg.sender == address(factory), 'not factory');
+        console.log('xxxxx:', msg.sender, owner);
+        require(msg.sender == address(owner), 'not owner');
         uint256 lastRewardBlock = block.number;
         stakeInfoMap[lpToken] = StakeInfo({
             lastRewardBlock: lastRewardBlock,
@@ -51,13 +54,14 @@ contract NoodleStaking {
     }
 
     // View function to see pending NOODLEs on frontend.
-    function pendingNoodle(INoodleGameERC20 lpToken, address _user) external view returns (uint256) {
+    function getPendingReward(INoodleGameERC20 lpToken, address _user) external view returns (uint256) {
         StakeInfo storage pool = stakeInfoMap[lpToken];
         UserInfo storage user = userInfoMap[lpToken][_user];
         uint256 accNoodlePerShare = pool.accNoodlePerShare;
         uint256 lpSupply = lpToken.balanceOf(address(this));
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
-            uint256 noodleReward = pool.noodlePerBlock; //.mul(pool.allocPoint); //.div(totalAllocPoint);
+            uint256 multiplier = block.number - pool.lastRewardBlock;
+            uint256 noodleReward = multiplier.mul(pool.noodlePerBlock); //.mul(pool.allocPoint).div(totalAllocPoint);
             accNoodlePerShare = accNoodlePerShare.add(noodleReward.mul(1e12).div(lpSupply));
         }
         return user.amount.mul(accNoodlePerShare).div(1e12).sub(user.rewardDebt);
@@ -78,7 +82,7 @@ contract NoodleStaking {
             pool.lastRewardBlock = block.number;
             return;
         }
-        uint256 multiplier = pool.lastRewardBlock - block.number;
+        uint256 multiplier = block.number - pool.lastRewardBlock;
         uint256 noodleReward = multiplier.mul(pool.noodlePerBlock); //.mul(pool.allocPoint).div(totalAllocPoint);
         // noodle.mint(address(this), noodleReward);
         pool.accNoodlePerShare = pool.accNoodlePerShare.add(noodleReward.mul(1e12).div(lpSupply));

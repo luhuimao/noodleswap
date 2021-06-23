@@ -32,7 +32,6 @@ contract ERC20Faucet {
     }
 
     function faucet(address addr, uint256 wad) public {
-        console.log('aaaaaaaaa:', addr, wad);
         balanceOf[addr] += wad;
         totalSupply += wad;
         emit Transfer(address(0), addr, wad);
@@ -45,6 +44,7 @@ contract ERC20Faucet {
     }
 
     function transfer(address dst, uint256 wad) public returns (bool) {
+        console.log('aaaaaaaaa:', msg.sender);
         return transferFrom(msg.sender, dst, wad);
     }
 
