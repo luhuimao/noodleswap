@@ -11,7 +11,7 @@ contract GameERC20 is INoodleGameERC20 {
     string public symbol;
     uint8 public constant decimals = 18;
     uint256 public totalSupply = 0;
-    mapping(address => uint256) public balanceOf;
+    mapping(address => uint256) public override balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
     // mapping(address => uint256) public nonces;
@@ -19,7 +19,7 @@ contract GameERC20 is INoodleGameERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
 
-    constructor(string memory _symbol){
+    constructor(string memory _symbol) {
         name = _symbol;
         symbol = _symbol;
     }
@@ -60,7 +60,7 @@ contract GameERC20 is INoodleGameERC20 {
         return true;
     }
 
-    function transfer(address to, uint256 value) external returns (bool) {
+    function transfer(address to, uint256 value) external override returns (bool) {
         _transfer(msg.sender, to, value);
         return true;
     }
@@ -69,7 +69,7 @@ contract GameERC20 is INoodleGameERC20 {
         address from,
         address to,
         uint256 value
-    ) external returns (bool) {
+    ) external override returns (bool) {
         //if (allowance[from][msg.sender] != uint(-1)) {
         allowance[from][msg.sender] = allowance[from][msg.sender].sub(value);
         //}

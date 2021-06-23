@@ -6,7 +6,6 @@ import './libraries/openzeppelin/contracts/utils/math/SafeMath.sol';
 import './interfaces/INoodleGameERC20.sol';
 
 import './interfaces/IGameFactory.sol';
-import './interfaces/IGame.sol';
 
 contract NoodleStaking {
     using SafeMath for uint256;
@@ -26,10 +25,10 @@ contract NoodleStaking {
     IGameFactory public factory;
     // The migrator contract. It has a lot of power. Can only be set through governance (owner).
     // Info of each pool.
-    // IGame lpToken; // gameToken
-    mapping(IGame => StakeInfo) public stakeInfoMap;
+    // INoodleGameERC20 lpToken; // gameToken
+    mapping(INoodleGameERC20 => StakeInfo) public stakeInfoMap;
     // Info of each user that stakes LP tokens.
-    mapping(IGame => mapping(address => UserInfo)) public userInfoMap;
+    mapping(INoodleGameERC20 => mapping(address => UserInfo)) public userInfoMap;
     event Deposit(address indexed user, address indexed lpToken, uint256 amount);
     event Withdraw(address indexed user, address indexed lpToken, uint256 amount);
     event EmergencyWithdraw(address indexed user, address indexed lpToken, uint256 amount);
@@ -41,7 +40,7 @@ contract NoodleStaking {
 
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-    function add(IGame lpToken, uint256 _noodlePerBlock) public {
+    function add(INoodleGameERC20 lpToken, uint256 _noodlePerBlock) public {
         // require(msg.sender == address(factory), 'not factory');
         uint256 lastRewardBlock = block.number;
         stakeInfoMap[lpToken] = StakeInfo({
@@ -52,7 +51,7 @@ contract NoodleStaking {
     }
 
     // View function to see pending NOODLEs on frontend.
-    function pendingNoodle(IGame lpToken, address _user) external view returns (uint256) {
+    function pendingNoodle(INoodleGameERC20 lpToken, address _user) external view returns (uint256) {
         StakeInfo storage pool = stakeInfoMap[lpToken];
         UserInfo storage user = userInfoMap[lpToken][_user];
         uint256 accNoodlePerShare = pool.accNoodlePerShare;
@@ -65,15 +64,15 @@ contract NoodleStaking {
     }
 
     // Update reward variables of the given pool to be up-to-date.
-    function updatePool(IGame lpToken) public {
+    function updatePool(INoodleGameERC20 lpToken) public {
         StakeInfo storage pool = stakeInfoMap[lpToken];
         if (block.number <= pool.lastRewardBlock) {
             return;
         }
         //游戏结束就不再产出
-        if (lpToken.endTime() > block.timestamp) {
-            return;
-        }
+        // if (lpToken.endTime() > block.timestamp) {
+        //     return;
+        // }
         uint256 lpSupply = lpToken.balanceOf(address(this));
         if (lpSupply == 0) {
             pool.lastRewardBlock = block.number;
@@ -87,7 +86,7 @@ contract NoodleStaking {
     }
 
     // Deposit LP tokens to NoodleStaking for NOODLE allocation.
-    function deposit(IGame lpToken, uint256 _amount) public {
+    function deposit(INoodleGameERC20 lpToken, uint256 _amount) public {
         StakeInfo storage pool = stakeInfoMap[lpToken];
         UserInfo storage user = userInfoMap[lpToken][msg.sender];
         updatePool(lpToken);
@@ -102,7 +101,7 @@ contract NoodleStaking {
     }
 
     // Withdraw LP tokens from NoodleStaking.
-    function withdraw(IGame lpToken, uint256 _amount) public {
+    function withdraw(INoodleGameERC20 lpToken, uint256 _amount) public {
         StakeInfo storage pool = stakeInfoMap[lpToken];
         UserInfo storage user = userInfoMap[lpToken][msg.sender];
         require(user.amount >= _amount, 'withdraw: not good');

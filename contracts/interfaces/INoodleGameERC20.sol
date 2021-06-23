@@ -9,6 +9,9 @@ interface INoodleGameERC20 {
     //function symbol() external pure returns (string memory);
     //function decimals() external pure returns (uint8);
     //function totalSupply() external view returns (uint);
+
+    // function endTime() external returns (uint256);
+
     function balanceOf(address owner) external view returns (uint256);
 
     // function approve(address spender, uint value) external returns (bool);

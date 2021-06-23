@@ -115,11 +115,14 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }
     }
 
-    function addLiquidity(uint256 amount,
+    function addLiquidity(
+        uint256 amount,
         uint256 _spread,
-        uint256 _deadline)
-        public payable
-        override 
+        uint256 _deadline
+    )
+        public
+        payable
+        override
         ensure(_deadline)
         gameEndCheck(endTime)
         returns (uint256 liquidity, uint256[] memory tokenIds)
@@ -137,14 +140,11 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         emit _addLiquidity(address(this), token, msg.sender, amount, liquidity, tokenIds, _getOptions());
     }
 
-    function removeLiquidity(uint256 _liquidity, 
+    function removeLiquidity(
+        uint256 _liquidity,
         uint256 _spread,
-        uint256 _deadline)
-        public payable
-        override
-        ensure(_deadline)
-        returns (uint256 amount, uint256[] memory tokenIds)
-    {
+        uint256 _deadline
+    ) public payable override ensure(_deadline) returns (uint256 amount, uint256[] memory tokenIds) {
         uint256 balance = balanceOf[address(msg.sender)];
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
         _burn(msg.sender, _liquidity);
@@ -161,21 +161,17 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     function removeLiquidityWithPermit(
-        uint256 _liquidity, 
+        uint256 _liquidity,
         uint256 _spread,
         uint256 _deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
-    )   public payable
-        override 
-        ensure(_deadline)
-        returns (uint256 amount, uint256[] memory tokenIds) 
-    {
+    ) public payable override ensure(_deadline) returns (uint256 amount, uint256[] memory tokenIds) {
         uint256 balance = balanceOf[address(msg.sender)];
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
         GameERC20(this).permit(msg.sender, address(this), _liquidity, _deadline, v, r, s);
-        removeLiquidity(_liquidity, _spread,_deadline);
+        removeLiquidity(_liquidity, _spread, _deadline);
     }
 
     function mint(address to, uint256 value) public override {
