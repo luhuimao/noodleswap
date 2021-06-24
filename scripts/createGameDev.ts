@@ -144,11 +144,11 @@ let main = async () => {
     let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'),0,boutils.GetUnixTimestamp() + 1000);
     await instanceGame.stakeGame(0);
     await instanceGame.openGame(0);
-    await instanceGame.getAward([0,1]);
-    // await instanceGame.challengeGame(0);
-    // await instanceGame.addVote(0);
-    // await instanceGame.addVote(1);
-    // await instanceGame.addVote(0);
+    // await instanceGame.getAward([0,1]);
+    await instanceGame.challengeGame(0);
+    await instanceGame.addVote(0);
+    await instanceGame.addVote(1);
+    await instanceGame.addVote(0);
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,

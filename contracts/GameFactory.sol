@@ -60,6 +60,11 @@ contract GameFactory is IGameFactory {
             vote,
             playNFT
         );
+        uint256 sum = 0;
+        for (uint256 i = 0; i < _optionNum.length; i++) {
+            sum += _optionNum[i]
+;        }
+        TransferHelper.safeTransferFrom(_token, msg.sender, _game, sum);
         emit _GameCreated(_token, _game, msg.sender, _gameName,_shortGameName, _optionName, _optionNum, _resultSource, _endTime);
     }
 }

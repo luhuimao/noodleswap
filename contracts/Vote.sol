@@ -21,9 +21,9 @@ contract Vote is IVote, ConfigurableParametersContract {
         uint256 endTime;
         uint8  originOption;
         uint8  challengeOption;
-        uint256  originVoteNumber;
-        uint256  challengeVoteNumber;
+        uint256[] voteNumbers;
         uint8  winOption;
+        uint256  optionLength;
     }
 
     mapping(address => VoteInfoStruct) public voteMap;
@@ -38,6 +38,7 @@ contract Vote is IVote, ConfigurableParametersContract {
             address _creator,
             uint8 _originOption,
             uint8 _challengeOption,
+            uint256 _optionLength,
             uint256 _endTime) public  override {
         VoteInfoStruct memory  voteInfo = voteMap[game];
         //require(voteInfo.start != true, 'NoodleSwap: Vote exist');
@@ -45,12 +46,12 @@ contract Vote is IVote, ConfigurableParametersContract {
         voteInfo.creator = _creator;
         voteInfo.endTime = _endTime;
         voteInfo.originOption = _originOption;
-        voteInfo.originVoteNumber = 0;
         voteInfo.challengeOption = _challengeOption;
-        voteInfo.challengeVoteNumber = 0;
+        voteInfo.optionLength = _optionLength;
+        voteInfo.voteNumbers = new uint256[](_optionLength);
         voteMap[game] = voteInfo;
         console.log('start vote:',game);
-        emit _startVote(game, _creator, _originOption,_challengeOption,_endTime);
+        emit _startVote(game, _creator, _originOption,_challengeOption,_optionLength,_endTime);
     }
 
     function add(address game,address sender,uint8 option) public payable override {
@@ -60,23 +61,29 @@ contract Vote is IVote, ConfigurableParametersContract {
         require(balance >= voteNumber, 'NoodleSwap: vote address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, sender, address(this), voteNumber);
         voteDataMap[sender][game] = option;
-        console.log('voteInfo.originOption:',voteMap[game].originOption);
-        console.log('voteInfo.challengeOption:',voteMap[game].challengeOption);
-        if (option == voteMap[game].originOption) {
-            console.log('voteInfo.originOption + 1');
-            voteMap[game].originVoteNumber += 1;
-        } else if (option == voteMap[game].challengeOption) {
-            console.log('voteInfo.challengeOption + 1');
-            voteMap[game].challengeVoteNumber += 1;
+        // require(option > 0 && option < voteMap[game].optionLength, 'NoodleSwap: vote option valid');
+        voteMap[game].voteNumbers[option] += 1;
+        console.log(voteMap[game].voteNumbers[option]);
+        //判断获胜条件
+        uint256 max;
+        uint256 originOptionNumber = voteMap[game].voteNumbers[voteMap[game].originOption];
+        uint256 challengeOptionNumber = voteMap[game].voteNumbers[voteMap[game].challengeOption];
+        uint8 winOption;
+        if(originOptionNumber >= challengeOptionNumber){
+            max = originOptionNumber;
+            winOption = voteMap[game].originOption;
+        }else{
+            max = challengeOptionNumber;
+            winOption = voteMap[game].challengeOption;
         }
-        if (voteMap[game].challengeVoteNumber > voteMap[game].originVoteNumber * 2) {
-            voteMap[game].winOption = voteMap[game].challengeOption;
-        } else {
-            voteMap[game].winOption = voteMap[game].originOption;
+        for (uint8 i = 0; i < voteMap[game].voteNumbers.length; i++) {
+            if(max < voteMap[game].voteNumbers[i]){
+                max = voteMap[game].voteNumbers[i];
+                winOption = i;
+            }
         }
-        console.log('originVoteNumber vote:',voteMap[game].originVoteNumber);
-        console.log('challengeVoteNumber vote:',voteMap[game].challengeVoteNumber);
-        emit _addVote(game, sender, option,voteMap[game].originVoteNumber,voteMap[game].challengeVoteNumber);
+        voteMap[game].winOption = winOption;
+        emit _addVote(game, sender, option,voteMap[game].voteNumbers,winOption);
     }
 
     function getAward(address game,address sender) public {
