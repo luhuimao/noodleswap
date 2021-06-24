@@ -177,10 +177,11 @@ type NoodleStaking @entity {
 
   owner: Bytes!
 
-  noodle: Bytes!
+  noodle: ERC20Token!
   noodlePerSecond: BigInt! #每区块总产出
   totalAllocLpToken: BigInt! #总质押lp数量
-  stakeInfos: [StakeInfo!] @derivedFrom(field: "nooleStaking")
+  harvestAll: BigInt! #已提取总收益
+  stakeInfos: [StakeInfo!]! @derivedFrom(field: "noodleStaking")
   stakeCount: BigInt! #总池子数量
   timestamp: BigInt!
   block: BigInt!
@@ -190,14 +191,14 @@ type NoodleStaking @entity {
 type StakeInfo @entity {
   # lpToken Address
   id: ID!
-  nooleStaking: NoodleStaking! #质押合约
+  noodleStaking: NoodleStaking! #质押合约
   lpToken: Bytes!
 
   noodlePerBlock: BigInt! #每区块奖励
-  lastRewardTime: BigInt! #最新奖励区块
+  totalAllocLpToken: BigInt! #总质押lp数量
+  lastRewardBlock: BigInt! #最新奖励区块
   accNoodlePerShare: BigInt! #当前每份额收益基数
-  slpBalance: BigInt!
-
+  harvestAll: BigInt! #已提取总收益
   users: [StakeUser!]! @derivedFrom(field: "stakeInfo")
   userCount: BigInt!
 
@@ -213,6 +214,7 @@ type StakeUser @entity {
 
   amount: BigInt! #提供的lpToken的数量
   rewardDebt: BigInt! #收益起始点
+  harvestAll: BigInt! #已提取总收益
   noodleHarvested: BigInt! #已收益noodle数量
   depositInfos: [DepositInfo!]! @derivedFrom(field: "user") #存入历史
   withdrawInfos: [WithdrawInfo!]! @derivedFrom(field: "user") #取出历史
@@ -235,7 +237,7 @@ type WithdrawInfo @entity {
   id: ID! #组合key
   user: StakeUser! #用户
   lpToken: Bytes!
-  amount: BigInt! #存入的lpToken的数量
+  amount: BigInt! #取出的lpToken的数量
   timestamp: BigInt!
   block: BigInt!
 }

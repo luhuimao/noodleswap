@@ -22,6 +22,7 @@ contract NoodleStaking {
         uint256 noodlePerBlock; // 每区块产出数量,因为是个比例,放大1e12倍解决小数问题
         uint256 endTimeSec; // 奖励结束区块
     }
+    uint256 noodlePerBlock; // 每区块产出数量,因为是个比例,放大1e12倍解决小数问题
     // The NOODLE TOKEN!
     INoodleGameERC20 public noodle; //治理代币,产出币
     // 控制谁能添加质押游戏对

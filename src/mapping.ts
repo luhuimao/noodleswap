@@ -17,6 +17,11 @@ import {
   GameUserInfo,
   BetInfo,
   Game,
+  NoodleStaking,
+  StakeInfo,
+  StakeUser,
+  DepositInfo,
+  WithdrawInfo,
 } from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
 import * as boutils from './boutils';
@@ -65,8 +70,22 @@ export function handleUpsertConfig(event: UpsertConfig): void {
   config.chainId = event.params.chainId;
   config.voteAddress = event.params.voteAddress;
   config.playNFTAddress = event.params.playNFTAddress;
+  config.stakingAddress = event.params.stakingAddress;
   config.timestamp = event.block.timestamp;
   config.save();
+  var stake = NoodleStaking.load(config.stakingAddress.toHex());
+  if (stake == null) {
+    stake = new NoodleStaking(config.stakingAddress.toHex());
+  }
+  stake.timestamp = event.block.timestamp;
+  stake.block = event.block.number;
+  stake.noodle = config.ndlToken;
+  stake.owner = config.factoryAddress;
+  stake.noodlePerSecond = BigInt.fromI32(0);
+  stake.totalAllocLpToken = BigInt.fromI32(0);
+  stake.stakeCount = BigInt.fromI32(0);
+  stake.stakeInfos = [];
+  stake.save();
 }
 export function handleUpsertGameToken(event: UpsertGameToken): void {
   let id = event.params.factoryAddress.toHex();
@@ -534,20 +553,194 @@ export function handGetAward(event: GameEvent._getAward): void {
 
 export function handleDeposit(event: StakeEvent.EventDeposit): void {
   log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:', []);
+  var gameInfo = GameInfo.load(event.params.lpToken.toHex());
+  if (gameInfo == null) {
+    log.error('handleDeposit game not found: {}', [event.params.lpToken.toHex()]);
+    return;
+  }
+  var stake = NoodleStaking.load(event.address.toHex());
+  if (stake == null) {
+    log.error('handleDeposit NoodleStaking not found: {}', [event.address.toHex()]);
+    return;
+  }
+  let sid = event.params.lpToken.toHex();
+  var stakeInfo = StakeInfo.load(sid);
+  if (stakeInfo == null) {
+    log.error('handleDeposit StakeInfo not found: {}', [event.address.toHex()]);
+    log.error('StakeInfo exist: {}', [sid]);
+    return;
+  }
+  let userid = gameInfo.id + '-' + event.params.user.toHex();
+  var user = StakeUser.load(userid);
+  if (user == null) {
+    user = new StakeUser(userid);
+    user.owner = event.params.user;
+    user.stakeInfo = stakeInfo.id;
+    user.amount = BigInt.fromI32(0);
+    user.rewardDebt = BigInt.fromI32(0);
+    user.noodleHarvested = BigInt.fromI32(0);
+    user.depositInfos = [];
+    user.withdrawInfos = [];
+    stakeInfo.userCount = stakeInfo.userCount.plus(BigInt.fromI32(1));
+    let tmp = stakeInfo.users;
+    tmp.push(user.id);
+    stakeInfo.users = tmp;
+  }
+  user.timestamp = event.block.timestamp;
+  user.block = event.block.number;
+  let did = userid + '-' + event.block.number.toString() + '-' + event.transactionLogIndex.toString();
+  let deposit = new DepositInfo(did);
+  deposit.user = user.id;
+  deposit.lpToken = event.params.lpToken;
+  deposit.amount = event.params.amount;
+  deposit.timestamp = event.block.timestamp;
+  deposit.block = event.block.number;
+  stakeInfo.totalAllocLpToken = stakeInfo.totalAllocLpToken.plus(event.params.amount);
+  stake.totalAllocLpToken = stake.totalAllocLpToken.plus(event.params.amount);
+  deposit.save();
+  stakeInfo.save();
+  stake.save();
+  user.save();
 }
 
 export function handleWithdraw(event: StakeEvent.EventWithdraw): void {
   log.info('xxxxxxxxxxxxxxxxxx:handleWithdraw:', []);
+  var gameInfo = GameInfo.load(event.params.lpToken.toHex());
+  if (gameInfo == null) {
+    log.error('handleWithdraw game not found: {}', [event.params.lpToken.toHex()]);
+    return;
+  }
+  var stake = NoodleStaking.load(event.address.toHex());
+  if (stake == null) {
+    log.error('handleWithdraw NoodleStaking not found: {}', [event.address.toHex()]);
+    return;
+  }
+  let sid = event.params.lpToken.toHex();
+  var stakeInfo = StakeInfo.load(sid);
+  if (stakeInfo == null) {
+    log.error('handleWithdraw StakeInfo not found: {}', [event.address.toHex()]);
+    log.error('StakeInfo exist: {}', [sid]);
+    return;
+  }
+  let userid = gameInfo.id + '-' + event.params.user.toHex();
+  var user = StakeUser.load(userid);
+  if (user == null) {
+    user = new StakeUser(userid);
+    user.owner = event.params.user;
+    user.stakeInfo = stakeInfo.id;
+    user.amount = BigInt.fromI32(0);
+    user.rewardDebt = BigInt.fromI32(0);
+    user.noodleHarvested = BigInt.fromI32(0);
+    user.depositInfos = [];
+    user.withdrawInfos = [];
+    stakeInfo.userCount = stakeInfo.userCount.plus(BigInt.fromI32(1));
+    let tmp = stakeInfo.users;
+    tmp.push(user.id);
+    stakeInfo.users = tmp;
+  }
+  user.timestamp = event.block.timestamp;
+  user.block = event.block.number;
+  let did = userid + '-' + event.block.number.toString() + '-' + event.transactionLogIndex.toString();
+  let deposit = new WithdrawInfo(did);
+  deposit.user = user.id;
+  deposit.lpToken = event.params.lpToken;
+  deposit.amount = event.params.amount;
+  deposit.timestamp = event.block.timestamp;
+  deposit.block = event.block.number;
+  stakeInfo.totalAllocLpToken = stakeInfo.totalAllocLpToken.minus(event.params.amount);
+  stake.totalAllocLpToken = stake.totalAllocLpToken.minus(event.params.amount);
+  deposit.save();
+  stakeInfo.save();
+  stake.save();
+  user.save();
 }
 
 export function handleHarvest(event: StakeEvent.EventHarvest): void {
   log.info('xxxxxxxxxxxxxxxxxx:handleHarvest:', []);
+  var gameInfo = GameInfo.load(event.params.lpToken.toHex());
+  if (gameInfo == null) {
+    log.error('handleHarvest game not found: {}', [event.params.lpToken.toHex()]);
+    return;
+  }
+  var stake = NoodleStaking.load(event.address.toHex());
+  if (stake == null) {
+    log.error('handleHarvest NoodleStaking not found: {}', [event.address.toHex()]);
+    return;
+  }
+  let sid = event.params.lpToken.toHex();
+  var stakeInfo = StakeInfo.load(sid);
+  if (stakeInfo == null) {
+    log.error('handleHarvest StakeInfo not found: {}', [sid]);
+    return;
+  }
+  let userid = gameInfo.id + '-' + event.params.user.toHex();
+  var user = StakeUser.load(userid);
+  if (user == null) {
+    log.error('handleHarvest StakeUser not found: {}', [userid]);
+    return;
+  }
+  user.harvestAll = user.harvestAll.plus(event.params.amount);
+  stakeInfo.harvestAll = stakeInfo.harvestAll.plus(event.params.amount);
+  stake.harvestAll = stake.harvestAll.plus(event.params.amount);
+  user.timestamp = event.block.timestamp;
+  user.block = event.block.number;
+  stakeInfo.save();
+  stake.save();
+  user.save();
 }
 
 export function handleStakeInfoAdd(event: StakeEvent.EventStakeInfoAdd): void {
   log.info('xxxxxxxxxxxxxxxxxx:handleStakeInfoAdd:', []);
+  var gameInfo = GameInfo.load(event.params.lpToken.toHex());
+  if (gameInfo == null) {
+    log.error('handleStakeInfoAdd game not found: {}', [event.params.lpToken.toHex()]);
+    return;
+  }
+  var stake = NoodleStaking.load(event.address.toHex());
+  if (stake == null) {
+    log.error('handleStakeInfoAdd NoodleStaking not found: {}', [event.address.toHex()]);
+    return;
+  }
+  let id = event.params.lpToken.toHex();
+  var stakeInfo = StakeInfo.load(id);
+  if (stakeInfo != null) {
+    log.error('StakeInfo exist: {}', [id]);
+    return;
+  }
+  stakeInfo = new StakeInfo(id);
+  stakeInfo.noodleStaking = stake.id;
+  stakeInfo.lpToken = event.params.lpToken;
+  stakeInfo.noodlePerBlock = event.params.noodlePerBlock;
+  stakeInfo.accNoodlePerShare = BigInt.fromI32(0);
+  stakeInfo.userCount = BigInt.fromI32(0);
+  stakeInfo.lastRewardBlock = event.block.number;
+  stakeInfo.timestamp = event.block.timestamp;
+  stakeInfo.block = event.block.number;
+  stakeInfo.users = [];
+  stakeInfo.save();
+  stake.save();
 }
 
 export function handleUpdatePool(event: StakeEvent.EventUpdatePool): void {
   log.info('xxxxxxxxxxxxxxxxxx:handleUpdatePool:', []);
+  var gameInfo = GameInfo.load(event.params.lpToken.toHex());
+  if (gameInfo == null) {
+    log.error('handleUpdatePool game not found: {}', [event.params.lpToken.toHex()]);
+    return;
+  }
+  var stake = NoodleStaking.load(event.address.toHex());
+  if (stake == null) {
+    log.error('handleUpdatePool NoodleStaking not found: {}', [event.address.toHex()]);
+    return;
+  }
+  let sid = event.params.lpToken.toHex();
+  var stakeInfo = StakeInfo.load(sid);
+  if (stakeInfo == null) {
+    log.error('handleUpdatePool StakeInfo not found: {}', [sid]);
+    return;
+  }
+  stakeInfo.accNoodlePerShare = event.params.accNoodlePerShare;
+  stakeInfo.lastRewardBlock = event.block.number;
+  stakeInfo.save();
+  stake.save();
 }

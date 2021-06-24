@@ -6,6 +6,7 @@ import { LGame } from '../typechain/LGame';
 import { LGameFactory } from '../typechain/LGameFactory';
 import { Vote } from '../typechain/Vote';
 import { PlayNFT } from '../typechain/PlayNFT';
+import { NoodleStaking } from '../typechain/NoodleStaking';
 import { GameFactory } from '../typechain/GameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import * as config from '../.config';
@@ -139,6 +140,17 @@ let main = async () => {
   flag = '\\/\\/REPLACE_FLAG';
   key = 'GAMEFACTORY_ADDRESS_' + network.name.toUpperCase();
   boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceGameFactory.address + '"; ' + flag);
+
+  const instanceStake = (await (await ethers.getContractFactory('NoodleStaking'))
+    .connect(owner)
+    .deploy(instanceNDLToken.address, instanceGameFactory.address, {
+      gasPrice: gasprice,
+      gasLimit: blockGaslimit,
+    })) as NoodleStaking;
+  console.log('new NoodleStaking address:', instanceStake.address);
+  flag = '\\/\\/REPLACE_FLAG';
+  key = 'STAKING_ADDRESS_' + network.name.toUpperCase();
+  boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceStake.address + '"; ' + flag);
 
   const wethAddr = config.getTokenAddrBySymbol(tokens, 'WBNB');
   console.log('WETH address:', wethAddr);
