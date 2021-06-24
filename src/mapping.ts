@@ -1,5 +1,6 @@
 import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/ConfigAddress';
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
+import * as StakeEvent from '../generated/NoodleStaking/NoodleStaking';
 import * as GameEvent from '../generated/templates/Game/Game';
 import * as VoteEvent from '../generated/VoteInfo/Vote';
 import { Game as GameTemplate } from '../generated/templates';
@@ -529,4 +530,24 @@ export function handGetAward(event: GameEvent._getAward): void {
   gameUserInfo.finishReward = event.params.amount;
   gameUserInfo.save();
   //VoteTemplate.create(event.params.vote);
+}
+
+export function handleDeposit(event: StakeEvent.EventDeposit): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:', []);
+}
+
+export function handleWithdraw(event: StakeEvent.EventWithdraw): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handleWithdraw:', []);
+}
+
+export function handleHarvest(event: StakeEvent.EventHarvest): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handleHarvest:', []);
+}
+
+export function handleStakeInfoAdd(event: StakeEvent.EventStakeInfoAdd): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handleStakeInfoAdd:', []);
+}
+
+export function handleUpdatePool(event: StakeEvent.EventUpdatePool): void {
+  log.info('xxxxxxxxxxxxxxxxxx:handleUpdatePool:', []);
 }

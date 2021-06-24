@@ -44,7 +44,7 @@ contract ERC20Faucet {
     }
 
     function transfer(address dst, uint256 wad) public returns (bool) {
-        console.log('aaaaaaaaa:', msg.sender);
+        //console.log('aaaaaaaaa:', msg.sender);
         return transferFrom(msg.sender, dst, wad);
     }
 

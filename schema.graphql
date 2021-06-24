@@ -24,6 +24,9 @@ type ConfigAddress @entity {
   # 投票合约地址
   voteAddress: Bytes!
 
+  # 投票合约地址
+  stakingAddress: Bytes!
+
   # NFT合约地址
   playNFTAddress: Bytes!
 
@@ -165,4 +168,74 @@ type TokenBalance @entity {
   id: ID!
   amount: Int!
   token: Token!
+}
+
+# 质押信息
+type NoodleStaking @entity {
+  # Contract address
+  id: ID!
+
+  owner: Bytes!
+
+  noodle: Bytes!
+  noodlePerSecond: BigInt! #每区块总产出
+  totalAllocLpToken: BigInt! #总质押lp数量
+  stakeInfos: [StakeInfo!] @derivedFrom(field: "nooleStaking")
+  stakeCount: BigInt! #总池子数量
+  timestamp: BigInt!
+  block: BigInt!
+}
+
+# 挖矿池子
+type StakeInfo @entity {
+  # lpToken Address
+  id: ID!
+  nooleStaking: NoodleStaking! #质押合约
+  lpToken: Bytes!
+
+  noodlePerBlock: BigInt! #每区块奖励
+  lastRewardTime: BigInt! #最新奖励区块
+  accNoodlePerShare: BigInt! #当前每份额收益基数
+  slpBalance: BigInt!
+
+  users: [StakeUser!]! @derivedFrom(field: "stakeInfo")
+  userCount: BigInt!
+
+  timestamp: BigInt!
+  block: BigInt!
+}
+
+# 质押用户信息
+type StakeUser @entity {
+  id: ID! #组合key
+  owner: Bytes! #用户地址
+  stakeInfo: StakeInfo
+
+  amount: BigInt! #提供的lpToken的数量
+  rewardDebt: BigInt! #收益起始点
+  noodleHarvested: BigInt! #已收益noodle数量
+  depositInfos: [DepositInfo!]! @derivedFrom(field: "user") #存入历史
+  withdrawInfos: [WithdrawInfo!]! @derivedFrom(field: "user") #取出历史
+  timestamp: BigInt!
+  block: BigInt!
+}
+
+# 存入操作历史
+type DepositInfo @entity {
+  id: ID! #组合key
+  user: StakeUser! #用户
+  lpToken: Bytes!
+  amount: BigInt! #存入的lpToken的数量
+  timestamp: BigInt!
+  block: BigInt!
+}
+
+# 取出操作历史
+type WithdrawInfo @entity {
+  id: ID! #组合key
+  user: StakeUser! #用户
+  lpToken: Bytes!
+  amount: BigInt! #存入的lpToken的数量
+  timestamp: BigInt!
+  block: BigInt!
 }
