@@ -24,7 +24,7 @@ services:
       postgres_db: graph-node
       ipfs: 'ipfs:5001'
       #ethereum: 'mainnet:http://host.dev.gameswap_dev_ganache:7545' #docker ganache
-      ethereum: 'mainnet:http://host.docker.internal:7545' #宿主机ganache
+      ethereum: 'mainnet:http://host.docker.internal:8545' #宿主机ganache
       #ethereum: 'mainnet:http://192.168.50.95:7545'
       #ethereum: 'mainnet:http://192.168.64.1:7545'
       RUST_LOG: info

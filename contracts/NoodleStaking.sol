@@ -8,8 +8,9 @@ import './libraries/openzeppelin/contracts/utils/math/SafeMath.sol';
 import './interfaces/INoodleGameERC20.sol';
 
 import './interfaces/IGameFactory.sol';
+import './interfaces/INoodleStaking.sol';
 
-contract NoodleStaking {
+contract NoodleStaking is INoodleStaking {
     using SafeMath for uint256;
     // Info of each user.
     struct UserInfo {
@@ -50,15 +51,15 @@ contract NoodleStaking {
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     function addStakeInfo(
-        INoodleGameERC20 lpToken,
+        address lpToken,
         uint256 _noodlePerBlock,
         uint256 _endTimeSec
-    ) public {
+    ) public override {
         require(msg.sender == address(owner), 'not owner');
-        require(stakeInfoMap[lpToken].lastRewardBlock == 0, 'already added');
+        require(stakeInfoMap[INoodleGameERC20(lpToken)].lastRewardBlock == 0, 'already added');
         require(_endTimeSec > block.timestamp, 'end time err');
         uint256 lastRewardBlock = block.number;
-        stakeInfoMap[lpToken] = StakeInfo({
+        stakeInfoMap[INoodleGameERC20(lpToken)] = StakeInfo({
             lastRewardBlock: lastRewardBlock,
             endTimeSec: _endTimeSec,
             accNoodlePerShare: 0,
@@ -107,6 +108,14 @@ contract NoodleStaking {
         pool.accNoodlePerShare = pool.accNoodlePerShare.add(noodleReward.mul(1e12).div(lpSupply));
         pool.lastRewardBlock = block.number;
         emit EventUpdatePool(address(lpToken), pool.accNoodlePerShare);
+    }
+
+    function getBalance(INoodleGameERC20 lpToken) public view returns (uint256 ret) {
+        ret = lpToken.balanceOf(msg.sender);
+    }
+
+    function getSender() public view returns (address ret) {
+        ret = msg.sender;
     }
 
     // 存入lp

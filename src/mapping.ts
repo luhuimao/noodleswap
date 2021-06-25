@@ -81,10 +81,11 @@ export function handleUpsertConfig(event: UpsertConfig): void {
   stake.block = event.block.number;
   stake.noodle = config.ndlToken;
   stake.owner = config.factoryAddress;
+  stake.harvestAll = BigInt.fromI32(0);
   stake.noodlePerSecond = BigInt.fromI32(0);
   stake.totalAllocLpToken = BigInt.fromI32(0);
   stake.stakeCount = BigInt.fromI32(0);
-  stake.stakeInfos = [];
+  // stake.stakeInfos = [];
   stake.save();
 }
 export function handleUpsertGameToken(event: UpsertGameToken): void {
@@ -438,7 +439,7 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:0:', []);
   var voteInfo = VoteInfo.load(event.params.game.toHex());
   if (voteInfo != null) {
-    log.error('VoteInfo game already exists: {}', [event.params.game.toHex()]);
+    log.error('handChallengeGame VoteInfo game already exists: {}', [event.params.game.toHex()]);
     return;
   }
   var gameInfo = GameInfo.load(event.params.game.toHex());
@@ -526,7 +527,7 @@ export function handStartVote(event: VoteEvent._startVote): void {
   log.info('xxxxxxxxxxxxxxxxxx:handConfirmVote:', []);
   var voteInfo = VoteInfo.load(event.params.game.toHex() + '3');
   if (voteInfo == null) {
-    log.error('VoteInfo game already exists: {}', [event.params.game.toHex()]);
+    log.error('handStartVote VoteInfo game already exists: {}', [event.params.game.toHex()]);
     return;
   }
 }
@@ -579,8 +580,9 @@ export function handleDeposit(event: StakeEvent.EventDeposit): void {
     user.amount = BigInt.fromI32(0);
     user.rewardDebt = BigInt.fromI32(0);
     user.noodleHarvested = BigInt.fromI32(0);
-    user.depositInfos = [];
-    user.withdrawInfos = [];
+    user.harvestAll = BigInt.fromI32(0);
+    // user.depositInfos = [];
+    // user.withdrawInfos = [];
     stakeInfo.userCount = stakeInfo.userCount.plus(BigInt.fromI32(1));
     let tmp = stakeInfo.users;
     tmp.push(user.id);
@@ -631,8 +633,9 @@ export function handleWithdraw(event: StakeEvent.EventWithdraw): void {
     user.amount = BigInt.fromI32(0);
     user.rewardDebt = BigInt.fromI32(0);
     user.noodleHarvested = BigInt.fromI32(0);
-    user.depositInfos = [];
-    user.withdrawInfos = [];
+    user.harvestAll = BigInt.fromI32(0);
+    // user.depositInfos = [];
+    // user.withdrawInfos = [];
     stakeInfo.userCount = stakeInfo.userCount.plus(BigInt.fromI32(1));
     let tmp = stakeInfo.users;
     tmp.push(user.id);
@@ -713,10 +716,11 @@ export function handleStakeInfoAdd(event: StakeEvent.EventStakeInfoAdd): void {
   stakeInfo.noodlePerBlock = event.params.noodlePerBlock;
   stakeInfo.accNoodlePerShare = BigInt.fromI32(0);
   stakeInfo.userCount = BigInt.fromI32(0);
+  stakeInfo.harvestAll = BigInt.fromI32(0);
   stakeInfo.lastRewardBlock = event.block.number;
   stakeInfo.timestamp = event.block.timestamp;
   stakeInfo.block = event.block.number;
-  stakeInfo.users = [];
+  // stakeInfo.users = [];
   stakeInfo.save();
   stake.save();
 }

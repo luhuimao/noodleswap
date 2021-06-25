@@ -141,16 +141,17 @@ let main = async () => {
   key = 'GAMEFACTORY_ADDRESS_' + network.name.toUpperCase();
   boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceGameFactory.address + '"; ' + flag);
 
-  const instanceStake = (await (await ethers.getContractFactory('NoodleStaking'))
+  const instanceStaking = (await (await ethers.getContractFactory('NoodleStaking'))
     .connect(owner)
     .deploy(instanceNDLToken.address, instanceGameFactory.address, {
       gasPrice: gasprice,
       gasLimit: blockGaslimit,
     })) as NoodleStaking;
-  console.log('new NoodleStaking address:', instanceStake.address);
+  console.log('new NoodleStaking address:', instanceStaking.address);
+  await instanceGameFactory.setNoodleStaking(instanceStaking.address);
   flag = '\\/\\/REPLACE_FLAG';
   key = 'STAKING_ADDRESS_' + network.name.toUpperCase();
-  boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceStake.address + '"; ' + flag);
+  boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceStaking.address + '"; ' + flag);
 
   const wethAddr = config.getTokenAddrBySymbol(tokens, 'WBNB');
   console.log('WETH address:', wethAddr);
@@ -172,8 +173,26 @@ let main = async () => {
     config.getBlockUrlByNetwork(network.name),
     network.name,
     instanceVote.address,
+    instanceStaking.address,
     instancePlayNFT.address,
-    { gasPrice: gasprice, gasLimit: blockGaslimit }
+    {
+      gasPrice: gasprice,
+      gasLimit: await instanceConfigAddress.estimateGas[
+        'upsert(address,uint256,address,address,address,string,string,string,address,address,address)'
+      ](
+        instanceGameFactory.address,
+        chainId,
+        instanceNDLToken.address,
+        instanceWETH9.address,
+        instanceUSDT.address,
+        config.getRpcUrlByNetwork(network.name),
+        config.getBlockUrlByNetwork(network.name),
+        network.name,
+        instanceVote.address,
+        instanceStaking.address,
+        instancePlayNFT.address
+      ),
+    }
   );
   //).wait(1);
   //console.log('instanceConfigAddress.upsert:', ret.transactionHash);
@@ -333,24 +352,52 @@ let main = async () => {
         // ),
       }
     );
-    await instanceGame.stakeGame(1, {
+    await instanceGame.stakeGame(ethers.utils.parseEther('1'), {
       gasLimit: await instanceGame.estimateGas['stakeGame(uint256)'](1),
     });
     console.info('instanceGame.stakeGame:ok');
-    await instanceGame.openGame(0, {
-      gasPrice: gasprice,
-      gasLimit: blockGaslimit,
-    });
-    console.info('instanceGame.openGame:ok');
-    await instanceGame.challengeGame(0, {
-      gasPrice: gasprice,
-      gasLimit: blockGaslimit,
-    });
-    console.info('instanceGame.challengeGame:ok');
-    await instanceVote.add(instanceGame.address, owner.address, 1, {
-      gasPrice: gasprice,
-      gasLimit: await instanceVote.estimateGas['add(address,address,uint8)'](instanceGame.address, owner.address, 1),
-    });
+    // 开启质押挖矿
+    await instanceGameFactory.addStakeInfo(instanceGame.address, ethers.utils.parseEther('60'), deadline);
+    for (let index = 0; index < 2; index++) {
+      await boutils.advanceBlock();
+      console.log(
+        'pending reward:',
+        (await instanceStaking.getPendingReward(instanceGame.address, owner.address)).toString()
+      );
+      console.log('xxxxxxx:0');
+      // await instanceGame['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('100'));
+      await instanceGame.approve(instanceStaking.address, ethers.utils.parseEther('1.0'));
+      console.log('xxxxxxx:1');
+      await instanceStaking.deposit(instanceGame.address, ethers.utils.parseEther('0.01'), {
+        gasLimit: await instanceStaking.estimateGas['deposit(address,uint256)'](
+          instanceGame.address,
+          ethers.utils.parseEther('0.01')
+        ),
+      });
+      console.log('xxxxxxx:1');
+      let pending = await instanceStaking.getPendingReward(instanceGame.address, owner.address);
+      await instanceStaking.withdraw(instanceGame.address, pending.div(2), {
+        gasLimit: await instanceStaking.estimateGas['withdraw(address,uint256)'](
+          instanceGame.address,
+          ethers.utils.parseEther('0.01')
+        ),
+        from: owner.address,
+      });
+      await instanceGame.openGame(0, {
+        gasPrice: gasprice,
+        gasLimit: blockGaslimit,
+      });
+      console.info('instanceGame.openGame:ok');
+      await instanceGame.challengeGame(0, {
+        gasPrice: gasprice,
+        gasLimit: blockGaslimit,
+      });
+      console.info('instanceGame.challengeGame:ok');
+      await instanceVote.add(instanceGame.address, owner.address, 1, {
+        gasPrice: gasprice,
+        gasLimit: await instanceVote.estimateGas['add(address,address,uint8)'](instanceGame.address, owner.address, 1),
+      });
+    }
   });
   console.log(
     '-------instanceGameFactory.createGame--------',

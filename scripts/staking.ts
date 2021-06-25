@@ -46,7 +46,8 @@ let main = async () => {
   const instanceStaking = (await (await ethers.getContractFactory('NoodleStaking'))
     .connect(owner)
     .deploy(instanceNDLToken.address, owner.address)) as NoodleStaking;
-  await instanceStaking.add(instanceUSDT.address, ethers.utils.parseEther('0.0001'));
+  let deadline = boutils.GetUnixTimestamp() + 86400;
+  await instanceStaking.addStakeInfo(instanceUSDT.address, ethers.utils.parseEther('0.0001'), deadline);
   console.log('new NoodleStaking address:0:', instanceStaking.address);
   await instanceNDLToken['faucet(address,uint256)'](instanceStaking.address, ethers.utils.parseEther('100000000.1'));
   await instanceUSDT['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('100000000.1'));
