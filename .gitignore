@@ -30,4 +30,4 @@ package-lock.json
 *-e
 abis/_*
 abis/hardhat*
-
+nohup.out
