@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { ethers, network } from 'hardhat';
+import { ethers, network, artifacts } from 'hardhat';
 import { ConfigAddress } from '../typechain/ConfigAddress';
 import { Game } from '../typechain/Game';
 import { LGame } from '../typechain/LGame';
