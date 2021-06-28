@@ -10,6 +10,7 @@ import { PlayNFT } from '../typechain/PlayNFT';
 import { NoodleStaking } from '../typechain/NoodleStaking';
 import { GameFactory } from '../typechain/GameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
+import { UniswapV3Pool } from '../typechain/UniswapV3Pool';
 import * as config from '../.config';
 import { BigNumber, Contract } from 'ethers';
 import { getOwnerPrivateKey } from '../.privatekey';
@@ -25,7 +26,14 @@ let main = async () => {
 
   console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));
 
-  const instanceV3USDCETH = await ethers.getContractAt(V3Pool, '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8');
+  console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));
+
+  const instanceV3USDCETH = (await ethers.getContractFactory('UniswapV3Pool'))
+    .connect(owner)
+    .attach('0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8') as UniswapV3Pool;
+  //const instanceV3USDCETH = await ethers.getContractAt(V3Pool, '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8');
+
+  // const instanceV3USDCETH = await ethers.getContractAt(V3Pool, '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8');
   console.log('USDCETH V3Pool address:', instanceV3USDCETH.address);
   // 下注代币
   let eventFilter = instanceV3USDCETH.filters.Swap(null, null, null, null, null, null, null);

@@ -142,7 +142,7 @@ type VoteInfo @entity {
   owner: Bytes! # 发起者地址
   game: GameInfo! # 所属游戏
   winOption: BigInt! # 最初输入的选项
-  voteWinOption: Int! # 最新投票胜者选项
+  voteWinOption: BigInt # 最新投票胜者选项
   option: BigInt! # 同意选项
   agreeNum: Int! # 同意数
   disAgreeNum: Int! # 不同意数
