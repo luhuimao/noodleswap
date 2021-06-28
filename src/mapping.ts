@@ -468,6 +468,7 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:3:', []);
   voteInfo.agreeNum = 0;
   voteInfo.disAgreeNum = 0;
+  voteInfo.endTime = BigInt.fromI32(0);
   voteInfo.timestamp = event.block.timestamp;
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:4:', []);
   voteInfo.save();
@@ -519,6 +520,7 @@ export function handAddVote(event: VoteEvent._addVote): void {
   } else {
     voteInfo.disAgreeNum = voteInfo.disAgreeNum + 1;
   }
+  voteInfo.voteNumbers = event.params.voteNumbers;
   voteUserInfo.save();
   voteInfo.save();
   gameInfo.save();
@@ -530,6 +532,8 @@ export function handStartVote(event: VoteEvent._startVote): void {
     log.error('handStartVote VoteInfo game already exists: {}', [event.params.game.toHex()]);
     return;
   }
+  voteInfo.endTime = event.params._endTime;
+  voteInfo.save();
 }
 
 export function handGetAward(event: GameEvent._getAward): void {
@@ -716,7 +720,7 @@ export function handleStakeInfoAdd(event: StakeEvent.EventStakeInfoAdd): void {
   }
   stakeInfo = new StakeInfo(id);
   stakeInfo.noodleStaking = stake.id;
-  stakeInfo.lpToken = event.params.lpToken;
+  stakeInfo.lpToken = gameInfo.id;
   stakeInfo.noodlePerBlock = event.params.noodlePerBlock;
   stakeInfo.accNoodlePerShare = BigInt.fromI32(0);
   stakeInfo.userCount = BigInt.fromI32(0);

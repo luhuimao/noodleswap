@@ -145,6 +145,8 @@ type VoteInfo @entity {
   option: BigInt! # 同意选项
   agreeNum: Int! # 同意数
   disAgreeNum: Int! # 不同意数
+  voteNumbers: [BigInt!] # 投票结果列表
+  endTime: BigInt! #  投票结束时间
   timestamp: BigInt! #  下注时间
   voteUserInfos: [VoteUserInfo!]! @derivedFrom(field: "vote") # 下注记录
 }
@@ -192,7 +194,7 @@ type StakeInfo @entity {
   # lpToken Address
   id: ID!
   noodleStaking: NoodleStaking! #质押合约
-  lpToken: Bytes!
+  lpToken: GameInfo!
 
   noodlePerBlock: BigInt! #每区块奖励
   totalAllocLpToken: BigInt! #总质押lp数量
