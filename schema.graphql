@@ -96,7 +96,7 @@ type GameInfo @entity {
   _openAddress: Bytes # 开奖者地址
   _winOption: BigInt # 获胜选项
   timestamp: BigInt! #  下注时间
-  vote: VoteInfo! @derivedFrom(field: "game") # 投票地址
+  vote: VoteInfo @derivedFrom(field: "game") # 投票地址
   betInfos: [BetInfo!]! @derivedFrom(field: "game") # 下注记录
   nftInfos: [NFTInfo!]! @derivedFrom(field: "game") # 下注记录
   _optionInfos: [OptionInfo!]! @derivedFrom(field: "game") # 选项列表
@@ -141,7 +141,8 @@ type VoteInfo @entity {
   vote: Bytes! # 投票合约地址
   owner: Bytes! # 发起者地址
   game: GameInfo! # 所属游戏
-  winOption: BigInt! # 同意选项
+  winOption: BigInt! # 最初输入的选项
+  voteWinOption: Int! # 最新投票胜者选项
   option: BigInt! # 同意选项
   agreeNum: Int! # 同意数
   disAgreeNum: Int! # 不同意数

@@ -521,6 +521,7 @@ export function handAddVote(event: VoteEvent._addVote): void {
     voteInfo.disAgreeNum = voteInfo.disAgreeNum + 1;
   }
   voteInfo.voteNumbers = event.params.voteNumbers;
+  voteInfo.voteWinOption = event.params.winOption;
   voteUserInfo.save();
   voteInfo.save();
   gameInfo.save();
