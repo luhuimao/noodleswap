@@ -251,8 +251,8 @@ contract ConfigAddress {
         address factoryAddress,
         address tokenAddress,
         string memory tokenSymbol
-    ) public {
-        require(_owner == msg.sender, 'only owner can upsertGameToken');
+    ) public returns (uint256 ret) {
+        require(_owner == msg.sender, 'only owner can upsertGameToken1');
         Config storage config = configMap[factoryAddress];
         config.gameTokenMap[tokenSymbol] = tokenAddress;
         bool ok = false;
@@ -265,6 +265,7 @@ contract ConfigAddress {
         if (ok == false) {
             config.gameTokenList.push(tokenAddress);
         }
+        ret = 1;
         emit UpsertGameToken(factoryAddress, tokenAddress, tokenSymbol);
     }
 

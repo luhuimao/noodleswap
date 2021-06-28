@@ -338,7 +338,7 @@ let main = async () => {
     console.log('add liquidity:');
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
-    //console.log('-------removeLiquidity--------');
+    console.log('-------removeLiquidity--------');
     let amount = await instanceGame.removeLiquidity(
       ethers.utils.parseEther('20'),
       0,
@@ -352,13 +352,14 @@ let main = async () => {
         // ),
       }
     );
+    console.log('-------removeLiquidity:end--------');
     await instanceGame.stakeGame(ethers.utils.parseEther('1'), {
-      gasLimit: await instanceGame.estimateGas['stakeGame(uint256)'](1),
+      gasLimit: await instanceGame.estimateGas['stakeGame(uint256)'](ethers.utils.parseEther('1')),
     });
     console.info('instanceGame.stakeGame:ok');
     // 开启质押挖矿
     await instanceGameFactory.addStakeInfo(instanceGame.address, ethers.utils.parseEther('60'), deadline);
-    for (let index = 0; index < 2; index++) {
+    for (let index = 0; index < 1; index++) {
       await boutils.advanceBlock();
       console.log(
         'pending reward:',
@@ -377,10 +378,7 @@ let main = async () => {
       console.log('xxxxxxx:1');
       let pending = await instanceStaking.getPendingReward(instanceGame.address, owner.address);
       await instanceStaking.withdraw(instanceGame.address, pending.div(2), {
-        gasLimit: await instanceStaking.estimateGas['withdraw(address,uint256)'](
-          instanceGame.address,
-          ethers.utils.parseEther('0.01')
-        ),
+        gasLimit: await instanceStaking.estimateGas['withdraw(address,uint256)'](instanceGame.address, pending.div(2)),
         from: owner.address,
       });
       await instanceGame.openGame(0, {

@@ -525,7 +525,7 @@ export function handAddVote(event: VoteEvent._addVote): void {
 }
 export function handStartVote(event: VoteEvent._startVote): void {
   log.info('xxxxxxxxxxxxxxxxxx:handConfirmVote:', []);
-  var voteInfo = VoteInfo.load(event.params.game.toHex() + '3');
+  var voteInfo = VoteInfo.load(event.params.game.toHex());
   if (voteInfo == null) {
     log.error('handStartVote VoteInfo game already exists: {}', [event.params.game.toHex()]);
     return;
@@ -572,11 +572,14 @@ export function handleDeposit(event: StakeEvent.EventDeposit): void {
     return;
   }
   let userid = gameInfo.id + '-' + event.params.user.toHex();
+  log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:1:', []);
   var user = StakeUser.load(userid);
   if (user == null) {
     user = new StakeUser(userid);
     user.owner = event.params.user;
+    log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:1:', []);
     user.stakeInfo = stakeInfo.id;
+    log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:2:', []);
     user.amount = BigInt.fromI32(0);
     user.rewardDebt = BigInt.fromI32(0);
     user.noodleHarvested = BigInt.fromI32(0);
@@ -584,23 +587,24 @@ export function handleDeposit(event: StakeEvent.EventDeposit): void {
     // user.depositInfos = [];
     // user.withdrawInfos = [];
     stakeInfo.userCount = stakeInfo.userCount.plus(BigInt.fromI32(1));
-    let tmp = stakeInfo.users;
-    tmp.push(user.id);
-    stakeInfo.users = tmp;
   }
+  log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:3:', []);
   user.timestamp = event.block.timestamp;
   user.block = event.block.number;
   let did = userid + '-' + event.block.number.toString() + '-' + event.transactionLogIndex.toString();
   let deposit = new DepositInfo(did);
   deposit.user = user.id;
+  log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:4:', []);
   deposit.lpToken = event.params.lpToken;
   deposit.amount = event.params.amount;
   deposit.timestamp = event.block.timestamp;
   deposit.block = event.block.number;
   stakeInfo.totalAllocLpToken = stakeInfo.totalAllocLpToken.plus(event.params.amount);
   stake.totalAllocLpToken = stake.totalAllocLpToken.plus(event.params.amount);
+  log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:6:', []);
   deposit.save();
   stakeInfo.save();
+  log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:4:', []);
   stake.save();
   user.save();
 }
@@ -717,6 +721,7 @@ export function handleStakeInfoAdd(event: StakeEvent.EventStakeInfoAdd): void {
   stakeInfo.accNoodlePerShare = BigInt.fromI32(0);
   stakeInfo.userCount = BigInt.fromI32(0);
   stakeInfo.harvestAll = BigInt.fromI32(0);
+  stakeInfo.totalAllocLpToken = BigInt.fromI32(0);
   stakeInfo.lastRewardBlock = event.block.number;
   stakeInfo.timestamp = event.block.timestamp;
   stakeInfo.block = event.block.number;
