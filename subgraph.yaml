@@ -11,9 +11,9 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0xe618F9681418D9E6b4801F824B051dC6eED632c1" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0xe0435A32f8908E7C1455D6F7356E669A9971D71B" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8160000 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -49,9 +49,9 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0x32d55a515Ff84cBFE3eED45d15FeaaFA4FAf6276" #{{GAMEFACTORY_ADDRESS}}
+      address: "0x549E465E2F096D3c18ca0d8F041d37cE3eF0db24" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8160000 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -78,9 +78,9 @@ dataSources:
     name: VoteInfo
     network: mainnet #replace mainnet
     source:
-      address: "0x408DE3f178c88384e4DAc9942EdDeF62e0beC81A" #{{VOTE_ADDRESS}}
+      address: "0xd6cec8dEdD0b636b6E2Ea403B45E4df87fFC9578" #{{VOTE_ADDRESS}}
       abi: Vote
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8160000 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -101,9 +101,9 @@ dataSources:
     name: NoodleStaking
     network: mainnet #replace mainnet
     source:
-      address: "0xa20A86380129EC515bCF1b4c156dB4281dbfAEa7" #{{STAKING_ADDRESS}}
+      address: "0x1685563f516572379A78E399C4Ad35dd15aCa3AE" #{{STAKING_ADDRESS}}
       abi: NoodleStaking
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8160000 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

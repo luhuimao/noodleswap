@@ -21,9 +21,9 @@ export const DEPLOY_ACCOUNT_HARDHAT = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb9226
 
 // ConfigAddree 地址
 export const CONFIGADDRESS_ADDRESS_DEVNET = "0xe618F9681418D9E6b4801F824B051dC6eED632c1"; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_DEVNET = "0x32d55a515Ff84cBFE3eED45d15FeaaFA4FAf6276"; //REPLACE_FLAG
-export const VOTE_ADDRESS_DEVNET = "0x408DE3f178c88384e4DAc9942EdDeF62e0beC81A"; //REPLACE_FLAG
-export const STAKING_ADDRESS_DEVNET = "0xa20A86380129EC515bCF1b4c156dB4281dbfAEa7"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_DEVNET = "0x16849A6c39b46672e1B7a391f660294642C0F46e"; //REPLACE_FLAG
+export const VOTE_ADDRESS_DEVNET = "0x0f690a7aB45AD02Aea9E2486974De0Bc7F224Ed8"; //REPLACE_FLAG
+export const STAKING_ADDRESS_DEVNET = "0x9b7F0968e4A23346D094d91b308f72DBA92f9d50"; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_DEVNET = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
 
 // ConfigAddree 地址
@@ -33,11 +33,11 @@ export const VOTE_ADDRESS_GANACHE = '0xCe5F6B9e3f507aF6B19F4c993B6DbaC48531C524'
 export const STAKING_ADDRESS_GANACHE = '0xCe5F6B9e3f507aF6B19F4c993B6DbaC48531C524'; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_GANACHE = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
 
-export const CONFIGADDRESS_ADDRESS_BSCTESTNET = '0xc9236Ff1a22284a38DBaA8A13849C10248C027A2'; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_BSCTESTNET = '0x215D0d6d2E82BD59d8f04e411781432142C832A1'; //REPLACE_FLAG
-export const VOTE_ADDRESS_BSCTESTNET = '0x18fD859C7e5Af05E191423168eB8124D4d6a14Fe'; //REPLACE_FLAG
-export const STAKING_ADDRESS_BSCTESTNET = '0x18fD859C7e5Af05E191423168eB8124D4d6a14Fe'; //REPLACE_FLAG
-export const DEPLOY_ACCOUNT_BSCTESTNET = '0x66f040c34C9bA21560952303AfF336dA12096ad2'; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_BSCTESTNET = "0xe0435A32f8908E7C1455D6F7356E669A9971D71B"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_BSCTESTNET = "0xBE7794f44A00191f761D301856dD5C306696104e"; //REPLACE_FLAG
+export const VOTE_ADDRESS_BSCTESTNET = "0x8da70bFE1D1e430B773041897c65B473e432A119"; //REPLACE_FLAG
+export const STAKING_ADDRESS_BSCTESTNET = "0x24a18844fb89cC1deFd8a562261F4e1221E96Cf1"; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_BSCTESTNET = "0x66f040c34C9bA21560952303AfF336dA12096ad2"; //REPLACE_FLAG
 
 export const CONFIGADDRESS_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_BSC = ''; //REPLACE_FLAG
@@ -45,11 +45,11 @@ export const VOTE_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const STAKING_ADDRESS_BSC = ''; //REPLACE_FLAG
 export const DEPLOY_ACCOUNT_BSC = ''; //REPLACE_FLAG
 
-export const CONFIGADDRESS_ADDRESS_RINKEBY = '0x5ca9F755276F63faD2E8Dbc27a5A5722a1449f06'; //REPLACE_FLAG
-export const GAMEFACTORY_ADDRESS_RINKEBY = '0xb903753fa2183720656C71F8384E4c31997c70F7'; //REPLACE_FLAG
-export const VOTE_ADDRESS_RINKEBY = '0x183edC2c10e4dBe40551D1d6A8B6EDc1665Ad23E'; //REPLACE_FLAG
-export const STAKING_ADDRESS_RINKEBY = '0x183edC2c10e4dBe40551D1d6A8B6EDc1665Ad23E'; //REPLACE_FLAG
-export const DEPLOY_ACCOUNT_RINKEBY = '0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D'; //REPLACE_FLAG
+export const CONFIGADDRESS_ADDRESS_RINKEBY = "0xa58aA1f6294DA955f2c609e7e266890bDA0AC364"; //REPLACE_FLAG
+export const GAMEFACTORY_ADDRESS_RINKEBY = "0x13CfB463898546e552ea3474b0824148F1662271"; //REPLACE_FLAG
+export const VOTE_ADDRESS_RINKEBY = "0x73862d7E9C669eAB611B9872c7A6bCf7E7464D93"; //REPLACE_FLAG
+export const STAKING_ADDRESS_RINKEBY = "0xFC35D810E2763377A873130b5E09b5c36546fb68"; //REPLACE_FLAG
+export const DEPLOY_ACCOUNT_RINKEBY = "0xf6c0570D6edDF4A73ef61d707a5caCD1e0be564D"; //REPLACE_FLAG
 
 export const CONFIGADDRESS_ADDRESS_MAINNET = ''; //REPLACE_FLAG
 export const GAMEFACTORY_ADDRESS_MAINNET = ''; //REPLACE_FLAG
@@ -290,7 +290,7 @@ export function getStartBlockNumber(name: string): number {
 export async function GetConfigAddressByGameFactoryAddress(
   name: string,
   addr: string,
-  num: number = 0
+  num: number = 10
 ): Promise<ConfigAddress | null> {
   let where = '';
   if (addr != '') {
@@ -375,7 +375,7 @@ export async function GetConfigAddressByGameFactoryAddress(
       break;
   }
   if (rawdata == null) {
-    if (num < 10) {
+    if (num >= 0) {
       console.log('GetConfigAddressByGameFactoryAddress rawdata:null', addr, num);
       await new Promise((resolve) => {
         setTimeout(() => {
@@ -383,7 +383,7 @@ export async function GetConfigAddressByGameFactoryAddress(
           resolve(null);
         }, 3000);
       });
-      return GetConfigAddressByGameFactoryAddress(name, addr, ++num);
+      return GetConfigAddressByGameFactoryAddress(name, addr, --num);
     } else {
       return null;
     }
@@ -393,7 +393,7 @@ export async function GetConfigAddressByGameFactoryAddress(
     return null;
   }
   if (data.configAddresses) {
-    if (num < 10) {
+    if (num >= 0) {
       if (data.configAddresses.length == 0) {
         console.log('GetConfigAddressByGameFactoryAddress rrodata.configAddressesr:0', addr, num);
         await new Promise((resolve) => {
@@ -402,7 +402,7 @@ export async function GetConfigAddressByGameFactoryAddress(
             resolve(null);
           }, 2000);
         });
-        return GetConfigAddressByGameFactoryAddress(name, addr, ++num);
+        return GetConfigAddressByGameFactoryAddress(name, addr, --num);
       }
       return data.configAddresses[0] as ConfigAddress;
     } else {
