@@ -44,16 +44,18 @@ let main = async () => {
     ethers.utils.formatEther(blockGaslimit.mul(gasprice))
   );
 
-  const instanceLGame = (await (await ethers.getContractFactory('LGame')).connect(owner).deploy()) as LGame;
+  let lGameContractFactory = await ethers.getContractFactory('LGame');
+  const instanceLGame = (await lGameContractFactory.connect(owner).deploy({
+    gasLimit: await ethers.provider.estimateGas(lGameContractFactory.getDeployTransaction()),
+  })) as LGame;
   console.log('new LGame address:', instanceLGame.address);
-  const instanceLGameFactory = (await (
-    await ethers.getContractFactory('LGameFactory', { libraries: { LGame: instanceLGame.address } })
-  )
-    .connect(owner)
-    .deploy({
-      gasPrice: gasprice,
-      gasLimit: blockGaslimit,
-    })) as LGameFactory;
+  let lgameFactoryContractFactory = await ethers.getContractFactory('LGameFactory', {
+    libraries: { LGame: instanceLGame.address },
+  });
+  const instanceLGameFactory = (await lgameFactoryContractFactory.connect(owner).deploy({
+    gasPrice: gasprice,
+    gasLimit: await ethers.provider.estimateGas(lgameFactoryContractFactory.getDeployTransaction()),
+  })) as LGameFactory;
   console.log('new LGameFactory address:', instanceLGameFactory.address);
 
   let instanceConfigAddress: ConfigAddress;
@@ -72,10 +74,10 @@ let main = async () => {
   }
   console.log('config address:', instanceConfigAddress.address);
   const tmp0 = await ethers.getContractFactory('ERC20Faucet');
-  console.log(
-    'deploy ERC20Faucet gas:',
-    ethers.utils.formatEther((await owner.estimateGas(tmp0.getDeployTransaction('WETH9', 'WETH9', 18))).mul(gasprice))
-  );
+  // console.log(
+  //   'deploy ERC20Faucet gas:',
+  //   ethers.utils.formatEther((await owner.estimateGas(tmp0.getDeployTransaction('WETH9', 'WETH9', 18))).mul(gasprice))
+  // );
   let deadline = boutils.GetUnixTimestamp() + 86400;
   let tmp1 = await ethers.getContractFactory('Game', { libraries: { LGame: instanceLGame.address } });
   console.log(
@@ -92,10 +94,11 @@ let main = async () => {
   const tmp2 = await ethers.getContractFactory('GameFactory', {
     libraries: { LGameFactory: instanceLGameFactory.address },
   });
+  // await boutils.Sleep(10000);
   console.log(
     'deploy GameFactory gas:',
     // ethers.utils.formatEther(
-    //   (await owner.estimateGas(tmp2.getDeployTransaction(owner.address, owner.address))).mul(gasprice)
+    //   (await ethers.provider.estimateGas(tmp2.getDeployTransaction(owner.address, owner.address))).mul(gasprice)
     // ),
     tmp2.bytecode.length
   );
@@ -106,17 +109,16 @@ let main = async () => {
   }
 
   let instanceWETH9;
+  let erc20ContractFactory = await ethers.getContractFactory('ERC20Faucet');
   if (configAddress && configAddress.wethToken) {
-    instanceWETH9 = (await ethers.getContractFactory('ERC20Faucet'))
+    instanceWETH9 = erc20ContractFactory
       .connect(owner)
       .attach((configAddress.wethToken as any as ERC20Faucet).id) as ERC20Faucet;
     console.log('reuse WETH9 address:', instanceWETH9.address);
   } else {
-    instanceWETH9 = (await (await ethers.getContractFactory('ERC20Faucet'))
-      .connect(owner)
-      .deploy('WETH9', 'WETH9', 18, {
-        gasLimit: blockGaslimit,
-      })) as ERC20Faucet;
+    instanceWETH9 = (await erc20ContractFactory.connect(owner).deploy('WETH9', 'WETH9', 18, {
+      gasLimit: await ethers.provider.estimateGas(erc20ContractFactory.getDeployTransaction('WETH9', 'WETH9', 18)),
+    })) as ERC20Faucet;
     console.log('new WETH9 address:', instanceWETH9.address);
   }
   let instanceNDLToken;
@@ -129,19 +131,26 @@ let main = async () => {
     instanceNDLToken = (await (await ethers.getContractFactory('ERC20Faucet'))
       .connect(owner)
       .deploy('NoodleToken', 'NDLT', 18, {
-        gasLimit: blockGaslimit,
+        gasLimit: await ethers.provider.estimateGas(
+          erc20ContractFactory.getDeployTransaction('NoodleToken', 'NDLT', 18)
+        ),
       })) as ERC20Faucet;
     console.log('new NoodleToken address:', instanceNDLToken.address);
   }
 
   let instanceVote: Vote;
-  instanceVote = (await (await ethers.getContractFactory('Vote'))
-    .connect(owner)
-    .deploy(instanceNDLToken.address)) as Vote;
+  let voteContractFactory = await ethers.getContractFactory('Vote');
+  instanceVote = (await voteContractFactory.connect(owner).deploy(instanceNDLToken.address, {
+    gasLimit: blockGaslimit,
+    // gasLimit: await ethers.provider.estimateGas(voteContractFactory.getDeployTransaction(instanceNDLToken.address)),
+  })) as Vote;
   console.log('new Vote address:', instanceVote.address);
 
   let instancePlayNFT: PlayNFT;
-  instancePlayNFT = (await (await ethers.getContractFactory('PlayNFT')).connect(owner).deploy()) as PlayNFT;
+  let nftContractFactory = await ethers.getContractFactory('PlayNFT');
+  instancePlayNFT = (await nftContractFactory.connect(owner).deploy({
+    gasLimit: await ethers.provider.estimateGas(nftContractFactory.getDeployTransaction()),
+  })) as PlayNFT;
   console.log('new PlayNFT address:', instancePlayNFT.address);
 
   let flag = '\\/\\/REPLACE_FLAG';
@@ -155,23 +164,26 @@ let main = async () => {
       .attach((configAddress.usdtToken as any as ERC20Faucet).id) as ERC20Faucet;
     console.log('reuse BUSDT address:', instanceUSDT.address, blockGaslimit.toString());
   } else {
-    instanceUSDT = (await (await ethers.getContractFactory('ERC20Faucet'))
-      .connect(owner)
-      .deploy('Test BUSDT', 'BUSDT', 6, {
-        gasLimit: blockGaslimit,
-      })) as ERC20Faucet;
+    instanceUSDT = (await erc20ContractFactory.connect(owner).deploy('Test BUSDT', 'BUSDT', 6, {
+      gasLimit: await ethers.provider.estimateGas(erc20ContractFactory.getDeployTransaction('Test BUSDT', 'BUSDT', 6)),
+    })) as ERC20Faucet;
     console.log('new BUSDT address:', instanceUSDT.address, blockGaslimit.toString());
   }
 
-  const instanceGameFactory = (await (
-    await ethers.getContractFactory('GameFactory', {
-      libraries: { LGameFactory: instanceLGameFactory.address },
-    })
-  )
+  let gameFactoryContractFactory = await ethers.getContractFactory('GameFactory', {
+    libraries: { LGameFactory: instanceLGameFactory.address },
+  });
+  const instanceGameFactory = (await gameFactoryContractFactory
     .connect(owner)
     .deploy(instanceNDLToken.address, instanceVote.address, instancePlayNFT.address, {
       gasPrice: gasprice,
-      gasLimit: blockGaslimit,
+      gasLimit: await ethers.provider.estimateGas(
+        gameFactoryContractFactory.getDeployTransaction(
+          instanceNDLToken.address,
+          instanceVote.address,
+          instancePlayNFT.address
+        )
+      ),
     })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
 
@@ -179,11 +191,14 @@ let main = async () => {
   key = 'GAMEFACTORY_ADDRESS_' + network.name.toUpperCase();
   boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceGameFactory.address + '"; ' + flag);
 
-  const instanceStaking = (await (await ethers.getContractFactory('NoodleStaking'))
+  let noodleStakeingContractFactory = await ethers.getContractFactory('NoodleStaking');
+  const instanceStaking = (await noodleStakeingContractFactory
     .connect(owner)
     .deploy(instanceNDLToken.address, instanceGameFactory.address, {
       gasPrice: gasprice,
-      gasLimit: blockGaslimit,
+      gasLimit: await ethers.provider.estimateGas(
+        noodleStakeingContractFactory.getDeployTransaction(instanceNDLToken.address, instanceGameFactory.address)
+      ),
     })) as NoodleStaking;
   console.log('new NoodleStaking address:', instanceStaking.address);
 
@@ -191,15 +206,13 @@ let main = async () => {
   key = 'STAKING_ADDRESS_' + network.name.toUpperCase();
   boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceStaking.address + '"; ' + flag);
 
-  console.log(
-    'xxxxxxxxxx:',
-    await instanceGameFactory.estimateGas['setNoodleStaking(address)'](instanceStaking.address)
-  );
-  await instanceGameFactory.setNoodleStaking(instanceStaking.address, {
+  // await boutils.Sleep(10000);
+  let tmpr = await instanceGameFactory.setNoodleStaking(instanceStaking.address, {
     gasPrice: gasprice,
-    gasLimit: await instanceGameFactory.estimateGas['setNoodleStaking(address)'](instanceStaking.address),
+    gasLimit: blockGaslimit,
+    // gasLimit: await instanceGameFactory.estimateGas['setNoodleStaking(address)'](instanceStaking.address),
   });
-
+  await tmpr.wait();
   const wethAddr = config.getTokenAddrBySymbol(tokens, 'WBNB');
   console.log('WETH address:', wethAddr);
 
@@ -214,7 +227,7 @@ let main = async () => {
     instanceGameFactory.address,
     chainId,
     instanceNDLToken.address,
-    instanceWETH9.address,
+    // instanceWETH9.address,
     instanceUSDT.address,
     config.getRpcUrlByNetwork(network.name),
     config.getBlockUrlByNetwork(network.name),
@@ -253,22 +266,23 @@ let main = async () => {
       const element = tokens[index];
       await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, element.address, element.symbol, {
         gasPrice: gasprice,
-        gasLimit: blockGaslimit,
+        gasLimit: instanceConfigAddress.estimateGas.upsertGameToken(
+          instanceGameFactory.address,
+          element.address,
+          element.symbol
+        ),
       });
       console.log('instanceConfigAddress.upsertGameToken:0:', element.address, element.symbol);
     }
   }
-  console.log('xxxxxxxxxxxxxx:0');
-  console.log('xxxxxxxxxxxxxx:0:', await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T0'));
+  // console.log('xxxxxxxxxxxxxx:0:', await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T0'));
   if (
     (await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T0')) ==
     '0x0000000000000000000000000000000000000000'
   ) {
-    console.log('xxxxxxxxxxxxxx:1');
     let t0;
     let tmpsymbol = 'T0';
     if (configAddress && configAddress.ndlToken) {
-      console.log('xxxxxxxxxxxxxx:2');
       for (let index = 0; index < configAddress.gameTokens.length; index++) {
         const element = configAddress.gameTokens[index] as any as ERC20Faucet;
         const ERC20Factory = await ethers.getContractFactory('ERC20Faucet');
@@ -281,13 +295,13 @@ let main = async () => {
       }
     }
     if (!t0) {
-      console.log('xxxxxxxxxxxxxx:3:', blockGaslimit);
-      t0 = (await (await ethers.getContractFactory('ERC20Faucet')).connect(owner).deploy('Test Token 0', tmpsymbol, 6, {
-        gasLimit: blockGaslimit,
+      t0 = (await erc20ContractFactory.connect(owner).deploy('Test Token 0', tmpsymbol, 6, {
+        gasLimit: await ethers.provider.estimateGas(
+          erc20ContractFactory.getDeployTransaction('Test Token 0', tmpsymbol, 6)
+        ),
       })) as ERC20Faucet;
       console.log('new T0 address:', t0.address);
     }
-    console.log('xxxxxxxxxxxxxx:4:', blockGaslimit);
     ret = await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, t0.address, tmpsymbol, {
       gasPrice: gasprice,
       gasLimit: await instanceConfigAddress.estimateGas['upsertGameToken(address,address,string)'](
@@ -298,12 +312,10 @@ let main = async () => {
     });
     console.log('instanceConfigAddress.upsertGameToken:1:', ret.gasPrice.toString());
   }
-  console.log('xxxxxxxxxxxxxx:5:', blockGaslimit);
   if (
     (await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T1')) ==
     '0x0000000000000000000000000000000000000000'
   ) {
-    console.log('xxxxxxxxxxxxxx:6:', blockGaslimit);
     let t1;
     let tmpsymbol = 'T1';
     if (configAddress && configAddress.ndlToken) {
@@ -319,8 +331,8 @@ let main = async () => {
       }
     }
     if (!t1) {
-      t1 = (await (await ethers.getContractFactory('ERC20Faucet')).connect(owner).deploy('Test Token 1', tmpsymbol, 6, {
-        gasLimit: blockGaslimit,
+      t1 = (await erc20ContractFactory.connect(owner).deploy('Test Token 1', tmpsymbol, 18, {
+        gasLimit: ethers.provider.estimateGas(erc20ContractFactory.getDeployTransaction('Test Token 1', tmpsymbol, 18)),
       })) as ERC20Faucet;
       console.log('new T1 address:', t1.address);
     }
@@ -334,12 +346,9 @@ let main = async () => {
     });
     console.log('instanceConfigAddress.upsertGameToken:2:', ret.gasPrice.toString());
   }
-  console.log('xxxxxxxxxxxxxx:7:', blockGaslimit);
-  let instanceERC20 = (await (await ethers.getContractFactory('ERC20Faucet'))
-    .connect(owner)
-    .deploy('Test BOST', 'BOST', 18, {
-      gasLimit: blockGaslimit,
-    })) as ERC20Faucet;
+  let instanceERC20 = (await erc20ContractFactory.connect(owner).deploy('Test BOST', 'BOST', 18, {
+    gasLimit: ethers.provider.estimateGas(erc20ContractFactory.getDeployTransaction('Test BOST', 'BOST', 18)),
+  })) as ERC20Faucet;
   console.log('GameERC20 address:', instanceERC20.address);
   let tmpsymbol = await instanceERC20.symbol();
   await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, instanceERC20.address, tmpsymbol, {
@@ -447,9 +456,13 @@ let main = async () => {
     });
     console.info('instanceGame.stakeGame:ok');
     // 开启质押挖矿
-    await instanceGameFactory.addStakeInfo(instanceGame.address, ethers.utils.parseEther('60'), deadline);
+    await (
+      await instanceGameFactory.addStakeInfo(instanceGame.address, ethers.utils.parseEther('60'), deadline)
+    ).wait();
     for (let index = 0; index < 1; index++) {
-      await boutils.advanceBlock();
+      if (network.name == 'devnet') {
+        await boutils.advanceBlock();
+      }
       console.log(
         'pending reward:',
         (await instanceStaking.getPendingReward(instanceGame.address, owner.address)).toString()
@@ -459,21 +472,27 @@ let main = async () => {
       await instanceGame.approve(instanceStaking.address, ethers.utils.parseEther('1.0'));
       console.log('xxxxxxx:1');
       await instanceStaking.deposit(instanceGame.address, ethers.utils.parseEther('0.01'), {
-        gasLimit: await instanceStaking.estimateGas['deposit(address,uint256)'](
-          instanceGame.address,
-          ethers.utils.parseEther('0.01')
-        ),
+        // gasLimit: await instanceStaking.estimateGas['deposit(address,uint256)'](
+        //   instanceGame.address,
+        //   ethers.utils.parseEther('0.01')
+        // ),
+        gasLimit: blockGaslimit.mul(2),
       });
-      console.log('xxxxxxx:1');
+      console.log('xxxxxxx:2');
       let pending = await instanceStaking.getPendingReward(instanceGame.address, owner.address);
+      console.log('xxxxxxx:3');
       await instanceStaking.withdraw(instanceGame.address, pending.div(2), {
-        gasLimit: await instanceStaking.estimateGas['withdraw(address,uint256)'](instanceGame.address, pending.div(2)),
+        // gasLimit: await instanceStaking.estimateGas['withdraw(address,uint256)'](instanceGame.address, pending.div(2)),
+        gasLimit: blockGaslimit.mul(2),
         from: owner.address,
       });
+      console.log('xxxxxxx:4');
       await instanceGame.openGame(0, {
         gasPrice: gasprice,
+        // gasLimit: await instanceGame.estimateGas['openGame(uint8)'](0),
         gasLimit: blockGaslimit,
       });
+      console.log('xxxxxxx:1');
       console.info('instanceGame.openGame:ok');
       await instanceGame.challengeGame(0, {
         gasPrice: gasprice,
@@ -491,6 +510,19 @@ let main = async () => {
     blockGaslimit.toString(),
     (await ethers.provider.getBlock('latest')).gasLimit.toString()
   );
+  let tmpLimit = blockGaslimit;
+  // let tmpLimit = await instanceGameFactory.estimateGas[
+  //   'createGame(address,string,string,string[],uint256[],string,uint256)'
+  // ](
+  //   instanceERC20.address,
+  //   'Test T0',
+  //   'T0',
+  //   ['BIG', 'SMALL'],
+  //   [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
+  //   'https://github.com/NoodleDAO/noodleswap',
+  //   deadline
+  // );
+  console.log('xxxx:tmpLimit:', tmpLimit.toString(), gameFactoryContractFactory.bytecode.length);
   let ret1 = instanceGameFactory.createGame(
     instanceERC20.address,
     'Test T0',
@@ -501,25 +533,14 @@ let main = async () => {
     deadline,
     {
       gasPrice: gasprice.add(1),
-      gasLimit: await instanceGameFactory.estimateGas[
-        'createGame(address,string,string,string[],uint256[],string,uint256)'
-      ](
-        instanceERC20.address,
-        'Test T0',
-        'T0',
-        ['BIG', 'SMALL'],
-        [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
-        'https://github.com/NoodleDAO/noodleswap',
-        deadline
-      ),
+      gasLimit: tmpLimit.mul(2),
     }
   );
-  console.log(ret1);
   let ret2 = await ret1;
   console.log(ret1);
   console.log(ret2);
   let ret3 = await ret2.wait(1);
-  console.log(ret2);
+  // console.log(ret2);
   console.log(ret3);
   console.log('-------instanceGameFactory.createGame--------end');
   // await instanceGameFactory.createGame(

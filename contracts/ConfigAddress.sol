@@ -7,7 +7,6 @@ contract ConfigAddress {
         address indexed factoryAddress,
         uint256 indexed chainId,
         address ndlToken,
-        address wethToken,
         address usdtToken,
         string rpcUrl,
         string blockUrl,
@@ -32,8 +31,6 @@ contract ConfigAddress {
         address faucetAddress;
         // 保证金合约地址,治理代币
         address ndlToken;
-        // WETH合约地址
-        address wethToken;
         // USDT合约地址
         address usdtToken;
         // 区块浏览器地址
@@ -62,7 +59,6 @@ contract ConfigAddress {
         address factoryAddress,
         uint256 chainId,
         address ndlToken,
-        address wethToken,
         address usdtToken,
         string memory rpcUrl,
         string memory blockUrl,
@@ -72,13 +68,8 @@ contract ConfigAddress {
         address playNFTAddress
     ) public {
         require(_owner == msg.sender, 'only owner can upsert');
-        require(factoryAddress != address(0), 'factoryAddress invalid');
-        require(ndlToken != address(0), 'ndlToken invalid');
-        require(wethToken != address(0), 'wethToken invalid');
-        require(usdtToken != address(0), 'usdtToken invalid');
         Config storage config = configMap[factoryAddress];
         config.factoryAddress = factoryAddress;
-        config.wethToken = wethToken;
         config.ndlToken = ndlToken;
         config.usdtToken = usdtToken;
         config.blockUrl = blockUrl;
@@ -93,7 +84,6 @@ contract ConfigAddress {
             factoryAddress,
             chainId,
             ndlToken,
-            wethToken,
             usdtToken,
             rpcUrl,
             blockUrl,
@@ -110,142 +100,6 @@ contract ConfigAddress {
     return config = configMap[factoryAddress];
   }
   // */
-
-    function updateVoteAddress(address factoryAddress, address voteAddress) public {
-        Config storage config = configMap[factoryAddress];
-        upsert(
-            config.factoryAddress,
-            config.chainId,
-            config.ndlToken,
-            config.wethToken,
-            config.usdtToken,
-            config.rpcUrl,
-            config.blockUrl,
-            config.networkName,
-            voteAddress,
-            config.stakingAddress,
-            config.playNFTAddress
-        );
-    }
-
-    function updateStakingAddress(address factoryAddress, address stakingAddress) public {
-        Config storage config = configMap[factoryAddress];
-        upsert(
-            config.factoryAddress,
-            config.chainId,
-            config.ndlToken,
-            config.wethToken,
-            config.usdtToken,
-            config.rpcUrl,
-            config.blockUrl,
-            config.networkName,
-            config.voteAddress,
-            stakingAddress,
-            config.playNFTAddress
-        );
-    }
-
-    function updatePlayNFTAddress(address factoryAddress, address playNFTAddress) public {
-        Config storage config = configMap[factoryAddress];
-        upsert(
-            config.factoryAddress,
-            config.chainId,
-            config.ndlToken,
-            config.wethToken,
-            config.usdtToken,
-            config.rpcUrl,
-            config.blockUrl,
-            config.networkName,
-            config.voteAddress,
-            config.stakingAddress,
-            playNFTAddress
-        );
-    }
-
-    function updateGstToken(address factoryAddress, address ndlToken) public {
-        Config storage config = configMap[factoryAddress];
-        upsert(
-            config.factoryAddress,
-            config.chainId,
-            ndlToken,
-            config.wethToken,
-            config.usdtToken,
-            config.rpcUrl,
-            config.blockUrl,
-            config.networkName,
-            config.voteAddress,
-            config.stakingAddress,
-            config.playNFTAddress
-        );
-    }
-
-    function updateWethToken(address factoryAddress, address wethToken) public {
-        Config storage config = configMap[factoryAddress];
-        upsert(
-            config.factoryAddress,
-            config.chainId,
-            config.ndlToken,
-            wethToken,
-            config.usdtToken,
-            config.rpcUrl,
-            config.blockUrl,
-            config.networkName,
-            config.voteAddress,
-            config.stakingAddress,
-            config.playNFTAddress
-        );
-    }
-
-    function updateUsdtToken(address factoryAddress, address usdtToken) public {
-        Config storage config = configMap[factoryAddress];
-        upsert(
-            config.factoryAddress,
-            config.chainId,
-            config.ndlToken,
-            config.wethToken,
-            usdtToken,
-            config.rpcUrl,
-            config.blockUrl,
-            config.networkName,
-            config.voteAddress,
-            config.stakingAddress,
-            config.playNFTAddress
-        );
-    }
-
-    function updateRpcUrl(address factoryAddress, string memory rpcUrl) public {
-        Config storage config = configMap[factoryAddress];
-        upsert(
-            config.factoryAddress,
-            config.chainId,
-            config.ndlToken,
-            config.wethToken,
-            config.usdtToken,
-            rpcUrl,
-            config.blockUrl,
-            config.networkName,
-            config.voteAddress,
-            config.stakingAddress,
-            config.playNFTAddress
-        );
-    }
-
-    function updateBlockUrl(address factoryAddress, string memory blockUrl) public {
-        Config storage config = configMap[factoryAddress];
-        upsert(
-            config.factoryAddress,
-            config.chainId,
-            config.ndlToken,
-            config.wethToken,
-            config.usdtToken,
-            config.rpcUrl,
-            blockUrl,
-            config.networkName,
-            config.voteAddress,
-            config.stakingAddress,
-            config.playNFTAddress
-        );
-    }
 
     function upsertGameToken(
         address factoryAddress,
@@ -285,9 +139,6 @@ contract ConfigAddress {
         uint256 wad
     ) public {
         Config storage config = configMap[factoryAddress];
-        if (config.wethToken != address(0)) {
-            faucet(config.wethToken, to, wad);
-        }
         if (config.usdtToken != address(0)) {
             faucet(config.usdtToken, to, wad);
         }

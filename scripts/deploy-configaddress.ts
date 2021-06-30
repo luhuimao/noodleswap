@@ -22,10 +22,13 @@ let main = async () => {
   console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));
 
   let gasLimit = (await ethers.provider.getBlock('latest')).gasLimit;
-  const instance = (await (await ethers.getContractFactory('ConfigAddress')).connect(owner).deploy({
+  let configAddressContractFactory = await ethers.getContractFactory('ConfigAddress');
+  const instance = (await configAddressContractFactory.connect(owner).deploy({
     gasLimit: gasLimit,
+    // gasLimit: await ethers.provider.estimateGas(configAddressContractFactory.getDeployTransaction()),
   })) as ConfigAddress;
-  console.log('new ConfigAddress address:', instance.address);
+  console.log('new ConfigAddress address:', instance.address, configAddressContractFactory.bytecode.length);
+  console.log('xxxxx:', await instance.getGameToken(instance.address, 'xx'));
   gasLimit = await instance.estimateGas['upsertGameToken(address,address,string)'](
     instance.address,
     instance.address,

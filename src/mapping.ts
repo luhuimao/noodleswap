@@ -38,9 +38,9 @@ export function handleUpsertConfig(event: UpsertConfig): void {
     ndlToken.decimals = BigInt.fromI32(18);
     ndlToken.save();
   }
-  let wethToken = ERC20Token.load(event.params.wethToken.toHexString());
+  let wethToken = ERC20Token.load(event.params.usdtToken.toHexString());
   if (wethToken == null) {
-    wethToken = new ERC20Token(event.params.wethToken.toHexString());
+    wethToken = new ERC20Token(event.params.usdtToken.toHexString());
     wethToken.name = event.params.networkName + ' WETH';
     wethToken.symbol = 'WETH';
     wethToken.decimals = BigInt.fromI32(18);

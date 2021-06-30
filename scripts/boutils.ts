@@ -14,3 +14,12 @@ export function GetUnixTimestamp(): number {
 export async function advanceBlock() {
   return ethers.provider.send('evm_mine', []);
 }
+
+export async function Sleep(msec: number) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log('xxxxxxxx:');
+      resolve(null);
+    }, msec);
+  });
+}
