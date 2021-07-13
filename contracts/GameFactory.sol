@@ -72,6 +72,9 @@ contract GameFactory is IGameFactory {
             sum += _optionNum[i];
         }
         TransferHelper.safeTransferFrom(_token, msg.sender, _game, sum);
+
+        INoodleStaking(noodleStaking).addStakeInfo(_game, 60*10e18, _endTime);
+        
         emit _GameCreated(
             _token,
             _game,
