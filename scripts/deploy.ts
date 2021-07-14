@@ -396,12 +396,13 @@ let main = async () => {
       boutils.GetUnixTimestamp() + 1000,
       {
         gasPrice: gasprice,
-        gasLimit: await instanceGame.estimateGas['placeGame(uint8[],uint256[],uint256,uint256)'](
-          [0],
-          [ethers.utils.parseEther('10')],
-          0,
-          boutils.GetUnixTimestamp() + 1000
-        ),
+        gasLimit: blockGaslimit,
+        // gasLimit: await instanceGame.estimateGas['placeGame(uint8[],uint256[],uint256,uint256)'](
+        //   [0],
+        //   [ethers.utils.parseEther('10')],
+        //   0,
+        //   boutils.GetUnixTimestamp() + 1000
+        // ),
       }
     );
     await instanceGame.placeGame([0], [ethers.utils.parseEther('15')], 0, boutils.GetUnixTimestamp() + 1000, {
@@ -456,37 +457,39 @@ let main = async () => {
     });
     console.info('instanceGame.stakeGame:ok');
     // 开启质押挖矿
-    await (
-      await instanceGameFactory.addStakeInfo(instanceGame.address, ethers.utils.parseEther('60'), deadline)
-    ).wait();
+    // await (
+    //   await instanceGameFactory.addStakeInfo(instanceGame.address, ethers.utils.parseEther('60'), deadline)
+    // ).wait();
     for (let index = 0; index < 1; index++) {
       if (network.name == 'devnet') {
         await boutils.advanceBlock();
       }
       console.log(
+        'instanceStaking.noodlePerSecond:',
+        await (await instanceStaking.stakeInfoMap(instanceGame.address)).noodlePerBlock.toString()
+      );
+      console.log(
         'pending reward:',
         (await instanceStaking.getPendingReward(instanceGame.address, owner.address)).toString()
       );
-      console.log('xxxxxxx:0');
       // await instanceGame['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('100'));
-      await instanceGame.approve(instanceStaking.address, ethers.utils.parseEther('1.0'));
-      console.log('xxxxxxx:1');
-      await instanceStaking.deposit(instanceGame.address, ethers.utils.parseEther('0.01'), {
-        // gasLimit: await instanceStaking.estimateGas['deposit(address,uint256)'](
-        //   instanceGame.address,
-        //   ethers.utils.parseEther('0.01')
-        // ),
-        gasLimit: blockGaslimit.mul(2),
+      console.log('xxxxxxx:0:');
+      await instanceGame.approve(instanceStaking.address, ethers.utils.parseEther('1.0'), {
+        gasLimit: blockGaslimit,
       });
-      console.log('xxxxxxx:2');
+      console.log('xxxxxxx:1:');
+      await instanceStaking.deposit(instanceGame.address, ethers.utils.parseEther('0.01'), {
+        gasLimit: blockGaslimit,
+      });
+      console.log('xxxxxxx:2:');
       let pending = await instanceStaking.getPendingReward(instanceGame.address, owner.address);
-      console.log('xxxxxxx:3');
+      console.log('xxxxxxx:3:');
       await instanceStaking.withdraw(instanceGame.address, pending.div(2), {
         // gasLimit: await instanceStaking.estimateGas['withdraw(address,uint256)'](instanceGame.address, pending.div(2)),
-        gasLimit: blockGaslimit.mul(2),
+        gasLimit: blockGaslimit,
         from: owner.address,
       });
-      console.log('xxxxxxx:4');
+      console.log('xxxxxxx:4:');
       await instanceGame.openGame(0, {
         gasPrice: gasprice,
         // gasLimit: await instanceGame.estimateGas['openGame(uint8)'](0),
@@ -501,9 +504,11 @@ let main = async () => {
       console.info('instanceGame.challengeGame:ok');
       await instanceVote.add(instanceGame.address, owner.address, 1, {
         gasPrice: gasprice,
-        gasLimit: await instanceVote.estimateGas['add(address,address,uint8)'](instanceGame.address, owner.address, 1),
+        gasLimit: blockGaslimit,
+        // gasLimit: await instanceVote.estimateGas['add(address,address,uint8)'](instanceGame.address, owner.address, 1),
       });
     }
+    console.info('instanceVote.add:ok');
   });
   console.log(
     '-------instanceGameFactory.createGame--------',
@@ -533,7 +538,8 @@ let main = async () => {
     deadline,
     {
       gasPrice: gasprice.add(1),
-      gasLimit: tmpLimit.mul(2),
+      gasLimit: blockGaslimit,
+      // gasLimit: tmpLimit.mul(2),
     }
   );
   let ret2 = await ret1;

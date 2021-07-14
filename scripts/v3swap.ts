@@ -18,6 +18,11 @@ import * as boutils from './boutils';
 import moment from 'moment';
 const V3Pool = require('../abis/pool.json');
 
+// or const createLogger = require('logging');
+import createLogger from 'logging';
+
+const logger = createLogger('FeatureName');
+
 let main = async () => {
   console.log('network:', network.name, (await ethers.provider.getNetwork()).chainId);
   let user;
