@@ -607,7 +607,7 @@ export function handleDeposit(event: StakeEvent.EventDeposit): void {
   deposit.amount = event.params.amount;
   deposit.timestamp = event.block.timestamp;
   deposit.block = event.block.number;
-  user.amount.plus(event.params.amount);
+  user.amount = user.amount.plus(event.params.amount);
   stakeInfo.totalAllocLpToken = stakeInfo.totalAllocLpToken.plus(event.params.amount);
   stake.totalAllocLpToken = stake.totalAllocLpToken.plus(event.params.amount);
   log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:6:', []);
@@ -663,7 +663,7 @@ export function handleWithdraw(event: StakeEvent.EventWithdraw): void {
   deposit.amount = event.params.amount;
   deposit.timestamp = event.block.timestamp;
   deposit.block = event.block.number;
-  user.amount.minus(event.params.amount);
+  user.amount = user.amount.minus(event.params.amount);
   stakeInfo.totalAllocLpToken = stakeInfo.totalAllocLpToken.minus(event.params.amount);
   stake.totalAllocLpToken = stake.totalAllocLpToken.minus(event.params.amount);
   deposit.save();

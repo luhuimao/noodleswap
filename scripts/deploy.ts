@@ -121,7 +121,7 @@ let main = async () => {
     })) as ERC20Faucet;
     console.log('new WETH9 address:', instanceWETH9.address);
   }
-  let instanceNDLToken;
+  let instanceNDLToken: ERC20Faucet;
   if (configAddress && configAddress.ndlToken) {
     instanceNDLToken = (await ethers.getContractFactory('ERC20Faucet'))
       .connect(owner)
@@ -356,6 +356,8 @@ let main = async () => {
     gasLimit: blockGaslimit,
   });
   console.log('instanceConfigAddress.upsertGameToken:3:', instanceERC20.address, tmpsymbol);
+  //初始化可挖矿总额
+  await instanceNDLToken['faucet(address,uint256)'](instanceStaking.address, ethers.utils.parseEther('10000'));
   await instanceNDLToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   if (user) {
@@ -460,7 +462,7 @@ let main = async () => {
     // await (
     //   await instanceGameFactory.addStakeInfo(instanceGame.address, ethers.utils.parseEther('60'), deadline)
     // ).wait();
-    for (let index = 0; index < 1; index++) {
+    for (let index = 0; index < 2; index++) {
       if (network.name == 'devnet') {
         await boutils.advanceBlock();
       }
@@ -473,23 +475,24 @@ let main = async () => {
         (await instanceStaking.getPendingReward(instanceGame.address, owner.address)).toString()
       );
       // await instanceGame['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('100'));
-      console.log('xxxxxxx:0:');
+      let pending = await instanceStaking.getPendingReward(instanceGame.address, owner.address);
+      console.log('xxxxxxx:0:', (await instanceNDLToken.balanceOf(owner.address)).toString(), pending.toString());
       await instanceGame.approve(instanceStaking.address, ethers.utils.parseEther('1.0'), {
         gasLimit: blockGaslimit,
       });
-      console.log('xxxxxxx:1:');
+      pending = await instanceStaking.getPendingReward(instanceGame.address, owner.address);
+      console.log('xxxxxxx:1:', pending.toString());
       await instanceStaking.deposit(instanceGame.address, ethers.utils.parseEther('0.01'), {
         gasLimit: blockGaslimit,
       });
-      console.log('xxxxxxx:2:');
-      let pending = await instanceStaking.getPendingReward(instanceGame.address, owner.address);
-      console.log('xxxxxxx:3:');
+      pending = await instanceStaking.getPendingReward(instanceGame.address, owner.address);
+      console.log('xxxxxxx:2:', pending.toString());
       await instanceStaking.withdraw(instanceGame.address, pending.div(2), {
         // gasLimit: await instanceStaking.estimateGas['withdraw(address,uint256)'](instanceGame.address, pending.div(2)),
         gasLimit: blockGaslimit,
         from: owner.address,
       });
-      console.log('xxxxxxx:4:');
+      console.log('xxxxxxx:4:', (await instanceNDLToken.balanceOf(owner.address)).toString());
       await instanceGame.openGame(0, {
         gasPrice: gasprice,
         // gasLimit: await instanceGame.estimateGas['openGame(uint8)'](0),
