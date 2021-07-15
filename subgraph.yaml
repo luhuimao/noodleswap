@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0xDb5Cc57c2dF5f13CEcaA088988F6f4Cc2733310A" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x13e0F099821172FB2CCb4d78BE148DeE14820411" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -49,7 +49,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0xA0F74D9A311405a08CE778eF96BD00d3f7c4a961" #{{GAMEFACTORY_ADDRESS}}
+      address: "0x37afcB1d9476710F94cCF8313d25A0688a1D9eBE" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -78,7 +78,7 @@ dataSources:
     name: VoteInfo
     network: mainnet #replace mainnet
     source:
-      address: "0xAeF9e58EBec21ce388C093bA31abeDA144825eea" #{{VOTE_ADDRESS}}
+      address: "0xd0A94D68e9b105D3BdDc3A073494e6cB4d655607" #{{VOTE_ADDRESS}}
       abi: Vote
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -101,7 +101,7 @@ dataSources:
     name: NoodleStaking
     network: mainnet #replace mainnet
     source:
-      address: "0xE9C47C70787137af32A681816e930E7F090Da0f7" #{{STAKING_ADDRESS}}
+      address: "0x783Ca7D42780361b46472ab9e3859f40562094B9" #{{STAKING_ADDRESS}}
       abi: NoodleStaking
       startBlock: 0 #{{STARTBLOCK}}
     mapping:

@@ -284,6 +284,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
     nftInfo.tokenId = element;
     nftInfo.owner = event.params.sender;
     nftInfo.game = gameInfo.id;
+    nftInfo.bet = bet.id;
     nftInfo.save();
   }
   // VoteUserInfo,
@@ -325,11 +326,6 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
   let tokenIds = event.params.tokenIds;
   for (let index = 0; index < tokenIds.length; index++) {
     let element = tokenIds[index];
-    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
-    nftInfo.tokenId = element;
-    nftInfo.owner = event.params.sender;
-    nftInfo.game = gameInfo.id;
-    nftInfo.save();
   }
 
   let instanceGame = GameContract.bind(event.params.game);
@@ -369,6 +365,12 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
     bet.tokenIds = tokenIds;
     bet.timestamp = event.block.timestamp;
     bet.save();
+    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    nftInfo.tokenId = element;
+    nftInfo.owner = event.params.sender;
+    nftInfo.game = gameInfo.id;
+    nftInfo.bet = bet.id;
+    nftInfo.save();
   }
 }
 export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
@@ -381,11 +383,6 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
   let tokenIds = event.params.tokenIds;
   for (let index = 0; index < tokenIds.length; index++) {
     let element = tokenIds[index];
-    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
-    nftInfo.tokenId = element;
-    nftInfo.owner = event.params.sender;
-    nftInfo.game = gameInfo.id;
-    nftInfo.save();
   }
   let instanceGame = GameContract.bind(event.params.game);
   let ret = instanceGame.try_getOptions();
@@ -423,6 +420,12 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
     bet.tokenIds = tokenIds;
     bet.timestamp = event.block.timestamp;
     bet.save();
+    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    nftInfo.tokenId = element;
+    nftInfo.owner = event.params.sender;
+    nftInfo.game = gameInfo.id;
+    nftInfo.bet = bet.id;
+    nftInfo.save();
   }
 }
 export function handStakeGame(event: GameEvent._stakeGame): void {
@@ -604,6 +607,7 @@ export function handleDeposit(event: StakeEvent.EventDeposit): void {
   deposit.amount = event.params.amount;
   deposit.timestamp = event.block.timestamp;
   deposit.block = event.block.number;
+  user.amount.plus(event.params.amount);
   stakeInfo.totalAllocLpToken = stakeInfo.totalAllocLpToken.plus(event.params.amount);
   stake.totalAllocLpToken = stake.totalAllocLpToken.plus(event.params.amount);
   log.info('xxxxxxxxxxxxxxxxxx:handleDeposit:6:', []);
@@ -659,6 +663,7 @@ export function handleWithdraw(event: StakeEvent.EventWithdraw): void {
   deposit.amount = event.params.amount;
   deposit.timestamp = event.block.timestamp;
   deposit.block = event.block.number;
+  user.amount.minus(event.params.amount);
   stakeInfo.totalAllocLpToken = stakeInfo.totalAllocLpToken.minus(event.params.amount);
   stake.totalAllocLpToken = stake.totalAllocLpToken.minus(event.params.amount);
   deposit.save();

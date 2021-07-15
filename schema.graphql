@@ -120,6 +120,7 @@ type NFTInfo @entity {
   tokenId: BigInt! # token地址
   owner: Bytes! # 用户地址
   game: GameInfo! # 所属游戏
+  bet: BetInfo! # 下注记录
 }
 
 # 下注记录
