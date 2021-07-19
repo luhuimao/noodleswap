@@ -30,19 +30,15 @@ contract GameFactory is IGameFactory {
 
     address public noodleToken;
 
-    address public vote;
-
     address public noodleStaking;
 
     address public playNFT;
 
     constructor(
         address _noodleToken,
-        address _vote,
         address _playNFT
     ) {
         noodleToken = _noodleToken;
-        vote = _vote;
         playNFT = _playNFT;
     }
 
@@ -64,7 +60,6 @@ contract GameFactory is IGameFactory {
             _resultSource,
             _endTime,
             noodleToken,
-            vote,
             playNFT
         );
         uint256 sum = 0;

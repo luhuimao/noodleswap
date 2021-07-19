@@ -17,6 +17,7 @@ library LGame {
         uint256 marketNumber;
         uint256 placeNumber;
         uint256 frozenNumber;
+        uint256 voteNumber;
     }
 
     //p = (b + placeB) / (a + placeA)

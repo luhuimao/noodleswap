@@ -15,6 +15,7 @@ contract Vote is IVote, ConfigurableParametersContract {
     using SafeMath for uint256;
 
     address public noodleToken;
+
     struct VoteInfoStruct {
         address creator;
         bool start;
@@ -40,7 +41,7 @@ contract Vote is IVote, ConfigurableParametersContract {
             uint8 _challengeOption,
             uint256 _optionLength,
             uint256 _endTime) public  override {
-        VoteInfoStruct memory  voteInfo = voteMap[game];
+        VoteInfoStruct storage  voteInfo = voteMap[game];
         //require(voteInfo.start != true, 'NoodleSwap: Vote exist');
         voteInfo.start = true;
         voteInfo.creator = _creator;
@@ -57,9 +58,6 @@ contract Vote is IVote, ConfigurableParametersContract {
     function add(address game,address sender,uint8 option) public payable override {
         console.log('vote option:',option);
         //require(voteInfo.endTime > block.timestamp, 'NoodleSwap: Vote end');
-        uint256 balance = IERC20(noodleToken).balanceOf(sender);
-        require(balance >= voteNumber, 'NoodleSwap: vote address have not enough amount');
-        TransferHelper.safeTransferFrom(noodleToken, sender, address(this), voteNumber);
         voteDataMap[sender][game] = option;
         // require(option > 0 && option < voteMap[game].optionLength, 'NoodleSwap: vote option valid');
         voteMap[game].voteNumbers[option] += 1;

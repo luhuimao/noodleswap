@@ -26,11 +26,10 @@ library LGameFactory {
         string memory _resultSource,
         uint256 _endTime,
         address _noodleToken,
-        address _vote,
         address _playNTF
     ) public returns (address _game) {
         // Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime,noodleToken);
-        Game game = new Game(msg.sender, _token, _shortGameName,_optionNum, _endTime, _noodleToken, _vote,_playNTF);
+        Game game = new Game(msg.sender, _token, _shortGameName,_optionNum, _endTime, _noodleToken,_playNTF);
         //取第一个option的金额作为liquidity
         game.mint(msg.sender, _optionNum[0]);
         _game = address(game);

@@ -40,7 +40,7 @@ interface IGame {
 
     function addVote(uint8 option) external;
 
-    function openGameWithVote() external;
+    function getVoteAward() external;
 
     event _placeGame(
         address indexed game,
@@ -85,9 +85,10 @@ interface IGame {
         address indexed sender,
         address indexed game,
         uint256 originOption,
-        uint256 challengeOption,
-        address vote
+        uint256 challengeOption
     );
 
-    event _openGameWithVote(address indexed game, address indexed sender, address vote, uint256 voteOption);
+    event _addVote(address indexed game, address indexed sender, uint8 option,uint256[] voteNumbers,uint8 winOption);
+
+    event _getVoteAward(address indexed game, address indexed sender, uint8 option,uint256 winNumber);
 }
