@@ -61,7 +61,7 @@
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.3.0",
     "ethereumjs-util": "^7.0.8",
-    "ethers": "^5.1.2",
+    "ethers": "^5.4.1",
     "ganache-cli": "^6.12.2",
     "hardhat": "^2.3.0",
     "hardhat-gas-reporter": "^1.0.4",
