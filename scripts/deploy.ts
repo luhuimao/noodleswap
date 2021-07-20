@@ -175,14 +175,10 @@ let main = async () => {
   });
   const instanceGameFactory = (await gameFactoryContractFactory
     .connect(owner)
-    .deploy(instanceNDLToken.address, instanceVote.address, instancePlayNFT.address, {
+    .deploy(instanceNDLToken.address, instancePlayNFT.address, {
       gasPrice: gasprice,
       gasLimit: await ethers.provider.estimateGas(
-        gameFactoryContractFactory.getDeployTransaction(
-          instanceNDLToken.address,
-          instanceVote.address,
-          instancePlayNFT.address
-        )
+        gameFactoryContractFactory.getDeployTransaction(instanceNDLToken.address, instancePlayNFT.address)
       ),
     })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
@@ -257,7 +253,7 @@ let main = async () => {
   );
   //).wait(1);
   //console.log('instanceConfigAddress.upsert:', ret.transactionHash);
-  console.log('instanceConfigAddress.upsert:', ret.gasPrice.toString());
+  console.log('instanceConfigAddress.upsert:', ret.gasPrice!.toString());
   // */
 
   //await instanceConfigAddress.updateBlockUrl(instanceConfigAddress.address,"test4");
@@ -310,7 +306,7 @@ let main = async () => {
         tmpsymbol
       ),
     });
-    console.log('instanceConfigAddress.upsertGameToken:1:', ret.gasPrice.toString());
+    console.log('instanceConfigAddress.upsertGameToken:1:', ret.gasPrice!.toString());
   }
   if (
     (await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T1')) ==
@@ -344,7 +340,7 @@ let main = async () => {
         tmpsymbol
       ),
     });
-    console.log('instanceConfigAddress.upsertGameToken:2:', ret.gasPrice.toString());
+    console.log('instanceConfigAddress.upsertGameToken:2:', ret.gasPrice!.toString());
   }
   let instanceERC20 = (await erc20ContractFactory.connect(owner).deploy('Test BOST', 'BOST', 18, {
     gasLimit: ethers.provider.estimateGas(erc20ContractFactory.getDeployTransaction('Test BOST', 'BOST', 18)),
@@ -505,11 +501,11 @@ let main = async () => {
         gasLimit: blockGaslimit,
       });
       console.info('instanceGame.challengeGame:ok');
-      await instanceVote.add(instanceGame.address, owner.address, 1, {
-        gasPrice: gasprice,
-        gasLimit: blockGaslimit,
-        // gasLimit: await instanceVote.estimateGas['add(address,address,uint8)'](instanceGame.address, owner.address, 1),
-      });
+      // await instanceVote.add(instanceGame.address, owner.address, 1, {
+      //   gasPrice: gasprice,
+      //   gasLimit: blockGaslimit,
+      //   // gasLimit: await instanceVote.estimateGas['add(address,address,uint8)'](instanceGame.address, owner.address, 1),
+      // });
     }
     console.info('instanceVote.add:ok');
   });

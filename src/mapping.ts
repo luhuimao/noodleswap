@@ -2,7 +2,7 @@ import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/Config
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as StakeEvent from '../generated/NoodleStaking/NoodleStaking';
 import * as GameEvent from '../generated/templates/Game/Game';
-import * as VoteEvent from '../generated/VoteInfo/Vote';
+// import * as VoteEvent from '../generated/VoteInfo/Vote';
 import { Game as GameTemplate } from '../generated/templates';
 import { Game as GameContract } from '../generated/GameFactory/Game';
 // import { VoteInfo as VoteTemplate } from '../generated/templates';
@@ -493,7 +493,8 @@ export function handleBlock(block: ethereum.Block): void {
   //let entity = new Block(id)
   //entity.save()
 }
-export function handAddVote(event: VoteEvent._addVote): void {
+export function handGetVoteAward(event: GameEvent._getVoteAward): void {}
+export function handAddVote(event: GameEvent._addVote): void {
   log.info('xxxxxxxxxxxxxxxxxx:handAddVote:', []);
   var gameInfo = GameInfo.load(event.params.game.toHex());
   if (gameInfo == null) {
@@ -529,16 +530,16 @@ export function handAddVote(event: VoteEvent._addVote): void {
   voteInfo.save();
   gameInfo.save();
 }
-export function handStartVote(event: VoteEvent._startVote): void {
-  log.info('xxxxxxxxxxxxxxxxxx:handConfirmVote:', []);
-  var voteInfo = VoteInfo.load(event.params.game.toHex());
-  if (voteInfo == null) {
-    log.error('handStartVote VoteInfo game already exists: {}', [event.params.game.toHex()]);
-    return;
-  }
-  voteInfo.endTime = event.params._endTime;
-  voteInfo.save();
-}
+// export function handStartVote(event: VoteEvent._startVote): void {
+//   log.info('xxxxxxxxxxxxxxxxxx:handConfirmVote:', []);
+//   var voteInfo = VoteInfo.load(event.params.game.toHex());
+//   if (voteInfo == null) {
+//     log.error('handStartVote VoteInfo game already exists: {}', [event.params.game.toHex()]);
+//     return;
+//   }
+//   voteInfo.endTime = event.params._endTime;
+//   voteInfo.save();
+// }
 
 export function handGetAward(event: GameEvent._getAward): void {
   log.info('xxxxxxxxxxxxxxxxxx:handGetAward:', []);
