@@ -253,7 +253,13 @@ let main = async () => {
   );
   //).wait(1);
   //console.log('instanceConfigAddress.upsert:', ret.transactionHash);
-  console.log('instanceConfigAddress.upsert:', ret.gasPrice!.toString());
+  if (!ret.gasPrice) {
+    console.log('instanceConfigAddress.upsert:', ret);
+    let ret1 = await ret.wait();
+    console.log('instanceConfigAddress.upsert:', ret1);
+  } else {
+    console.log('instanceConfigAddress.upsert:', ret.gasPrice!.toString());
+  }
   // */
 
   //await instanceConfigAddress.updateBlockUrl(instanceConfigAddress.address,"test4");
@@ -300,13 +306,20 @@ let main = async () => {
     }
     ret = await instanceConfigAddress.upsertGameToken(instanceGameFactory.address, t0.address, tmpsymbol, {
       gasPrice: gasprice,
-      gasLimit: await instanceConfigAddress.estimateGas['upsertGameToken(address,address,string)'](
-        instanceGameFactory.address,
-        t0.address,
-        tmpsymbol
-      ),
+      gasLimit: blockGaslimit,
+      // gasLimit: await instanceConfigAddress.estimateGas['upsertGameToken(address,address,string)'](
+      //   instanceGameFactory.address,
+      //   t0.address,
+      //   tmpsymbol
+      // ),
     });
-    console.log('instanceConfigAddress.upsertGameToken:1:', ret.gasPrice!.toString());
+    if (!ret.gasPrice) {
+      console.log('instanceConfigAddress.upsert:', ret);
+      let ret1 = await ret.wait();
+      console.log('instanceConfigAddress.upsert:', ret1);
+    } else {
+      console.log('instanceConfigAddress.upsertGameToken:1:', ret.gasPrice!.toString());
+    }
   }
   if (
     (await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T1')) ==
@@ -340,7 +353,13 @@ let main = async () => {
         tmpsymbol
       ),
     });
-    console.log('instanceConfigAddress.upsertGameToken:2:', ret.gasPrice!.toString());
+    if (!ret.gasPrice) {
+      console.log('instanceConfigAddress.upsert:', ret);
+      let ret1 = await ret.wait();
+      console.log('instanceConfigAddress.upsert:', ret1);
+    } else {
+      console.log('instanceConfigAddress.upsertGameToken:2:', ret.gasPrice!.toString());
+    }
   }
   let instanceERC20 = (await erc20ContractFactory.connect(owner).deploy('Test BOST', 'BOST', 18, {
     gasLimit: ethers.provider.estimateGas(erc20ContractFactory.getDeployTransaction('Test BOST', 'BOST', 18)),
@@ -458,7 +477,7 @@ let main = async () => {
     // await (
     //   await instanceGameFactory.addStakeInfo(instanceGame.address, ethers.utils.parseEther('60'), deadline)
     // ).wait();
-    for (let index = 0; index < 2; index++) {
+    for (let index = 0; index < 1; index++) {
       if (network.name == 'devnet') {
         await boutils.advanceBlock();
       }
@@ -501,6 +520,10 @@ let main = async () => {
         gasLimit: blockGaslimit,
       });
       console.info('instanceGame.challengeGame:ok');
+      await instanceGame.addVote(1, {
+        gasPrice: gasprice,
+        gasLimit: blockGaslimit,
+      });
       // await instanceVote.add(instanceGame.address, owner.address, 1, {
       //   gasPrice: gasprice,
       //   gasLimit: blockGaslimit,

@@ -464,7 +464,7 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   // } else {
   //   voteInfo.winOption = BigInt.fromI32(0);
   // }
-  voteInfo.vote = event.params.vote;
+  voteInfo.vote = event.params.game;
   voteInfo.owner = event.params.sender;
   voteInfo.winOption = event.params.originOption;
   voteInfo.option = event.params.challengeOption;
@@ -493,7 +493,32 @@ export function handleBlock(block: ethereum.Block): void {
   //let entity = new Block(id)
   //entity.save()
 }
-export function handGetVoteAward(event: GameEvent._getVoteAward): void {}
+export function handGetVoteAward(event: GameEvent._getVoteAward): void {
+  var gameInfo = GameInfo.load(event.params.game.toHex());
+  if (gameInfo == null) {
+    log.error('handGetVoteAward GameInfo game not found: {}', [event.params.game.toHex()]);
+    return;
+  }
+  var voteInfo = VoteInfo.load(event.params.game.toHex());
+  if (voteInfo == null) {
+    log.error('handGetVoteAward VoteInfo vote not exists: {}', [event.params.game.toHex()]);
+    return;
+  }
+  let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
+  var voteUserInfo = VoteUserInfo.load(id);
+  if (voteUserInfo == null) {
+    log.error('handGetVoteAward VoteUserInfo game already exists: {}', [id]);
+    return;
+  }
+  voteUserInfo.winNumber = event.params.winNumber;
+  voteUserInfo.save();
+}
+//  event _addVote(address indexed game, address indexed sender, uint8 option,uint256[] voteNumbers,uint8 winOption);
+// event _getVoteAward(address indexed game, address indexed sender, uint8 option,uint256 winNumber);
+//     -    event _openGameWithVote(address indexed game, address indexed sender, address vote, uint256 voteOption);
+// +    event _addVote(address indexed game, address indexed sender, uint8 option,uint256[] voteNumbers,uint8 winOption);
+// +
+// +    event _getVoteAward(address indexed game, address indexed sender, uint8 option,uint256 winNumber);
 export function handAddVote(event: GameEvent._addVote): void {
   log.info('xxxxxxxxxxxxxxxxxx:handAddVote:', []);
   var gameInfo = GameInfo.load(event.params.game.toHex());

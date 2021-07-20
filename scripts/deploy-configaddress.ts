@@ -20,14 +20,15 @@ let main = async () => {
   // }
 
   console.log('deploy account:', owner.address, ethers.utils.formatEther((await owner.getBalance()).toString()));
-  await owner.sendTransaction({ value: 1, to: owner.address });
-  let logs = await ethers.provider.getLogs({ fromBlock: 'latest' });
-  console.log('logs:', logs);
+  // await owner.sendTransaction({ value: 1, to: owner.address });
+  // let logs = await ethers.provider.getLogs({ fromBlock: 'latest' });
+  // console.log('logs:', logs);
   // ethers.provider.on('pending', (tx: any) => {
   //   console.log('pending:', tx);
   // });
 
-  let gasLimit = (await ethers.provider.getBlock('latest')).gasLimit;
+  let gasLimit = (await ethers.provider.getBlock('latest')).gasLimit.div(2);
+  console.log('gasLimit:', gasLimit.toString());
   let configAddressContractFactory = await ethers.getContractFactory('ConfigAddress');
   const instance = (await configAddressContractFactory.connect(owner).deploy({
     gasLimit: gasLimit,

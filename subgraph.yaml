@@ -9,11 +9,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ConfigAddress
-    network: mainnet #replace mainnet
+    network: rinkeby #replace mainnet
     source:
-      address: '0xEe333C8591Bb9ecE70fe00C9d13fE628405E4A06' #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x0CE91cB68709b34fF21c21F248C544786E06a2E6" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8471670 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -47,11 +47,11 @@ dataSources:
   # GameFactory合约
   - kind: ethereum/contract
     name: GameFactory
-    network: mainnet #replace mainnet
+    network: rinkeby #replace mainnet
     source:
-      address: '0x8b4D4Ec58d8BA491341bB0E7fBe20FD80B4Daf82' #{{GAMEFACTORY_ADDRESS}}
+      address: "0xc59Db1CF6F39707e980Fd7D17535ce83a59AD256" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8471670 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -76,11 +76,11 @@ dataSources:
   # 投票合约
   # - kind: ethereum/contract
   #   name: VoteInfo
-  #   network: mainnet #replace mainnet
+  #   network: rinkeby #replace mainnet
   #   source:
-  #     address: '0xe390fd927aD6Fe184D633288FA507419C4a18d8e' #{{VOTE_ADDRESS}}
+  #     address: "0xc3000C4782276800d2a39e59C7b4dbabF0A58d87" #{{VOTE_ADDRESS}}
   #     abi: Vote
-  #     startBlock: 0 #{{STARTBLOCK}}
+  #     startBlock: 8471670 #{{STARTBLOCK}}
   #   mapping:
   #     kind: ethereum/events
   #     apiVersion: 0.0.4
@@ -99,11 +99,11 @@ dataSources:
   # 质押挖矿合约
   - kind: ethereum/contract
     name: NoodleStaking
-    network: mainnet #replace mainnet
+    network: rinkeby #replace mainnet
     source:
-      address: '0x04684774c26C3FcD9E5453C47DB2EAd906757D07' #{{STAKING_ADDRESS}}
+      address: "0x2958eD436F3E5Ff0AF4b2A77d8B427c560a22805" #{{STAKING_ADDRESS}}
       abi: NoodleStaking
-      startBlock: 0 #{{STARTBLOCK}}
+      startBlock: 8471670 #{{STARTBLOCK}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -131,7 +131,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: Game
-    network: mainnet #replace mainnet
+    network: rinkeby #replace mainnet
     source:
       abi: Game
     mapping:
