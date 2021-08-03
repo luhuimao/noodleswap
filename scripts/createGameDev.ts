@@ -5,6 +5,7 @@ import { LGameFactory } from '../typechain/LGameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import { Vote } from '../typechain/Vote';
 import { PlayNFT } from '../typechain/PlayNFT';
+import { NoodleStaking } from '../typechain/NoodleStaking';
 import { GameFactory } from '../typechain/GameFactory';
 import { Game } from '../typechain/Game';
 
@@ -59,9 +60,9 @@ let main = async () => {
     console.log('new NoodleToken address:', instanceNDLToken.address);
   }
 
-  let voteToken: Vote;
-  voteToken = (await (await ethers.getContractFactory('Vote')).connect(owner).deploy(instanceNDLToken.address)) as Vote;
-  console.log('new Vote address:', voteToken.address);
+  // let voteToken: Vote;
+  // voteToken = (await (await ethers.getContractFactory('Vote')).connect(owner).deploy(instanceNDLToken.address)) as Vote;
+  // console.log('new Vote address:', voteToken.address);
 
   let playNFTToken: PlayNFT;
   playNFTToken = (await (await ethers.getContractFactory('PlayNFT')).connect(owner).deploy()) as PlayNFT;
@@ -83,12 +84,31 @@ let main = async () => {
     })
   )
     .connect(owner)
-    .deploy(instanceNDLToken.address, voteToken.address, playNFTToken.address, {
+    .deploy(instanceNDLToken.address,  playNFTToken.address, {
       gasPrice: 1,
       gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
     })) as GameFactory;
   //.attach(config.getGameFactoryAddressByNetwork(network.name))) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
+
+  let noodleStakeingContractFactory = await ethers.getContractFactory('NoodleStaking');
+  const instanceStaking = (await noodleStakeingContractFactory
+    .connect(owner)
+    .deploy(instanceNDLToken.address, instanceGameFactory.address, {
+      gasPrice: 1,
+      gasLimit: await ethers.provider.estimateGas(
+        noodleStakeingContractFactory.getDeployTransaction(instanceNDLToken.address, instanceGameFactory.address)
+      ),
+    })) as NoodleStaking;
+  console.log('new NoodleStaking address:', instanceStaking.address);
+  
+  let tmpr = await instanceGameFactory.setNoodleStaking(instanceStaking.address, {
+    gasPrice: 1,
+    gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
+    // gasLimit: await instanceGameFactory.estimateGas['setNoodleStaking(address)'](instanceStaking.address),
+  });
+  await tmpr.wait();
+
   // 下注代币
   let eventFilter = instanceGameFactory.filters._GameCreated(
     instanceERC20.address,
@@ -127,28 +147,32 @@ let main = async () => {
       0,
       boutils.GetUnixTimestamp() + 1000
     );
-    await instanceGame.placeGame(
-      [1],
-      [ethers.utils.parseEther('20')],
-      0,
-      boutils.GetUnixTimestamp() + 1000
-    );
+    // await instanceGame.placeGame(
+    //   [1],
+    //   [ethers.utils.parseEther('20')],
+    //   0,
+    //   boutils.GetUnixTimestamp() + 1000
+    // );
     // console.log('game optionNames[0]:', await instanceGame.options(0));
     // console.log('game optionNames[1]:', await instanceGame.options(1));
-    //console.log('-------addLiquidity--------');
+    console.log('-------addLiquidity--------');
     let liquidity = await instanceGame.addLiquidity(ethers.utils.parseEther('102'),0,boutils.GetUnixTimestamp() + 1000);
     // console.log('add liquidity:');
     // console.log('game optionNames[0]:', await instanceGame.options(0));
     // console.log('game optionNames[1]:', await instanceGame.options(1));
-    //console.log('-------removeLiquidity--------');
+    console.log('-------removeLiquidity--------');
     let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'),0,boutils.GetUnixTimestamp() + 1000);
+    console.log('-------stakeGame--------');
     await instanceGame.stakeGame(0);
+    console.log('-------openGame--------');
     await instanceGame.openGame(0);
     // await instanceGame.getAward([0,1]);
-    await instanceGame.challengeGame(0);
-    await instanceGame.addVote(0);
+    console.log('-------challengeGame--------');
+    await instanceGame.challengeGame(1);
+    console.log('-------addVote--------');
     await instanceGame.addVote(1);
-    await instanceGame.addVote(0);
+    console.log('-------getVoteAward--------');
+    await instanceGame.getVoteAward();
   });
   await instanceGameFactory.createGame(
     instanceERC20.address,

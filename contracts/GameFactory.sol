@@ -51,6 +51,10 @@ contract GameFactory is IGameFactory {
         string memory _resultSource,
         uint256 _endTime
     ) public override ensure(_endTime) returns (address _game) {
+        uint256 sum = 0;
+        for (uint256 i = 0; i < _optionNum.length; i++) {
+            sum += _optionNum[i];
+        }
         _game = gameMap.createGame(
             _token,
             _gameName,
@@ -62,10 +66,6 @@ contract GameFactory is IGameFactory {
             noodleToken,
             playNFT
         );
-        uint256 sum = 0;
-        for (uint256 i = 0; i < _optionNum.length; i++) {
-            sum += _optionNum[i];
-        }
         TransferHelper.safeTransferFrom(_token, msg.sender, _game, sum);
 
         emit _GameCreated(
