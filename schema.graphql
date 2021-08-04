@@ -121,6 +121,7 @@ type NFTInfo @entity {
   owner: Bytes! # 用户地址
   game: GameInfo! # 所属游戏
   bet: BetInfo! # 下注记录
+  finishReward: BigInt # 是否已领奖,非空表示已领
 }
 
 # 下注记录
@@ -133,6 +134,7 @@ type BetInfo @entity {
   options: [Int!]! # 选项数据
   optionNum: [BigInt!]! # 选项数据
   tokenIds: [BigInt!]! # 选项数据
+  nftInfos: [NFTInfo!]! @derivedFrom(field: "bet") # nft列表
   timestamp: BigInt! #  下注时间
 }
 
