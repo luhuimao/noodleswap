@@ -320,7 +320,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }else {
             noodleAward = stakeNumber + stakeNumber * 3 / 10;
         }
-        TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), noodleAward);
+        TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, noodleAward);
         uint256 feeAward = fee * 10 / 100;
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, feeAward);
         emit _getConfirmAward(address(this),msg.sender, noodleAward, feeAward);
