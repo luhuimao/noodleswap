@@ -209,7 +209,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //获得奖励
-    function getAward(uint256[] memory tokenIds) public payable gameEndCheck(endTime) returns (uint256 amount) {
+    function getAward(uint256[] memory tokenIds) public payable  returns (uint256 amount) {
         require(isGameClose() < 100, 'NoodleSwap: Game is not over');
         console.log('winOption:', winOption);
         amount = playInfoMap.getAward(tokenIds, winOption, playNFT);
