@@ -45,7 +45,7 @@ library LGame {
             }
             if (self[tokenIds[i]].option == winOption) {
                 //用户赢了，则将币转给用户
-                amount += self[tokenIds[i]].allFrozen;
+                amount += self[tokenIds[i]].optionNum + self[tokenIds[i]].allFrozen;
             }
             self[tokenIds[i]].option = 200; //表示已经领取
         }
