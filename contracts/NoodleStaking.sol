@@ -166,6 +166,7 @@ contract NoodleStaking is INoodleStaking {
     // Safe noodle transfer function, just in case if rounding error causes pool to not have enough NOODLEs.
     function safeNoodleTransfer(address _to, uint256 _amount) internal {
         uint256 noodleBal = noodle.balanceOf(address(this));
+        require(noodleBal > 0, 'noodleToken not enough');
         if (_amount > noodleBal) {
             noodle.transfer(_to, noodleBal);
         } else {

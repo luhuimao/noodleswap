@@ -90,5 +90,7 @@ interface IGame {
 
     event _addVote(address indexed game, address indexed sender, uint8 option,uint256[] voteNumbers,uint8 winOption);
 
-    event _getVoteAward(address indexed game, address indexed sender, uint8 option,uint256 winNumber);
+    event _getVoteAward(address indexed game, address indexed sender, uint256 noodleAward,uint256 feeAward);
+
+    event _getConfirmAward(address indexed game, address indexed sender, uint256 noodleAward,uint256 feeAward);
 }

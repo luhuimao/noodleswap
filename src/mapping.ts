@@ -365,7 +365,8 @@ export function handAddLiquidity(event: GameEvent._addLiquidity): void {
     bet.tokenIds = tokenIds;
     bet.timestamp = event.block.timestamp;
     bet.save();
-    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    // let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    let nftInfo = new NFTInfo(id);
     nftInfo.tokenId = element;
     nftInfo.owner = event.params.sender;
     nftInfo.game = gameInfo.id;
@@ -420,7 +421,8 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
     bet.tokenIds = tokenIds;
     bet.timestamp = event.block.timestamp;
     bet.save();
-    let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    // let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
+    let nftInfo = new NFTInfo(id);
     nftInfo.tokenId = element;
     nftInfo.owner = event.params.sender;
     nftInfo.game = gameInfo.id;
@@ -582,6 +584,15 @@ export function handGetAward(event: GameEvent._getAward): void {
   }
   gameUserInfo.sender = event.params.sender;
   gameUserInfo.finishReward = event.params.amount;
+  let tokenIds = event.params.tokenIds;
+  for (let index = 0; index < tokenIds.length; index++) {
+    let element = tokenIds[index];
+    var nftInfo = NFTInfo.load(element.toHex() + '-' + gameInfo.id);
+    if (nftInfo) {
+      nftInfo.finishReward = event.params.amount;
+      nftInfo.save();
+    }
+  }
   gameUserInfo.save();
   //VoteTemplate.create(event.params.vote);
 }

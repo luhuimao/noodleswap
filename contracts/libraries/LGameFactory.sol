@@ -28,10 +28,12 @@ library LGameFactory {
         address _noodleToken,
         address _playNTF
     ) public returns (address _game) {
-        // Game game = new Game(msg.sender, _token, _gameName, _optionName, _optionNum, _resultSource, _endTime,noodleToken);
+        uint256 sum = 0;
+        for (uint256 i = 0; i < _optionNum.length; i++) {
+            sum += _optionNum[i];
+        }
         Game game = new Game(msg.sender, _token, _shortGameName,_optionNum, _endTime, _noodleToken,_playNTF);
-        //取第一个option的金额作为liquidity
-        game.mint(msg.sender, _optionNum[0]);
+        game.mint(msg.sender, sum);
         _game = address(game);
         GameStruct memory gameStruct;
         gameStruct.creator = msg.sender;
@@ -44,7 +46,5 @@ library LGameFactory {
         gameMap[_game] = gameStruct;
     }
 
-    //option,optionNum,optionP,allFrozen,返回tokenId
-    //p = (b + placeB) / (a + placeA)
     function _none(uint256 a, uint256 b) public pure returns (uint256 p) {}
 }

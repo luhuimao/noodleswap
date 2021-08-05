@@ -6,7 +6,7 @@ contract ConfigurableParametersContract {
     //Contract owner
     address public owner = address(0);
 
-    uint256 public stakeNumber = 100 ether;
+    uint256 public stakeNumber = 10 ether;
 
     uint256 public voteNumber = 1 ether;
 

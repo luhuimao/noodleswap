@@ -30,36 +30,45 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         _;
     }
 
+    uint256 public confirmResultSlot = 300;   //游戏结束时间到可输入结果时间，单位为s，设置为1h
+    uint256 public confirmSlot = 300;         //结果确认后时间，单位为s，设置为4h
+    uint256 public voteSlot = 300;            //投票时间，单位为s,设置为4h
+
     address public creator;
     address public token;
     
     uint256 public endTime;             //结束game时间
     uint256 public confirmResultTime;   //输入结果时间
-    uint256 public confirmSlot = 300;   //确认后时间，单位为s
-    uint256 public startVoteTime;       //开始投票时间，0表示没有开启投票
-    uint256 public voteSlot = 300;      //投票时间，单位为s
+    uint256 public challengeTime;       //质疑时间
+    uint256 public startVoteTime;       //开始投票时间
     
     address public openAddress;         //原始输入地址
     uint8  public originOption = 200;   //原始输入结果
     address public challengeAddress;    //挑战地址
     uint8  public challengeOption = 200;//挑战结果
     uint8  public winOption = 200;      //最终结果
+    
     uint8 private voteFlag = 100;       //投票标志
     uint8 private receiveFlag = 200;    //领奖标志
+    
+    uint256 public confirmResultAward = 100;  //结果输出者是否领奖
     mapping(address => uint8) public voteMap; //投票数据 
 
+    
     LGame.OptionDataStruct[] public options;
 
     mapping(uint256 => LGame.PlayInfoStruct) public playInfoMap;
 
-    //创建者手续费
-    uint256 public ownerFee = 0;
+    //手续费率
+    uint256 public feeRate = 5;  //0.5%
 
-    //平台手续费
-    uint256 public platformFee = 0;
+    //总手续费
+    uint256 public fee = 0;
 
     address public noodleToken;
-    // address public vote;
+
+    address public lockNoodleToken;
+    
     address public playNFT;
 
     constructor(
@@ -75,6 +84,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         token = _token;
         endTime = _endTime;
         noodleToken = _noodleToken;
+        lockNoodleToken = _noodleToken;
         for (uint8 i = 0; i < _optionNum.length; i++) {
             LGame.OptionDataStruct memory option;
             option.marketNumber = _optionNum[i];
@@ -100,9 +110,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }
         require(balance >= sum, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
-        tokenIds = playInfoMap.update(options, _options, _optionNum, playNFT, ownerFee, platformFee);
-        console.log('tokenIds:', tokenIds.length);
-        console.log('id:', tokenIds[0]);
+        uint256 placeFee;
+        (tokenIds,placeFee) = playInfoMap.update(options, _options, _optionNum, playNFT, feeRate);
+        fee = fee + placeFee;
         emit _placeGame(address(this), token, msg.sender, _options, _optionNum, tokenIds, _getOptions());
     }
 
@@ -136,12 +146,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 balance = IERC20(token).balanceOf(address(msg.sender));
         require(balance >= amount, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), amount);
-        uint256 initOption0MarketNumber = options[0].marketNumber;
         uint256 sum = 0;
         uint256 frozenSum = 0;
-        (tokenIds, sum, frozenSum) = playInfoMap.addLiquidity(options, playNFT, amount);
-        //以第一个池子的数来计算生成的做市币数量
-        liquidity = (initOption0MarketNumber * amount) / sum;
+        (tokenIds, sum, frozenSum,liquidity) = playInfoMap.addLiquidity(options, playNFT, amount);
         _mint(msg.sender, liquidity);
         emit _addLiquidity(address(this), token, msg.sender, amount, liquidity, tokenIds, _getOptions());
     }
@@ -154,14 +161,16 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 balance = balanceOf[address(msg.sender)];
         require(balance >= _liquidity, 'NoodleSwap: address have not enough amount');
         _burn(msg.sender, _liquidity);
-        //从池子里拿出的金额
-        uint256 initMarketNumber = options[0].marketNumber;
         uint256 sum = 0;
         uint256 frozenSum = 0;
-        (tokenIds, sum, frozenSum) = playInfoMap.removeLiquidity(options, playNFT, initMarketNumber, _liquidity);
-        amount = sum;
-        console.log('remove:', amount);
-        //转账需要处理approve
+        if(block.timestamp < endTime){
+            (tokenIds, sum, frozenSum) = playInfoMap.removeLiquidity(options, playNFT, _liquidity);
+            amount = sum;
+        }else{
+            require(isGameClose() < 100, 'NoodleSwap: Game is not over');
+            uint256 marketFee = fee * 70 / 100;
+            sum = playInfoMap.removeLiquidityWithWinOption(options,totalSupply,_liquidity,winOption,marketFee);
+        }
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, sum);
         emit _removeLiquidity(address(this), msg.sender, _liquidity, amount, tokenIds, _getOptions());
     }
@@ -184,9 +193,24 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         _mint(to, value);
     }
 
+    //游戏是否可以领奖
+    function isGameClose() private returns (uint256 gameResultType){
+        if(confirmResultTime > 0 &&  challengeAddress == address(0) && confirmResultTime + confirmSlot < block.timestamp){
+            gameResultType = 1;
+        }else if(confirmResultTime > 0 &&  challengeAddress != address(0) && challengeTime + voteSlot < block.timestamp){
+            gameResultType = 2;
+        }else if(confirmResultTime == 0 && startVoteTime >= endTime + confirmResultSlot && startVoteTime <= endTime + confirmResultSlot + voteSlot && endTime + confirmResultSlot + voteSlot < block.timestamp){
+            gameResultType = 3;
+        }else if(confirmResultTime == 0 && startVoteTime > endTime + confirmResultSlot + voteSlot && startVoteTime < block.timestamp){
+            gameResultType = 4;
+        }else {
+            gameResultType = 100;
+        }
+    }
+
     //获得奖励
-    function getAward(uint256[] memory tokenIds) public returns (uint256 amount) {
-        //todo: 需要判断game是否结束
+    function getAward(uint256[] memory tokenIds) public payable  returns (uint256 amount) {
+        require(isGameClose() < 100, 'NoodleSwap: Game is not over');
         console.log('winOption:', winOption);
         amount = playInfoMap.getAward(tokenIds, winOption, playNFT);
         console.log('award amount:', amount);
@@ -208,19 +232,21 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function openGame(uint8 _winOption) public override {
         require(openAddress == msg.sender, 'NoodleSwap: cannot open game');
         originOption = _winOption;
+        winOption = _winOption;
         confirmResultTime = block.timestamp;
         emit _openGame(address(this), address(msg.sender), originOption);
     }
 
     //挑战，发起投票
     function challengeGame(uint8 _challengeOption) public override {
-        require(openAddress != address(0), 'NoodleSwap: the game has openAddress');
+        require(openAddress != address(0), 'NoodleSwap: the game has no openAddress');
+        require(confirmResultTime + confirmSlot > block.timestamp, 'NoodleSwap: the game is over');
         uint256 balance = IERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
         challengeAddress = address(msg.sender);
         challengeOption = _challengeOption;
-        startVoteTime = block.timestamp;
+        challengeTime = block.timestamp;
         emit _challengeGame(address(msg.sender), address(this), winOption, challengeOption);
     }
 
@@ -236,16 +262,25 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     function addVote(uint8 option) public override {
-        //判断投票是否截止
-        //判断是否已经投票
-        //判断余额是否足够
+        console.log('vote.1');
         require(option < options.length,'NoodleSwap: option should be less ');
-        require(startVoteTime > 0, 'NoodleSwap: vote have not started');
-        require(startVoteTime + voteSlot > block.timestamp, 'NoodleSwap: vote stop');
+        bool canVote = false;
+        if(challengeTime > 0 && challengeTime + voteSlot > block.timestamp){
+            canVote = true;
+        }else if(confirmResultTime == 0 && startVoteTime == 0 && endTime + confirmResultSlot < block.timestamp){
+            canVote = true;
+        }else if(confirmResultTime == 0 && startVoteTime != 0 && endTime + confirmResultSlot + voteSlot > block.timestamp){
+            canVote = true;
+        }else {
+            canVote = false;
+        }
+        require(canVote == true, 'NoodleSwap: can not vote');
         require(voteMap[msg.sender] == 0, 'NoodleSwap: vote only once');
-        uint256 balance = IERC20(noodleToken).balanceOf(msg.sender);
+        uint256 balance = IERC20(lockNoodleToken).balanceOf(msg.sender);
         require(balance >= voteNumber, 'NoodleSwap: vote address have not enough amount');
-        TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), voteNumber);
+        if(startVoteTime == 0){
+            startVoteTime = block.timestamp;
+        }
         if(option == 0 ){
             voteMap[msg.sender] = voteFlag;
         }else{
@@ -274,38 +309,69 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         emit _addVote(address(this), msg.sender, option, _getVoteNumbers(),winOption);
     }
 
+    //领取输入结果奖励
+    function getConfirmAward() public {
+        require(msg.sender == openAddress && originOption == winOption && confirmResultAward == 100, 'NoodleSwap: Confirmresult address has no award');
+        confirmResultAward = 200;
+        uint256 gameResultType = isGameClose();
+        uint256 noodleAward;
+        if(gameResultType == 1){
+            noodleAward = stakeNumber;
+        }else {
+            noodleAward = stakeNumber + stakeNumber * 3 / 10;
+        }
+        TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, noodleAward);
+        uint256 feeAward = fee * 10 / 100;
+        TransferHelper.safeTransferFrom(token, address(this), msg.sender, feeAward);
+        emit _getConfirmAward(address(this),msg.sender, noodleAward, feeAward);
+    }
+
+    //领取投票奖励
     function getVoteAward() public override {
-        //判断投票是否截止
-        //用户是否投票
-        //用户投票是否正确
-        //用户是否是发起人
-        require(startVoteTime > 0, 'NoodleSwap: vote have not started');
-        require(startVoteTime + voteSlot < block.timestamp, 'NoodleSwap: vote have not stopped');
-        require(voteMap[msg.sender] > 0, 'NoodleSwap: address have no vote');
+        uint256 gameResultType = isGameClose();
+        require(gameResultType < 100, 'NoodleSwap: Game is not over');
+        require(msg.sender != openAddress && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
         uint8 voteOption = voteMap[msg.sender];
         if(voteOption == voteFlag){
             voteOption = 0;
         }
         require(voteOption == winOption,'NoodleSwap: vote not winOption');
         voteMap[msg.sender] = receiveFlag;
-        uint256 winNumber;
-        if(winOption == originOption){
-            if(msg.sender == openAddress){
-                winNumber = stakeNumber*30/100;
+        uint256 noodleAward;
+        uint256 feeAward;
+        if(gameResultType == 2){
+            if(challengeOption == winOption){
+                if(msg.sender == challengeAddress){
+                    noodleAward = stakeNumber + stakeNumber * 3 / 10;
+                    feeAward = fee * 10 / 100;
+                }else{
+                    noodleAward = stakeNumber * 7 /10;
+                    noodleAward = noodleAward / (options[winOption].voteNumber - 1);
+                }
+            }else if(originOption == winOption){
+                noodleAward = stakeNumber * 7 /10;
+                noodleAward = noodleAward / (options[winOption].voteNumber - 1);
             }else{
-                winNumber = stakeNumber*70/100/options[winOption].voteNumber;
+                noodleAward = stakeNumber + stakeNumber;
+                noodleAward = noodleAward / (options[winOption].voteNumber);
+                
+                feeAward = fee * 10 / 100;
+                feeAward = feeAward / (options[winOption].voteNumber);
             }
-        }else if(winOption == challengeOption){
-            if(msg.sender == challengeAddress){
-                winNumber = stakeNumber*30/100;
-            }else{
-                winNumber = stakeNumber*70/100/options[winOption].voteNumber;
+        }else if(gameResultType == 3 || gameResultType == 4){
+            if(openAddress != address(0)){
+                noodleAward = stakeNumber;
+                noodleAward = noodleAward / (options[winOption].voteNumber);
             }
-        }else {
-            winNumber = stakeNumber*2/options[winOption].voteNumber;
+            feeAward = fee * 10 / 100;
+            feeAward = feeAward / (options[winOption].voteNumber);
         }
-        console.log(winNumber);
-        TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, winNumber);
-        emit _getVoteAward(address(this), msg.sender, voteOption,winNumber); 
+        if(noodleAward > 0){
+            TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, noodleAward);
+        }
+        if(feeAward > 0){
+            TransferHelper.safeTransferFrom(token, address(this), msg.sender, feeAward);
+        }
+        emit _getVoteAward(address(this), msg.sender, noodleAward, feeAward); 
     }
 }

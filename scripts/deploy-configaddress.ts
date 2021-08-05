@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import { config, ethers, network } from 'hardhat';
+import { ERC20Faucet } from '../typechain/ERC20Faucet';
 import { ConfigAddress } from '../typechain/ConfigAddress';
 import { getOwnerPrivateKey } from '../.privatekey';
 import { ReplaceLine } from './boutils';
@@ -29,6 +30,12 @@ let main = async () => {
 
   let gasLimit = (await ethers.provider.getBlock('latest')).gasLimit.div(2);
   console.log('gasLimit:', gasLimit.toString());
+  let erc20ContractFactory = await ethers.getContractFactory('ERC20Faucet');
+
+  let instanceERC20 = (await erc20ContractFactory.connect(owner).deploy('Test BOST', 'BOST', 18, {
+    gasLimit: gasLimit,
+  })) as ERC20Faucet;
+  console.log('new ERC20Faucet address:', instanceERC20.address);
   let configAddressContractFactory = await ethers.getContractFactory('ConfigAddress');
   const instance = (await configAddressContractFactory.connect(owner).deploy({
     gasLimit: gasLimit,
