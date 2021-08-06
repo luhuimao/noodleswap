@@ -234,6 +234,11 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         originOption = _winOption;
         winOption = _winOption;
         confirmResultTime = block.timestamp;
+        if(_winOption == 0 ){
+            voteMap[msg.sender] = voteFlag;
+        }else{
+            voteMap[msg.sender] = _winOption;
+        }
         emit _openGame(address(this), address(msg.sender), originOption);
     }
 
@@ -247,6 +252,11 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         challengeAddress = address(msg.sender);
         challengeOption = _challengeOption;
         challengeTime = block.timestamp;
+        if(_challengeOption == 0 ){
+            voteMap[msg.sender] = voteFlag;
+        }else{
+            voteMap[msg.sender] = _challengeOption;
+        }
         emit _challengeGame(address(msg.sender), address(this), winOption, challengeOption);
     }
 
@@ -262,6 +272,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     function addVote(uint8 option) public override {
+        console.log('vote1');
         require(option < options.length,'NoodleSwap: option should be less ');
         bool canVote = false;
         if(challengeTime > 0 && challengeTime + voteSlot > block.timestamp){
@@ -273,7 +284,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }else {
             canVote = false;
         }
-        require(canVote == true, 'NoodleSwap: can not vote');
+        console.log('vote2');
+        console.log(voteMap[msg.sender]);
+        require(canVote == true, 'NoodleSwap: time can not vote');
         require(voteMap[msg.sender] == 0, 'NoodleSwap: vote only once');
         uint256 balance = IERC20(lockNoodleToken).balanceOf(msg.sender);
         require(balance >= voteNumber, 'NoodleSwap: vote address have not enough amount');
@@ -287,17 +300,24 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             voteMap[msg.sender] = option;
         }
         options[option].voteNumber += 1;
+        console.log('vote3');
         //判断获胜条件
         uint256 max;
-        uint256 originOptionNumber = options[originOption].voteNumber; 
-        uint256 challengeOptionNumber = options[challengeOption].voteNumber;
         uint8 _winOption;
-        if(originOptionNumber >= challengeOptionNumber){
-            max = originOptionNumber;
-            _winOption = originOption;
+        if(challengeTime > 0){
+            uint256 originOptionNumber = options[originOption].voteNumber; 
+            uint256 challengeOptionNumber = options[challengeOption].voteNumber;
+            
+            if(originOptionNumber >= challengeOptionNumber){
+                max = originOptionNumber;
+                _winOption = originOption;
+            }else{
+                max = challengeOptionNumber;
+                _winOption = challengeOption;
+            }
         }else{
-            max = challengeOptionNumber;
-            _winOption = challengeOption;
+            max = options[0].voteNumber;
+            _winOption = 0;
         }
         for (uint8 i = 0; i < options.length; i++) {
             if(max < options[i].voteNumber){
@@ -306,6 +326,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             }
         }
         winOption = _winOption;
+        console.log('vote4');
         emit _addVote(address(this), msg.sender, option, _getVoteNumbers(),winOption);
     }
 
