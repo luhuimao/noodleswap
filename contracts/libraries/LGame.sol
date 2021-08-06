@@ -199,7 +199,7 @@ library LGame {
                 }
             }
             //这个选项的赔率
-            uint256 optionP = (allFrozen + optionNum)*1 ether/_optionNum[i];
+            uint256 optionP = (allFrozen + optionNum)*1 ether/optionNum;
             //调用生成ERC721 token的接口, option,optionNum,optionP,allFrozen,返回tokenId
             uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
             // LGame.PlayInfoStruct memory playInfo = self[tokenId];
