@@ -262,7 +262,6 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     function addVote(uint8 option) public override {
-        console.log('vote.1');
         require(option < options.length,'NoodleSwap: option should be less ');
         bool canVote = false;
         if(challengeTime > 0 && challengeTime + voteSlot > block.timestamp){
@@ -278,6 +277,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         require(voteMap[msg.sender] == 0, 'NoodleSwap: vote only once');
         uint256 balance = IERC20(lockNoodleToken).balanceOf(msg.sender);
         require(balance >= voteNumber, 'NoodleSwap: vote address have not enough amount');
+        TransferHelper.safeTransferFrom(lockNoodleToken, msg.sender, address(this), voteNumber);
         if(startVoteTime == 0){
             startVoteTime = block.timestamp;
         }
@@ -337,41 +337,45 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }
         require(voteOption == winOption,'NoodleSwap: vote not winOption');
         voteMap[msg.sender] = receiveFlag;
-        uint256 noodleAward;
-        uint256 feeAward;
-        if(gameResultType == 2){
-            if(challengeOption == winOption){
-                if(msg.sender == challengeAddress){
-                    noodleAward = stakeNumber + stakeNumber * 3 / 10;
-                    feeAward = fee * 10 / 100;
-                }else{
+        if(voteOption != winOption){
+            TransferHelper.safeTransferFrom(lockNoodleToken, address(this), msg.sender,  voteNumber);
+        }else {
+            uint256 noodleAward;
+            uint256 feeAward;
+            if(gameResultType == 2){
+                if(challengeOption == winOption){
+                    if(msg.sender == challengeAddress){
+                        noodleAward = stakeNumber + stakeNumber * 3 / 10;
+                        feeAward = fee * 10 / 100;
+                    }else{
+                        noodleAward = stakeNumber * 7 /10;
+                        noodleAward = noodleAward / (options[winOption].voteNumber - 1);
+                    }
+                }else if(originOption == winOption){
                     noodleAward = stakeNumber * 7 /10;
                     noodleAward = noodleAward / (options[winOption].voteNumber - 1);
+                }else{
+                    noodleAward = stakeNumber + stakeNumber;
+                    noodleAward = noodleAward / (options[winOption].voteNumber);
+                    
+                    feeAward = fee * 10 / 100;
+                    feeAward = feeAward / (options[winOption].voteNumber);
                 }
-            }else if(originOption == winOption){
-                noodleAward = stakeNumber * 7 /10;
-                noodleAward = noodleAward / (options[winOption].voteNumber - 1);
-            }else{
-                noodleAward = stakeNumber + stakeNumber;
-                noodleAward = noodleAward / (options[winOption].voteNumber);
-                
+            }else if(gameResultType == 3 || gameResultType == 4){
+                if(openAddress != address(0)){
+                    noodleAward = stakeNumber;
+                    noodleAward = noodleAward / (options[winOption].voteNumber);
+                }
                 feeAward = fee * 10 / 100;
                 feeAward = feeAward / (options[winOption].voteNumber);
             }
-        }else if(gameResultType == 3 || gameResultType == 4){
-            if(openAddress != address(0)){
-                noodleAward = stakeNumber;
-                noodleAward = noodleAward / (options[winOption].voteNumber);
+            if(noodleAward > 0){
+                TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, noodleAward);
             }
-            feeAward = fee * 10 / 100;
-            feeAward = feeAward / (options[winOption].voteNumber);
+            if(feeAward > 0){
+                TransferHelper.safeTransferFrom(token, address(this), msg.sender, feeAward);
+            }
+            emit _getVoteAward(address(this), msg.sender, noodleAward, feeAward); 
         }
-        if(noodleAward > 0){
-            TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, noodleAward);
-        }
-        if(feeAward > 0){
-            TransferHelper.safeTransferFrom(token, address(this), msg.sender, feeAward);
-        }
-        emit _getVoteAward(address(this), msg.sender, noodleAward, feeAward); 
     }
 }
