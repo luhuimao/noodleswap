@@ -335,13 +335,12 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         if(voteOption == voteFlag){
             voteOption = 0;
         }
-        require(voteOption == winOption,'NoodleSwap: vote not winOption');
         voteMap[msg.sender] = receiveFlag;
+        uint256 noodleAward;
+        uint256 feeAward;
         if(voteOption != winOption){
             TransferHelper.safeTransferFrom(lockNoodleToken, address(this), msg.sender,  voteNumber);
         }else {
-            uint256 noodleAward;
-            uint256 feeAward;
             if(gameResultType == 2){
                 if(challengeOption == winOption){
                     if(msg.sender == challengeAddress){
@@ -369,13 +368,13 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
                 feeAward = fee * 10 / 100;
                 feeAward = feeAward / (options[winOption].voteNumber);
             }
-            if(noodleAward > 0){
+        }
+        if(noodleAward > 0){
                 TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, noodleAward);
             }
-            if(feeAward > 0){
-                TransferHelper.safeTransferFrom(token, address(this), msg.sender, feeAward);
-            }
-            emit _getVoteAward(address(this), msg.sender, noodleAward, feeAward); 
+        if(feeAward > 0){
+            TransferHelper.safeTransferFrom(token, address(this), msg.sender, feeAward);
         }
+        emit _getVoteAward(address(this), msg.sender, noodleAward, feeAward);
     }
 }
