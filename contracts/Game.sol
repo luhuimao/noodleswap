@@ -234,6 +234,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         originOption = _winOption;
         winOption = _winOption;
         confirmResultTime = block.timestamp;
+        options[_winOption].voteNumber += 1;
         if(_winOption == 0 ){
             voteMap[msg.sender] = voteFlag;
         }else{
@@ -252,6 +253,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         challengeAddress = address(msg.sender);
         challengeOption = _challengeOption;
         challengeTime = block.timestamp;
+        options[_challengeOption].voteNumber += 1;
         if(_challengeOption == 0 ){
             voteMap[msg.sender] = voteFlag;
         }else{
