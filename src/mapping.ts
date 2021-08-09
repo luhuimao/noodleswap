@@ -217,7 +217,7 @@ export function handleApproval(event: GameEvent.Approval): void {
   // pair.save();
 }
 export function handPlaceGame(event: GameEvent._placeGame): void {
-  
+
   var gameInfo = GameInfo.load(event.params.game.toHex());
   if (gameInfo == null) {
     log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
@@ -239,7 +239,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   //   token.save();
   // }
 
-  
+
   // let gameOptionNum = gameInfo._optionNum;
   // for (let index = 0; index < options.length; index++) {
   //   let element = options[index];
@@ -256,15 +256,15 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   let tokenIds = event.params.tokenIds;
   for (let index = 0; index < tokenIds.length; index++) {
     let id =
-    event.params.game.toHex() +
-    '-' +
-    event.params.sender.toHex() +
-    '-' +
-    event.block.timestamp.toString() +
-    '-1' +
-    '-0'+
-    tokenIds[index].toString();;
-  log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:{}', [id]);
+      event.params.game.toHex() +
+      '-' +
+      event.params.sender.toHex() +
+      '-' +
+      event.block.timestamp.toString() +
+      '-1' +
+      '-0' +
+      tokenIds[index].toString();;
+    log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:{}', [id]);
     var bet = BetInfo.load(id);
     if (bet != null) {
       log.error('BetInfo already exist: {}', [id]);
@@ -279,7 +279,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
     nftInfo.bet = bet.id;
     nftInfo.save();
 
-    
+
     bet.sender = event.params.sender;
     //bet.token = event.params.token.toString();
     bet.token = gameInfo._token;
@@ -289,7 +289,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
     bet.optionNum = [optionNum[index]];
     let options = event.params.options;
     bet.options = [options[index]];
-    
+
     bet.tokenIds = [tokenIds[index]]
     bet.timestamp = event.block.timestamp;
     bet.save();
@@ -297,7 +297,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   }
   // VoteUserInfo,
   // VoteInfo,
-  
+
   gameInfo.save();
 }
 export function handAddLiquidity(event: GameEvent._addLiquidity): void {
@@ -539,7 +539,10 @@ export function handAddVote(event: GameEvent._addVote): void {
   var voteInfo = VoteInfo.load(event.params.game.toHex());
   if (voteInfo == null) {
     log.error('VoteInfo vote not exists: {}', [event.params.game.toHex()]);
-    return;
+    voteInfo = new VoteInfo(gameInfo.id);
+    voteInfo.game = event.params.game.toHex();
+    voteInfo.vote = event.params.game;
+    // return;
   }
   let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
   var voteUserInfo = VoteUserInfo.load(id);
@@ -554,11 +557,6 @@ export function handAddVote(event: GameEvent._addVote): void {
   voteUserInfo.vote = voteInfo.id;
   // voteUserInfo.game = gameInfo.id;
   voteUserInfo.timestamp = event.block.timestamp;
-  if (voteInfo.option.toI32() == voteUserInfo.option) {
-    voteInfo.agreeNum = voteInfo.agreeNum + 1;
-  } else {
-    voteInfo.disAgreeNum = voteInfo.disAgreeNum + 1;
-  }
   voteInfo.voteNumbers = event.params.voteNumbers;
   voteInfo.voteWinOption = BigInt.fromI32(event.params.winOption);
   voteUserInfo.save();
