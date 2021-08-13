@@ -174,6 +174,8 @@ let main = async () => {
    // console.log('-------challengeGame--------');
    // await instanceGame.challengeGame(1);
     console.log('-------addVote--------');
+    await instanceGame.addVote(0);
+    console.log('-------addVote--------');
     await instanceGame.addVote(1);
     console.log('-------getVoteAward--------');
     await instanceGame.getVoteAward();

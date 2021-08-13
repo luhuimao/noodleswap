@@ -271,7 +271,6 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     function addVote(uint8 option) public override {
-        console.log('vote1');
         require(option < options.length,'NoodleSwap: option should be less ');
         bool canVote = false;
         if(challengeTime > 0 && challengeTime + voteSlot > block.timestamp){
@@ -283,26 +282,21 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }else {
             canVote = false;
         }
-        console.log('vote2');
-        console.log(voteMap[msg.sender]);
         require(canVote == true, 'NoodleSwap: time can not vote');
         require(voteMap[msg.sender] == 0, 'NoodleSwap: vote only once');
         uint256 balance = IERC20(lockNoodleToken).balanceOf(msg.sender);
         require(balance >= voteNumber, 'NoodleSwap: vote address have not enough amount');
         TransferHelper.safeTransferFrom(lockNoodleToken, msg.sender, address(this), voteNumber);
-        if(startVoteTime == 0){
-            startVoteTime = block.timestamp;
-        }
         if(option == 0 ){
             voteMap[msg.sender] = voteFlag;
         }else{
             voteMap[msg.sender] = option;
         }
         options[option].voteNumber += 1;
-        console.log('vote3');
         //判断获胜条件
         uint256 max;
         uint8 _winOption;
+        bool hasWiner = false;
         if(challengeTime > 0){
             uint256 originOptionNumber = options[originOption].voteNumber; 
             uint256 challengeOptionNumber = options[challengeOption].voteNumber;
@@ -314,15 +308,29 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
                 max = challengeOptionNumber;
                 _winOption = challengeOption;
             }
+            for (uint8 i = 0; i < options.length; i++) {
+                if(max < options[i].voteNumber){
+                    max = options[i].voteNumber;
+                    _winOption = i;
+                }
+            }
+            hasWiner = true;
         }else{
             max = options[0].voteNumber;
             _winOption = 0;
-        }
-        for (uint8 i = 0; i < options.length; i++) {
-            if(max < options[i].voteNumber){
-                max = options[i].voteNumber;
-                _winOption = i;
+            hasWiner = true;
+            for (uint8 i = 1; i < options.length; i++) {
+                if(max < options[i].voteNumber){
+                    max = options[i].voteNumber;
+                    _winOption = i;
+                    hasWiner = true;
+                }else if(max == options[i].voteNumber){
+                    hasWiner = false;
+                }
             }
+        }
+        if(startVoteTime == 0 && hasWiner){
+            startVoteTime = block.timestamp;
         }
         winOption = _winOption;
         console.log('vote4');
