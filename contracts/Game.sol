@@ -9,10 +9,6 @@ import './libraries/TransferHelper.sol';
 import './libraries/LGame.sol';
 import './interfaces/IERC20.sol';
 import './ConfigurableParametersContract.sol';
-
-// import './PlayNFT.sol';
-
-// import './Vote.sol';
 import 'hardhat/console.sol';
 
 contract Game is IGame, GameERC20, ConfigurableParametersContract {
@@ -78,13 +74,14 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256[] memory _optionNum,
         uint256 _endTime,
         address _noodleToken,
+        address _lockNoodleToken,
         address _playNFT
     ) GameERC20(_shortGameName) {
         creator = _creator;
         token = _token;
         endTime = _endTime;
         noodleToken = _noodleToken;
-        lockNoodleToken = _noodleToken;
+        lockNoodleToken = _lockNoodleToken;
         for (uint8 i = 0; i < _optionNum.length; i++) {
             LGame.OptionDataStruct memory option;
             option.marketNumber = _optionNum[i];

@@ -30,15 +30,19 @@ contract GameFactory is IGameFactory {
 
     address public noodleToken;
 
+    address public lockNoodleToken;
+
     address public noodleStaking;
 
     address public playNFT;
 
     constructor(
         address _noodleToken,
+        address _lockNoodleToken,
         address _playNFT
     ) {
         noodleToken = _noodleToken;
+        lockNoodleToken = _lockNoodleToken;
         playNFT = _playNFT;
     }
 
@@ -64,6 +68,7 @@ contract GameFactory is IGameFactory {
             _resultSource,
             _endTime,
             noodleToken,
+            lockNoodleToken,
             playNFT
         );
         TransferHelper.safeTransferFrom(_token, msg.sender, _game, sum);

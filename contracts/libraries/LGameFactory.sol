@@ -26,13 +26,14 @@ library LGameFactory {
         string memory _resultSource,
         uint256 _endTime,
         address _noodleToken,
+        address _lockNoodleToken,
         address _playNTF
     ) public returns (address _game) {
         uint256 sum = 0;
         for (uint256 i = 0; i < _optionNum.length; i++) {
             sum += _optionNum[i];
         }
-        Game game = new Game(msg.sender, _token, _shortGameName,_optionNum, _endTime, _noodleToken,_playNTF);
+        Game game = new Game(msg.sender, _token, _shortGameName,_optionNum, _endTime, _noodleToken,_lockNoodleToken,_playNTF);
         game.mint(msg.sender, sum);
         _game = address(game);
         GameStruct memory gameStruct;

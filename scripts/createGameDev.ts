@@ -3,7 +3,7 @@ import { ethers, network } from 'hardhat';
 import { LGame } from '../typechain/LGame';
 import { LGameFactory } from '../typechain/LGameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
-import { Vote } from '../typechain/Vote';
+import { LockNoodleTokenERC20 } from '../typechain/LockNoodleTokenERC20';
 import { PlayNFT } from '../typechain/PlayNFT';
 import { NoodleStaking } from '../typechain/NoodleStaking';
 import { GameFactory } from '../typechain/GameFactory';
@@ -60,6 +60,10 @@ let main = async () => {
     console.log('new NoodleToken address:', instanceNDLToken.address);
   }
 
+  let lockNoodleToken: LockNoodleTokenERC20;
+  lockNoodleToken = (await (await ethers.getContractFactory('LockNoodleTokenERC20')).connect(owner).deploy('LockNoodleToken','LockNoodleToken')) as LockNoodleTokenERC20;
+    console.log('new LockNoodleToken address:', lockNoodleToken.address);
+
   // let voteToken: Vote;
   // voteToken = (await (await ethers.getContractFactory('Vote')).connect(owner).deploy(instanceNDLToken.address)) as Vote;
   // console.log('new Vote address:', voteToken.address);
@@ -84,7 +88,7 @@ let main = async () => {
     })
   )
     .connect(owner)
-    .deploy(instanceNDLToken.address,  playNFTToken.address, {
+    .deploy(instanceNDLToken.address, lockNoodleToken.address, playNFTToken.address, {
       gasPrice: 1,
       gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
     })) as GameFactory;
