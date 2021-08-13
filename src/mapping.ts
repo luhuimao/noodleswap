@@ -232,6 +232,7 @@ export function handleEventCreateGame(event: _GameCreated): void {
   gameInfo._optionName = optionName;
   gameInfo._endSec = event.params._endTime;
   gameInfo.timestamp = event.block.timestamp;
+  gameInfo._winTimestamp = BigInt.fromI32(0);
   gameInfo.save();
   GameTemplate.create(event.params._game);
 }
