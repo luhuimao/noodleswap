@@ -228,6 +228,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     //开奖
     function openGame(uint8 _winOption) public override {
         require(openAddress == msg.sender, 'NoodleSwap: cannot open game');
+        require(endTime < block.timestamp && endTime + confirmResultSlot > block.timestamp, 'NoodleSwap: not open time');
         originOption = _winOption;
         winOption = _winOption;
         confirmResultTime = block.timestamp;
@@ -333,7 +334,6 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
             startVoteTime = block.timestamp;
         }
         winOption = _winOption;
-        console.log('vote4');
         emit _addVote(address(this), msg.sender, option, _getVoteNumbers(),winOption);
     }
 
