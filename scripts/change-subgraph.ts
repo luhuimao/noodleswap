@@ -32,6 +32,11 @@ let main = async () => {
     console.error('stakingaddr address null:', network.name);
     return;
   }
+  let lockingaddr = config.getLockingAddressByNetwork(network.name);
+  if (lockingaddr == null) {
+    console.error('lockingaddr address null:', network.name);
+    return;
+  }
   const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
   let configaddr = config.getConfigAddressByNetwork(network.name);
   if (configaddr == null) {
@@ -49,6 +54,8 @@ let main = async () => {
   ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': "' + voteaddr + '" ' + flag);
   flag = '#{{STAKING_ADDRESS}}';
   ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': "' + stakingaddr + '" ' + flag);
+  flag = '#{{LOCKING_ADDRESS}}';
+  ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': "' + lockingaddr + '" ' + flag);
   key = 'startBlock';
   flag = '#{{STARTBLOCK}}';
   ReplaceLine('subgraph.yaml', key + '.*' + flag, key + ': ' + config.getStartBlockNumber(network.name) + ' ' + flag);

@@ -23,30 +23,38 @@ describe('LockingNoodleToken', () => {
 
   describe('Locking Noodle Token', () => {
     it('mint 100 Noodle Token', async () => {
-      await instance_NoodleTokenERC20.mint(owner.address, 100);
+      await instance_NoodleTokenERC20.mint(owner.address, ethers.utils.parseEther('100.0'));
       let b = await instance_NoodleTokenERC20.balanceOf(owner.address);
       console.log(' noodle token balance:', b.toString());
-      expect(await instance_NoodleTokenERC20.balanceOf(owner.address)).to.be.eq(100);
+      expect(await instance_NoodleTokenERC20.balanceOf(owner.address)).to.be.eq(ethers.utils.parseEther('100.0'));
     });
 
     it('lock 100 noodle token', async () => {
-      await instance_LockingNoodle.addLockingPoolInfo(2);
-      await instance_NoodleTokenERC20.approve(instance_LockingNoodle.address, 100);
-      await instance_LockingNoodle.createLock(100, 1001100100);
+      await instance_LockingNoodle.addLockingPoolInfo(ethers.utils.parseEther('3.0'));
+      await instance_NoodleTokenERC20.approve(instance_LockingNoodle.address, ethers.utils.parseEther('100.0'));
+      let blocktimestamp = (await ethers.provider.getBlock("latest")).timestamp;
+      await instance_LockingNoodle.createLock(ethers.utils.parseEther('10.0'), blocktimestamp + 10000);
 
-      expect(await instance_NoodleTokenERC20.balanceOf(instance_LockingNoodle.address)).to.be.eq(100);
+      await instance_NoodleTokenERC20.transfer(instance_LockingNoodle.address, ethers.utils.parseEther('10.0'));
 
-      expect(await instance_NoodleTokenERC20.balanceOf(owner.address)).to.be.eq(0);
-      expect(await instance_LockNoodleERC20.balanceOf(owner.address)).to.be.eq(100);
+      expect(await instance_LockingNoodle.fetchTotalLockedAmount()).to.be.eq(ethers.utils.parseEther('10.0'));
+
+      expect(await instance_NoodleTokenERC20.balanceOf(instance_LockingNoodle.address)).to.be.eq(ethers.utils.parseEther('20.0'));
+
+      expect(await instance_NoodleTokenERC20.balanceOf(owner.address)).to.be.eq(ethers.utils.parseEther('80.0'));
+      expect(await instance_LockNoodleERC20.balanceOf(owner.address)).to.be.eq(ethers.utils.parseEther('10.0'));
     })
 
     it('get user noodle token locked amount', async () => {
       console.log('locked noodle amount: ', (await instance_LockingNoodle.lockedAmount(owner.address)).toString());
-      expect(await instance_LockingNoodle.lockedAmount(owner.address)).to.be.eq(100);
+      expect(await instance_LockingNoodle.lockedAmount(owner.address)).to.be.eq(ethers.utils.parseEther('10.0'));
     });
 
+
     it('get user noodle token unlock time', async () => {
-      expect(await instance_LockingNoodle.lockedEnd(owner.address)).to.be.eq(1001100100);
+      let lockBeginTimeStamp = await instance_LockingNoodle.lockedBegin(owner.address);
+      console.log('lock begin timestamp: ', lockBeginTimeStamp.toString());
+      // expect(await instance_LockingNoodle.lockedEnd(owner.address)).to.be.eq(16287551830);
     });
 
     it('get pending reward noodle token', async () => {
@@ -58,11 +66,11 @@ describe('LockingNoodleToken', () => {
       let lockPoolBalance = await instance_NoodleTokenERC20.balanceOf(instance_LockingNoodle.address);
       console.log('lock pool balance: ', lockPoolBalance.toString());
       let reward = await instance_LockingNoodle.getPendingReward(owner.address);
-
+      console.log('noodle reward: ', reward.toString());
       await instance_LockingNoodle.withdraw();
       console.log('lock pool balance: ', (await instance_NoodleTokenERC20.balanceOf(instance_LockingNoodle.address)).toString());
-
-      expect(await instance_NoodleTokenERC20.balanceOf(owner.address)).to.be.eq(lockPoolBalance.add(reward));
+      console.log('locking pool balance: ', (await instance_LockingNoodle.fetchTotalLockedAmount()).toString());
+      // expect(await instance_NoodleTokenERC20.balanceOf(owner.address)).to.be.eq(lockPoolBalance.add(reward));
       expect(await instance_LockNoodleERC20.balanceOf(owner.address)).to.be.eq(0);
 
     });

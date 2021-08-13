@@ -1,6 +1,7 @@
-import { UpsertConfig, UpsertGameToken } from '../generated/ConfigAddress/ConfigAddress';
+import { UpsertConfig, UpsertGameToken, UpsertNoodleLocking, UpsertLockNoodleToken } from '../generated/ConfigAddress/ConfigAddress';
 import { _GameCreated } from '../generated/GameFactory/GameFactory';
 import * as StakeEvent from '../generated/NoodleStaking/NoodleStaking';
+import * as LockEvent from '../generated/NoodleLocking/NoodleLocking';
 import * as GameEvent from '../generated/templates/Game/Game';
 // import * as VoteEvent from '../generated/VoteInfo/Vote';
 import { Game as GameTemplate } from '../generated/templates';
@@ -22,10 +23,16 @@ import {
   StakeUser,
   DepositInfo,
   WithdrawInfo,
+  NoodleLocking,
+  LockInfo,
+  LockUser,
+  LockDepositInfo,
+  UnLockWithdrawInfo,
 } from '../generated/schema';
 import { ERC20 } from '../generated/ConfigAddress/ERC20';
 import * as boutils from './boutils';
 import { Address, BigInt, ethereum, Bytes, log } from '@graphprotocol/graph-ts';
+// import { ExportImportStatement } from 'assemblyscript';
 
 export function handleUpsertConfig(event: UpsertConfig): void {
   let id = event.params.factoryAddress.toHex();
@@ -38,6 +45,7 @@ export function handleUpsertConfig(event: UpsertConfig): void {
     ndlToken.decimals = BigInt.fromI32(18);
     ndlToken.save();
   }
+
   let wethToken = ERC20Token.load(event.params.usdtToken.toHexString());
   if (wethToken == null) {
     wethToken = new ERC20Token(event.params.usdtToken.toHexString());
@@ -62,6 +70,7 @@ export function handleUpsertConfig(event: UpsertConfig): void {
   config.factoryAddress = event.params.factoryAddress;
   config.configAddress = event.params.configAddress;
   config.ndlToken = ndlToken.id;
+  config.lckndlToken = "";
   config.wethToken = wethToken.id;
   config.usdtToken = usdtToken.id;
   config.networkName = event.params.networkName;
@@ -71,11 +80,15 @@ export function handleUpsertConfig(event: UpsertConfig): void {
   config.voteAddress = event.params.voteAddress;
   config.playNFTAddress = event.params.playNFTAddress;
   config.stakingAddress = event.params.stakingAddress;
+  config.lockingAddress = event.params.stakingAddress;
   config.timestamp = event.block.timestamp;
   config.save();
   var stake = NoodleStaking.load(config.stakingAddress.toHex());
   if (stake == null) {
     stake = new NoodleStaking(config.stakingAddress.toHex());
+    if (stake == null) {
+      log.info('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~new NoodleStaking Failed~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', [config.stakingAddress.toHex()]);
+    }
   }
   stake.timestamp = event.block.timestamp;
   stake.block = event.block.number;
@@ -88,6 +101,60 @@ export function handleUpsertConfig(event: UpsertConfig): void {
   // stake.stakeInfos = [];
   stake.save();
 }
+
+export function handleUpsertLockNoodleToken(event: UpsertLockNoodleToken): void {
+  let id = event.params.factoryAddress.toHex();
+  log.info('xxxxxxxxxxxxxxxxxx:handleUpsertLockNoodleToken:0:', []);
+  var config = ConfigAddress.load(id);
+  if (config == null) {
+    log.info('please UpsertConfig first: {}', [id]);
+    return;
+  }
+  let lckndlToken = ERC20Token.load(event.params.tokenAddress.toHexString());
+  if (lckndlToken == null) {
+    lckndlToken = new ERC20Token(event.params.tokenAddress.toHexString());
+    lckndlToken.name = config.networkName + ' LCKNDL';
+    lckndlToken.symbol = 'LCKNDL';
+    lckndlToken.decimals = BigInt.fromI32(18);
+    lckndlToken.save();
+  }
+  config.lckndlToken = lckndlToken.id;
+  log.info('!!!!!!!!!!!!!!!!!!!!!!!!!!Lock Noodle Token Address: ' + lckndlToken.id, []);
+  config.save();
+}
+
+export function handleUpsertNoodleLocking(event: UpsertNoodleLocking): void {
+  let id = event.params.factoryAddress.toHex();
+  log.info('xxxxxxxxxxxxxxxxxx:handleUpsertNoodleLocking:0:', []);
+  var config = ConfigAddress.load(id);
+  if (config == null) {
+    log.info('please UpsertConfig first: {}', [id]);
+    return;
+  }
+  log.info('Lock Noodle Token Address: ' + event.params.lockingAddress.toHexString(), []);
+
+  // let lckndlTokenAddress = event.params.lockingAddress;
+  config.lockingAddress = event.params.lockingAddress;
+  config.save();
+  log.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Noodle Locking Contract Address: ' + config.lockingAddress.toHexString(), []);
+  var lock = NoodleLocking.load(config.lockingAddress.toHexString());
+  if (lock == null) {
+    log.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!New A NoodleLocking Instance', []);
+    lock = new NoodleLocking(config.lockingAddress.toHexString());
+    if (lock == null) {
+      log.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!New A NoodleLocking Instance Failed!', []);
+    }
+  }
+  lock.timestamp = event.block.timestamp;
+  lock.block = event.block.number;
+  lock.noodle = config.ndlToken;
+  lock.owner = config.factoryAddress;
+  lock.noodlePerBlock = BigInt.fromI32(0);
+  // stake.stakeInfos = [];
+  lock.save();
+}
+
+// export function handleUpsertLockNoodleToken(event: UpsertLockNoodleToken): void { }
 export function handleUpsertGameToken(event: UpsertGameToken): void {
   let id = event.params.factoryAddress.toHex();
   log.info('xxxxxxxxxxxxxxxxxx:handleUpsertGameToken:0:', []);
@@ -217,7 +284,20 @@ export function handleApproval(event: GameEvent.Approval): void {
   // pair.save();
 }
 export function handPlaceGame(event: GameEvent._placeGame): void {
-
+  let id =
+    event.params.game.toHex() +
+    '-' +
+    event.params.sender.toHex() +
+    '-' +
+    event.block.timestamp.toString() +
+    '-1' +
+    '-0';
+  log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:{}', [id]);
+  var bet = BetInfo.load(id);
+  if (bet != null) {
+    log.error('BetInfo already exist: {}', [id]);
+    return;
+  }
   var gameInfo = GameInfo.load(event.params.game.toHex());
   if (gameInfo == null) {
     log.error('BetInfo game not found: {}', [event.params.game.toHex()]);
@@ -239,7 +319,19 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
   //   token.save();
   // }
 
+  bet = new BetInfo(id);
+  bet.sender = event.params.sender;
+  //bet.token = event.params.token.toString();
+  bet.token = gameInfo._token;
 
+  bet.game = gameInfo.id;
+  let optionNum = event.params.optionNum;
+  bet.optionNum = optionNum;
+  let options = event.params.options;
+  bet.options = options;
+  let tokenIds = event.params.tokenIds;
+  bet.tokenIds = tokenIds;
+  bet.timestamp = event.block.timestamp;
   // let gameOptionNum = gameInfo._optionNum;
   // for (let index = 0; index < options.length; index++) {
   //   let element = options[index];
@@ -253,24 +345,7 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
     gameInfo._optionNum = ret.value;
   }
   updateGameInfos(gameInfo as GameInfo);
-  let tokenIds = event.params.tokenIds;
   for (let index = 0; index < tokenIds.length; index++) {
-    let id =
-      event.params.game.toHex() +
-      '-' +
-      event.params.sender.toHex() +
-      '-' +
-      event.block.timestamp.toString() +
-      '-1' +
-      '-0' +
-      tokenIds[index].toString();;
-    log.info('xxxxxxxxxxxxxxxxxx:handPlaceGame:{}', [id]);
-    var bet = BetInfo.load(id);
-    if (bet != null) {
-      log.error('BetInfo already exist: {}', [id]);
-      return;
-    }
-    bet = new BetInfo(id);
     let element = tokenIds[index];
     let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
     nftInfo.tokenId = element;
@@ -278,26 +353,10 @@ export function handPlaceGame(event: GameEvent._placeGame): void {
     nftInfo.game = gameInfo.id;
     nftInfo.bet = bet.id;
     nftInfo.save();
-
-
-    bet.sender = event.params.sender;
-    //bet.token = event.params.token.toString();
-    bet.token = gameInfo._token;
-
-    bet.game = gameInfo.id;
-    let optionNum = event.params.optionNum;
-    bet.optionNum = [optionNum[index]];
-    let options = event.params.options;
-    bet.options = [options[index]];
-
-    bet.tokenIds = [tokenIds[index]]
-    bet.timestamp = event.block.timestamp;
-    bet.save();
-
   }
   // VoteUserInfo,
   // VoteInfo,
-
+  bet.save();
   gameInfo.save();
 }
 export function handAddLiquidity(event: GameEvent._addLiquidity): void {
@@ -426,7 +485,7 @@ export function handRemoveLiquidity(event: GameEvent._removeLiquidity): void {
     // tmp1.push(instanceGame.playInfoMap(element).value1);
     // bet.optionNum = tmp1;
     bet.optionNum = [instanceGame.playInfoMap(element).value1];
-    bet.tokenIds = [element];
+    bet.tokenIds = tokenIds;
     bet.timestamp = event.block.timestamp;
     bet.save();
     // let nftInfo = new NFTInfo(element.toHex() + '-' + gameInfo.id);
@@ -520,7 +579,7 @@ export function handGetVoteAward(event: GameEvent._getVoteAward): void {
     log.error('handGetVoteAward VoteUserInfo game already exists: {}', [id]);
     return;
   }
-  voteUserInfo.winNumber = event.params.winNumber;
+  voteUserInfo.winNumber = event.params.noodleAward;
   voteUserInfo.save();
 }
 //  event _addVote(address indexed game, address indexed sender, uint8 option,uint256[] voteNumbers,uint8 winOption);
@@ -539,10 +598,7 @@ export function handAddVote(event: GameEvent._addVote): void {
   var voteInfo = VoteInfo.load(event.params.game.toHex());
   if (voteInfo == null) {
     log.error('VoteInfo vote not exists: {}', [event.params.game.toHex()]);
-    voteInfo = new VoteInfo(gameInfo.id);
-    voteInfo.game = event.params.game.toHex();
-    voteInfo.vote = event.params.game;
-    // return;
+    return;
   }
   let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
   var voteUserInfo = VoteUserInfo.load(id);
@@ -557,6 +613,11 @@ export function handAddVote(event: GameEvent._addVote): void {
   voteUserInfo.vote = voteInfo.id;
   // voteUserInfo.game = gameInfo.id;
   voteUserInfo.timestamp = event.block.timestamp;
+  if (voteInfo.option.toI32() == voteUserInfo.option) {
+    voteInfo.agreeNum = voteInfo.agreeNum + 1;
+  } else {
+    voteInfo.disAgreeNum = voteInfo.disAgreeNum + 1;
+  }
   voteInfo.voteNumbers = event.params.voteNumbers;
   voteInfo.voteWinOption = BigInt.fromI32(event.params.winOption);
   voteUserInfo.save();
@@ -781,6 +842,32 @@ export function handleStakeInfoAdd(event: StakeEvent.EventStakeInfoAdd): void {
   // stakeInfo.users = [];
   stakeInfo.save();
   stake.save();
+}
+
+export function handleLockingPoolInfoAdd(event: LockEvent.EventLockingPoolInfoAdd): void {
+  log.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!:handleLockingPoolInfoAdd:', []);
+
+  var lock = NoodleLocking.load(event.address.toHex());
+  if (lock == null) {
+    log.error('handleLockingPoolInfoAdd NoodleLocking not found: {}', [event.address.toHex()]);
+    return;
+  }
+  let id = event.params.lockedToken.toHex();
+  var lockInfo = LockInfo.load(id);
+  if (lockInfo != null) {
+    log.error('lockInfo exist: {}', [id]);
+    return;
+  }
+  lock.noodlePerBlock = event.params.noodlePerBlock;
+  lockInfo = new LockInfo(id);
+  lockInfo.noodleLocking = event.address.toHexString();
+  lockInfo.noodlePerBlock = event.params.noodlePerBlock;
+  lockInfo.userCount = BigInt.fromI32(0);
+
+  lockInfo.timestamp = event.block.timestamp;
+  lockInfo.block = event.block.number;
+  lockInfo.save();
+  lock.save();
 }
 
 export function handleUpdatePool(event: StakeEvent.EventUpdatePool): void {

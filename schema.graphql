@@ -56,6 +56,12 @@ type ConfigAddress @entity {
 
   # 其他用来游戏的代币也可以随时配置添加
   gameTokens: [ERC20Token!]!
+
+  # lock noodle token 合约地址
+  lckndlToken: ERC20Token!
+
+  # 锁仓合约地址
+  lockingAddress: Bytes!
 }
 
 # 用户信息
@@ -194,6 +200,19 @@ type NoodleStaking @entity {
   block: BigInt!
 }
 
+# 锁仓信息
+type NoodleLocking @entity {
+  # Contract address
+  id: ID!
+
+  owner: Bytes!
+  lockInfos: [LockInfo!]!@derivedFrom(field: "noodleLocking")
+  noodle: ERC20Token!
+  noodlePerBlock: BigInt! #每区块总产出
+  timestamp: BigInt!
+  block: BigInt!
+}
+
 # 挖矿池子
 type StakeInfo @entity {
   # lpToken Address
@@ -207,6 +226,20 @@ type StakeInfo @entity {
   accNoodlePerShare: BigInt! #当前每份额收益基数
   harvestAll: BigInt! #已提取总收益
   users: [StakeUser!]! @derivedFrom(field: "stakeInfo")
+  userCount: BigInt!
+
+  timestamp: BigInt!
+  block: BigInt!
+}
+
+# 锁仓池子
+type LockInfo @entity {
+  # LockedToken Address
+  id: ID!
+  noodleLocking: NoodleLocking! #锁仓合约
+
+  noodlePerBlock: BigInt! #每区块奖励
+  users: [LockUser!]! @derivedFrom(field: "lockInfo")
   userCount: BigInt!
 
   timestamp: BigInt!
@@ -229,6 +262,18 @@ type StakeUser @entity {
   block: BigInt!
 }
 
+# 锁仓用户信息
+type LockUser @entity {
+  id: ID! #组合key
+  owner: Bytes! #用户地址
+  lockInfo: LockInfo
+  amount: BigInt! #提供的noodle token的数量
+  lockdepositInfos: [LockDepositInfo!]! @derivedFrom(field: "user") #锁仓历史
+  unLockwithdrawInfos: [UnLockWithdrawInfo!]! @derivedFrom(field: "user") #解锁取出历史
+  timestamp: BigInt!
+  block: BigInt!
+}
+
 # 存入操作历史
 type DepositInfo @entity {
   id: ID! #组合key
@@ -245,6 +290,26 @@ type WithdrawInfo @entity {
   user: StakeUser! #用户
   lpToken: Bytes!
   amount: BigInt! #取出的lpToken的数量
+  timestamp: BigInt!
+  block: BigInt!
+}
+
+# 锁仓操作历史
+type LockDepositInfo @entity {
+  id: ID! #组合key
+  user: LockUser! #用户
+  lockedToken: Bytes!
+  amount: BigInt! #存入的Noodle Token的数量
+  timestamp: BigInt!
+  block: BigInt!
+}
+
+# 锁仓到期取出操作历史
+type UnLockWithdrawInfo @entity {
+  id: ID! #组合key
+  user: LockUser! #用户
+  lockedToken: Bytes!
+  amount: BigInt! #取出的Noodle Token的数量
   timestamp: BigInt!
   block: BigInt!
 }

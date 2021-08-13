@@ -24,14 +24,12 @@ contract NoodleLocking is INoodleLocking {
         uint256 noodlePerBlock; // 每区块产出数量,因为是个比例,放大1e12倍解决小数问题
         uint256 startTimeSec; // 初始区块
     }
-    // int128 constant DEPOSIT_FOR_TYPE = 0;
-    // int128 constant CREATE_LOCK_TYPE = 1;
-    // int128 constant INCREASE_LOCK_AMOUNT = 2;
-    // int128 constant INCREASE_UNLOCK_TIME = 3;
 
     uint256 constant WEEK = 7 * 86400; // all future times are rounded by week
     uint256 constant MAXTIME = 4 * 365 * 86400; // 4 years
     uint256 constant MULTIPLIER = 10**18;
+
+    uint256 totalLockedAmount = 0; // 锁仓总量
 
     address constant ZERO_ADDRESS = address(0x0);
     address public _noodleToken; //NOODLE Token
@@ -55,7 +53,7 @@ contract NoodleLocking is INoodleLocking {
     event EventWithdraw(address indexed provider, uint256 value, uint256 ts);
     event EventSupply(uint256 prevSupply, uint256 supply);
     event EventLockingPoolInfo(address indexed noodleToken, uint256 accNoodlePerShare);
-    event EventLockingPoolInfoAdd(address indexed lpToken, uint256 noodlePerBlock);
+    event EventLockingPoolInfoAdd(address indexed lockedToken, uint256 noodlePerBlock);
 
     constructor(
         address _noodleAddr,
@@ -133,6 +131,19 @@ contract NoodleLocking is INoodleLocking {
         ret = lockedUserInfo[_addr].end;
     }
 
+    function lockedBegin(address _addr) public view returns (uint256 ret) {
+        /*
+        @notice Get timestamp when `_addr`'s lock start
+        @param _addr User wallet
+        @return Epoch time of the lock start
+        */
+        ret = lockedUserInfo[_addr].start;
+    }
+
+    function fetchTotalLockedAmount() public view returns (uint256 ret) {
+        ret = totalLockedAmount;
+    }
+
     function _depositFor(
         address _addr,
         uint256 _value,
@@ -153,12 +164,13 @@ contract NoodleLocking is INoodleLocking {
         if (unlock_time != 0) {
             _locked.end = unlock_time;
         }
+        _locked.start = block.timestamp;
         lockedUserInfo[_addr] = _locked;
-        if (_value != 0) {
-            require(noodle.transferFrom(_addr, address(this), _value), 'transferFrom failed');
-            //铸造lock Noodle
-            require(lockNoodleToken.mint(_addr, _value), 'mint lockNoodle failed');
-        }
+        totalLockedAmount.add(_locked.amount);
+        require(noodle.transferFrom(_addr, address(this), _value), 'transferFrom failed');
+        //铸造lock Noodle
+        require(lockNoodleToken.mint(_addr, _value), 'mint lockNoodle failed');
+
         emit EventDeposit(_addr, _value, _locked.end, block.timestamp);
     }
 
@@ -225,9 +237,10 @@ contract NoodleLocking is INoodleLocking {
         uint256 value = uint256(_locked.amount);
         require(value > 0, 'Zero Lock Noodle Token Amount');
         // LockedBalance storage old_locked = _locked;
-        _locked.end = 0;
-        _locked.amount = 0;
-        lockedUserInfo[msg.sender] = _locked;
+
+        //return unlocked noodle token to user
+        require(noodle.balanceOf(address(this)) >= value, 'Locking Pool Insufficient Balance');
+        require(noodle.transfer(msg.sender, value), 'withdraw failed');
 
         //distribute noodle token reward to user
         uint256 rewardAmount = _pendingNoodleReward(msg.sender);
@@ -235,11 +248,15 @@ contract NoodleLocking is INoodleLocking {
             safeNoodleTransfer(msg.sender, rewardAmount);
         }
 
-        //return unlocked noodle token to user
-        require(noodle.balanceOf(address(this)) >= value, 'Locking Pool Insufficient Balance');
-        require(noodle.transfer(msg.sender, value),'withdraw failed');
-        // burn lockNoodle Token
+        // burn all lockNoodle Token
         require(lockNoodleToken.burn(msg.sender, lockNoodleToken.balanceOf(msg.sender)));
+
+        _locked.end = 0;
+        _locked.start = 0;
+        _locked.amount = 0;
+        lockedUserInfo[msg.sender] = _locked;
+        totalLockedAmount.sub(value);
+
         emit EventWithdraw(msg.sender, value, block.timestamp);
         // emit Supply(supply_before, supply_before - value);
     }
@@ -247,11 +264,16 @@ contract NoodleLocking is INoodleLocking {
     function _pendingNoodleReward(address _user) internal view returns (uint256) {
         LockingPoolInfo storage pool = lockingPoolInfoMap[noodle];
         LockedBalance storage user = lockedUserInfo[_user];
-        uint256 noodleSupply = noodle.balanceOf(address(this)); //锁仓总数量
-        uint256 lockedBlocks = (user.end - user.start).div(blockSpeed); //锁仓区块数量
-        uint256 lockedPencentage = user.amount.div(noodleSupply); //锁仓百分比
+        // uint256 noodleSupply = noodle.balanceOf(address(this)); //锁仓总数量
 
-        return pool.noodlePerBlock.mul(lockedBlocks).mul(lockedPencentage).div(1e12); // 锁仓奖励= 每个区块奖励 × 锁仓区块总数 × 锁仓百分比
+        require(
+            pool.noodlePerBlock > 0 && user.end > 0 && user.start > 0 && totalLockedAmount > 0 && blockSpeed > 0,
+            '_pendingNoodleReward failed'
+        );
+        uint256 lockedBlocks = (user.end - user.start).div(blockSpeed); //锁仓区块数量
+        uint256 lockedPencentage = user.amount.div(totalLockedAmount); //锁仓百分比
+        uint256 pendingReward = pool.noodlePerBlock.mul(lockedBlocks).mul(lockedPencentage); // 锁仓奖励= 每个区块奖励 × 锁仓区块总数 × 锁仓百分比
+        return pendingReward;
     }
 
     // 计算用户锁仓到期奖励

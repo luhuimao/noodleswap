@@ -7,8 +7,10 @@ import { LGameFactory } from '../typechain/LGameFactory';
 import { Vote } from '../typechain/Vote';
 import { PlayNFT } from '../typechain/PlayNFT';
 import { NoodleStaking } from '../typechain/NoodleStaking';
+import { NoodleLocking } from '../typechain/NoodleLocking';
 import { GameFactory } from '../typechain/GameFactory';
 import { ERC20Faucet } from '../typechain/ERC20Faucet';
+import { LockNoodleTokenERC20 } from '../typechain';
 import * as config from '../.config';
 import { Contract } from 'ethers';
 import { getOwnerPrivateKey } from '../.privatekey';
@@ -138,6 +140,25 @@ let main = async () => {
     console.log('new NoodleToken address:', instanceNDLToken.address);
   }
 
+  // let instanceLCKNDLToken: ERC20Faucet;
+
+  let instanceLCKNDLToken: LockNoodleTokenERC20
+  if (configAddress && configAddress.lckndlToken) {
+    instanceLCKNDLToken = (await ethers.getContractFactory('LockNoodleTokenERC20'))
+      .connect(owner)
+      .attach((configAddress.lckndlToken as any as LockNoodleTokenERC20).id) as LockNoodleTokenERC20;
+    console.log('reuse LockNoodleToken address:', instanceLCKNDLToken.address);
+  } else {
+    instanceLCKNDLToken = (await (await ethers.getContractFactory('LockNoodleTokenERC20'))
+      .connect(owner)
+      .deploy('LockNoodleToken', 'LCKNDLT', {
+        gasLimit: await ethers.provider.estimateGas(
+          erc20ContractFactory.getDeployTransaction('LockNoodleToken', 'LCKNDLT', 18)
+        ),
+      })) as LockNoodleTokenERC20;
+    console.log('new LOCKNoodleToken address:', instanceLCKNDLToken.address);
+  }
+
   let instanceVote: Vote;
   let voteContractFactory = await ethers.getContractFactory('Vote');
   instanceVote = (await voteContractFactory.connect(owner).deploy(instanceNDLToken.address, {
@@ -197,7 +218,6 @@ let main = async () => {
       ),
     })) as NoodleStaking;
   console.log('new NoodleStaking address:', instanceStaking.address);
-
   flag = '\\/\\/REPLACE_FLAG';
   key = 'STAKING_ADDRESS_' + network.name.toUpperCase();
   boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceStaking.address + '"; ' + flag);
@@ -209,6 +229,23 @@ let main = async () => {
     // gasLimit: await instanceGameFactory.estimateGas['setNoodleStaking(address)'](instanceStaking.address),
   });
   await tmpr.wait();
+
+  let noodleLockingContractFactory = await ethers.getContractFactory('NoodleLocking');
+  const instanceLocking = (await noodleLockingContractFactory
+    .connect(owner)
+    .deploy(instanceNDLToken.address, instanceLCKNDLToken.address, 2, {
+      gasPrice: gasprice,
+      gasLimit: await ethers.provider.estimateGas(
+        noodleLockingContractFactory.getDeployTransaction(instanceNDLToken.address, instanceLCKNDLToken.address, 2)
+      ),
+    })) as NoodleLocking;
+  console.log('new NoodleLocking address:', instanceLocking.address);
+
+  flag = '\\/\\/REPLACE_FLAG';
+  key = 'LOCKING_ADDRESS_' + network.name.toUpperCase();
+  boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceLocking.address + '"; ' + flag);
+
+
   const wethAddr = config.getTokenAddrBySymbol(tokens, 'WBNB');
   console.log('WETH address:', wethAddr);
 
@@ -220,14 +257,13 @@ let main = async () => {
   //方便目前测试已经部署的业务
   //let ret = await (
   let ret = await instanceConfigAddress.upsert(
-    instanceGameFactory.address,
     chainId,
-    instanceNDLToken.address,
-    // instanceWETH9.address,
-    instanceUSDT.address,
     config.getRpcUrlByNetwork(network.name),
     config.getBlockUrlByNetwork(network.name),
     network.name,
+    instanceGameFactory.address,
+    instanceNDLToken.address,
+    instanceUSDT.address,
     instanceVote.address,
     instanceStaking.address,
     instancePlayNFT.address,
@@ -261,6 +297,25 @@ let main = async () => {
     console.log('instanceConfigAddress.upsert:', ret.gasPrice!.toString());
   }
   // */
+
+  await instanceConfigAddress.upsertLockNoodleToken(instanceGameFactory.address, instanceLCKNDLToken.address, {
+    gasPrice: gasprice,
+    gasLimit: instanceConfigAddress.estimateGas.upsertLockNoodleToken(
+      instanceGameFactory.address,
+      instanceLCKNDLToken.address
+    ),
+  });
+  console.log('instanceConfigAddress.upsertLockNoodleToken:', instanceLCKNDLToken.address);
+
+
+  await instanceConfigAddress.upsertNoodleLocking(instanceGameFactory.address, instanceLocking.address, {
+    gasPrice: gasprice,
+    gasLimit: instanceConfigAddress.estimateGas.upsertNoodleLocking(
+      instanceGameFactory.address,
+      instanceLocking.address
+    ),
+  });
+  console.log('instanceConfigAddress.upsertNoodleLocking:', instanceLocking.address);
 
   //await instanceConfigAddress.updateBlockUrl(instanceConfigAddress.address,"test4");
   if (tokens != null) {
@@ -520,10 +575,10 @@ let main = async () => {
         gasLimit: blockGaslimit,
       });
       console.info('instanceGame.challengeGame:ok');
-      await instanceGame.addVote(1, {
-        gasPrice: gasprice,
-        gasLimit: blockGaslimit,
-      });
+      // await instanceGame.addVote(1, {
+      //   gasPrice: gasprice,
+      //   gasLimit: blockGaslimit,
+      // });
       // await instanceVote.add(instanceGame.address, owner.address, 1, {
       //   gasPrice: gasprice,
       //   gasLimit: blockGaslimit,
@@ -583,6 +638,64 @@ let main = async () => {
   //     gasLimit: blockGaslimit0,
   //   }
   // );
+  console.log(
+    '-------instanceLocking.addLockingPoolInfo--------',
+    blockGaslimit.toString(),
+    (await ethers.provider.getBlock('latest')).gasLimit.toString()
+  );
+  let ret4 = instanceLocking.addLockingPoolInfo(
+    ethers.utils.parseEther('3.0'),
+    {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    }
+  );
+  let ret5 = await ret4;
+  console.log(ret4);
+  console.log(ret5);
+  let ret6 = await ret5.wait(1);
+  // console.log(ret2);
+  console.log(ret6);
+  console.log('-------instanceLocking.addLockingPoolInfo--------end');
+
+
+  console.log(
+    '-------instanceLocking.createLock--------',
+    blockGaslimit.toString(),
+    (await ethers.provider.getBlock('latest')).gasLimit.toString()
+  );
+  // let myTestAccount = new ethers.Wallet('cdfea5ce686fd368a7cc2827c68ae7e4af107f1fa51030565d01ad232389c156', ethers.provider);
+  // await instanceNDLToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
+  console.log(' NDL Balance: ', (await instanceNDLToken.balanceOf(owner.address)).toString());
+  await instanceNDLToken.approve(instanceLocking.address, ethers.utils.parseEther('100.0'), {
+    gasPrice: gasprice.add(1),
+    gasLimit: blockGaslimit,
+  });
+
+  await instanceNDLToken.transferFrom(owner.address, instanceLocking.address, ethers.utils.parseEther('1.0'))
+  console.log(' instanceLocking NDL Balance: ', (await instanceNDLToken.balanceOf(instanceLocking.address)).toString());
+
+  console.log('lock 10 noodle token into locking pool');
+  // console.log('block timestamp',(await ethers.provider.getBlock("latest")).timestamp);
+  var ts = (await ethers.provider.getBlock("latest")).timestamp;
+  ret4 = instanceLocking.createLock(
+    ethers.utils.parseEther('10.0'),
+    ts + 10000,
+    {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    }
+  );
+  ret5 = await ret4;
+  console.log(ret4);
+  console.log(ret5);
+  ret6 = await ret5.wait(1);
+  // console.log(ret2);
+  console.log(ret6);
+  let lockedAmont = await instanceLocking.lockedAmount(owner.address)
+  console.log('user locked amount: ', lockedAmont.toString());
+  console.log('-------instanceLocking.createLock--------end');
+
 };
 
 main();

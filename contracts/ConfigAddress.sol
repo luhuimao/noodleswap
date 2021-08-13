@@ -3,6 +3,8 @@ pragma solidity ^0.8.3;
 
 contract ConfigAddress {
     event UpsertGameToken(address indexed factoryAddress, address indexed tokenAddress, string tokenSymbol);
+    event UpsertLockNoodleToken(address indexed factoryAddress, address indexed tokenAddress);
+    event UpsertNoodleLocking(address indexed factoryAddress, address indexed lockingAddress);
     event UpsertConfig(
         address indexed factoryAddress,
         uint256 indexed chainId,
@@ -16,6 +18,7 @@ contract ConfigAddress {
         address playNFTAddress,
         address configAddress
     );
+
     struct Config {
         // 配置文件合约地址
         address configAddress;
@@ -25,6 +28,8 @@ contract ConfigAddress {
         address voteAddress;
         // 质押合约
         address stakingAddress;
+        // 锁仓合约
+        // address lockingAddress;
         // NFT合约地址
         address playNFTAddress;
         // 水龙头合约地址
@@ -43,6 +48,7 @@ contract ConfigAddress {
         uint256 chainId;
         // 其他用来游戏的代币也可以随时配置添加
         mapping(string => address) gameTokenMap;
+        mapping(string => address) lockTokenMap;
         address[] gameTokenList;
     }
 
@@ -56,13 +62,13 @@ contract ConfigAddress {
 
     //插入更新
     function upsert(
-        address factoryAddress,
         uint256 chainId,
-        address ndlToken,
-        address usdtToken,
         string memory rpcUrl,
         string memory blockUrl,
         string memory networkName,
+        address factoryAddress,
+        address ndlToken,
+        address usdtToken,
         address voteAddress,
         address stakingAddress,
         address playNFTAddress
@@ -71,6 +77,8 @@ contract ConfigAddress {
         Config storage config = configMap[factoryAddress];
         config.factoryAddress = factoryAddress;
         config.ndlToken = ndlToken;
+        // config.lockTokenMap['lckndlToken'] = lockTokenMap[0];
+        // config.lockTokenMap['lockingAddress'] = lockTokenMap[1];
         config.usdtToken = usdtToken;
         config.blockUrl = blockUrl;
         config.rpcUrl = rpcUrl;
@@ -101,6 +109,22 @@ contract ConfigAddress {
   }
   // */
 
+    function upsertLockNoodleToken(address factoryAddress, address tokenAddress) public returns (uint256 ret) {
+        require(_owner == msg.sender, 'only owner can upsertLockNoodleToken');
+        Config storage config = configMap[factoryAddress];
+        config.lockTokenMap['lckndlToken'] = tokenAddress;
+        ret = 1;
+        emit UpsertLockNoodleToken(factoryAddress, tokenAddress);
+    }
+
+    function upsertNoodleLocking(address factoryAddress, address lockingAddress) public returns (uint256 ret) {
+        require(_owner == msg.sender, 'only owner can upsertLockingNoodle');
+        Config storage config = configMap[factoryAddress];
+        config.lockTokenMap['lockingAddress'] = lockingAddress;
+        ret = 1;
+        emit UpsertNoodleLocking(factoryAddress, lockingAddress);
+    }
+
     function upsertGameToken(
         address factoryAddress,
         address tokenAddress,
@@ -126,6 +150,16 @@ contract ConfigAddress {
     function getGameToken(address factoryAddress, string memory tokenSymbol) public view returns (address) {
         Config storage config = configMap[factoryAddress];
         return config.gameTokenMap[tokenSymbol];
+    }
+
+    function getLockNoodleToken(address factoryAddress) public view returns (address) {
+        Config storage config = configMap[factoryAddress];
+        return config.lockTokenMap['lckndlToken'];
+    }
+
+    function getLockingAddress(address factoryAddress) public view returns (address) {
+        Config storage config = configMap[factoryAddress];
+        return config.lockTokenMap['lockingAddress'];
     }
 
     function getLen(address factoryAddress, uint256 index) public view returns (address) {
@@ -162,9 +196,10 @@ contract ConfigAddress {
             size := extcodesize(tokenAddress)
         }
         require(size > 0);
-        (bool success, bytes memory returndata) =
-            // tokenAddress.delegatecall(abi.encodeWithSelector(bytes4(keccak256('faucet(address,uint256)')), to, wad));
-            tokenAddress.call(abi.encodeWithSelector(bytes4(keccak256('faucet(address,uint256)')), to, wad));
+        (
+            bool success,
+            bytes memory returndata // tokenAddress.delegatecall(abi.encodeWithSelector(bytes4(keccak256('faucet(address,uint256)')), to, wad));
+        ) = tokenAddress.call(abi.encodeWithSelector(bytes4(keccak256('faucet(address,uint256)')), to, wad));
         if (success) {
             return;
         }

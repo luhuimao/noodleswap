@@ -11,7 +11,7 @@ dataSources:
     name: ConfigAddress
     network: mainnet #replace mainnet
     source:
-      address: "0xEe333C8591Bb9ecE70fe00C9d13fE628405E4A06" #{{CONFIGADDRESS_ADDRESS}}
+      address: "0x953166191665Cd5a8C1F6C8bD6b09a0a87907B58" #{{CONFIGADDRESS_ADDRESS}}
       abi: ConfigAddress
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -34,6 +34,10 @@ dataSources:
           handler: handleUpsertConfig
         - event: UpsertGameToken(indexed address,indexed address,string)
           handler: handleUpsertGameToken
+        - event: UpsertLockNoodleToken(indexed address,indexed address)
+          handler: handleUpsertLockNoodleToken
+        - event: UpsertNoodleLocking(indexed address,indexed address)
+          handler: handleUpsertNoodleLocking
       #callHandlers:
       #- function: createGravatar(string,string)
       #  handler: handleCreateGravatar
@@ -49,7 +53,7 @@ dataSources:
     name: GameFactory
     network: mainnet #replace mainnet
     source:
-      address: "0xF34206a2373092048D8C4e160f3D13194a96983E" #{{GAMEFACTORY_ADDRESS}}
+      address: "0x993630d22d60ef03b10DC0d82BEA5Aa71Eb66ea2" #{{GAMEFACTORY_ADDRESS}}
       abi: GameFactory
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -78,7 +82,7 @@ dataSources:
   #   name: VoteInfo
   #   network: mainnet #replace mainnet
   #   source:
-  #     address: "0x4aC4575742eb6fa41d522c4B8A086f0B9f0eAe78" #{{VOTE_ADDRESS}}
+  #     address: "0xC3e87A25e4414cDE1D35B2FE9920E09a9f5f944D" #{{VOTE_ADDRESS}}
   #     abi: Vote
   #     startBlock: 0 #{{STARTBLOCK}}
   #   mapping:
@@ -101,7 +105,7 @@ dataSources:
     name: NoodleStaking
     network: mainnet #replace mainnet
     source:
-      address: "0x431E00Da6fE042618546630db794e2eE3Ac58370" #{{STAKING_ADDRESS}}
+      address: "0x30156AA84C298a77DA002A386b2Aa669307F6cCA" #{{STAKING_ADDRESS}}
       abi: NoodleStaking
       startBlock: 0 #{{STARTBLOCK}}
     mapping:
@@ -127,6 +131,29 @@ dataSources:
           handler: handleStakeInfoAdd
         - event: EventUpdatePool(indexed address,uint256)
           handler: handleUpdatePool
+  # 锁仓挖矿合约
+  - kind: ethereum/contract
+    name: NoodleLocking
+    network: mainnet #replace mainnet
+    source:
+      address: "0xDaB801A672a14916E4A22B859EfC3e8afb327514" #{{LOCKING_ADDRESS}}
+      abi: NoodleLocking
+      startBlock: 0 #{{STARTBLOCK}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - NoodleLocking
+        - LockInfo
+        - LockeUser
+      abis:
+        - name: NoodleLocking
+          file: ./abis/NoodleLocking.json
+      eventHandlers:
+        - event: EventLockingPoolInfoAdd(indexed address,uint256)
+          handler: handleLockingPoolInfoAdd
 
 templates:
   - kind: ethereum/contract
@@ -163,7 +190,7 @@ templates:
           handler: handChallengeGame
         - event: _getAward(indexed address,indexed address,indexed address,uint256[],uint256)
           handler: handGetAward
-        - event: _getVoteAward(indexed address,indexed address,uint8,uint256)
+        - event: _getVoteAward(indexed address,indexed address,uint256,uint256)
           handler: handGetVoteAward
         - event: _addVote(indexed address,indexed address,uint8,uint256[],uint8)
           handler: handAddVote
