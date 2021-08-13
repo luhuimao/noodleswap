@@ -29,7 +29,7 @@ contract NoodleLocking is INoodleLocking {
     uint256 constant MAXTIME = 4 * 365 * 86400; // 4 years
     uint256 constant MULTIPLIER = 10**18;
 
-    uint256 totalLockedAmount = 0; // 锁仓总量
+    uint256 private _totalLockedAmount = 0; // 锁仓总量
 
     address constant ZERO_ADDRESS = address(0x0);
     address public _noodleToken; //NOODLE Token
@@ -140,8 +140,8 @@ contract NoodleLocking is INoodleLocking {
         ret = lockedUserInfo[_addr].start;
     }
 
-    function fetchTotalLockedAmount() public view returns (uint256 ret) {
-        ret = totalLockedAmount;
+    function fetchTotalLockedAmount() public view returns (uint256) {
+        return _totalLockedAmount;
     }
 
     function _depositFor(
@@ -166,7 +166,7 @@ contract NoodleLocking is INoodleLocking {
         }
         _locked.start = block.timestamp;
         lockedUserInfo[_addr] = _locked;
-        totalLockedAmount.add(_locked.amount);
+        _totalLockedAmount += _locked.amount;
         require(noodle.transferFrom(_addr, address(this), _value), 'transferFrom failed');
         //铸造lock Noodle
         require(lockNoodleToken.mint(_addr, _value), 'mint lockNoodle failed');
@@ -255,7 +255,7 @@ contract NoodleLocking is INoodleLocking {
         _locked.start = 0;
         _locked.amount = 0;
         lockedUserInfo[msg.sender] = _locked;
-        totalLockedAmount.sub(value);
+        _totalLockedAmount -= value;
 
         emit EventWithdraw(msg.sender, value, block.timestamp);
         // emit Supply(supply_before, supply_before - value);
@@ -267,11 +267,11 @@ contract NoodleLocking is INoodleLocking {
         // uint256 noodleSupply = noodle.balanceOf(address(this)); //锁仓总数量
 
         require(
-            pool.noodlePerBlock > 0 && user.end > 0 && user.start > 0 && totalLockedAmount > 0 && blockSpeed > 0,
+            pool.noodlePerBlock > 0 && user.end > 0 && user.start > 0 && _totalLockedAmount > 0 && blockSpeed > 0,
             '_pendingNoodleReward failed'
         );
         uint256 lockedBlocks = (user.end - user.start).div(blockSpeed); //锁仓区块数量
-        uint256 lockedPencentage = user.amount.div(totalLockedAmount); //锁仓百分比
+        uint256 lockedPencentage = user.amount.div(_totalLockedAmount); //锁仓百分比
         uint256 pendingReward = pool.noodlePerBlock.mul(lockedBlocks).mul(lockedPencentage); // 锁仓奖励= 每个区块奖励 × 锁仓区块总数 × 锁仓百分比
         return pendingReward;
     }

@@ -694,6 +694,10 @@ let main = async () => {
   console.log(ret6);
   let lockedAmont = await instanceLocking.lockedAmount(owner.address)
   console.log('user locked amount: ', lockedAmont.toString());
+
+  let totalLockedAmount = await instanceLocking.fetchTotalLockedAmount();
+  console.log('total locked amount: ', totalLockedAmount.toString());
+
   console.log('-------instanceLocking.createLock--------end');
 
 };
