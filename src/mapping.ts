@@ -520,6 +520,14 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   voteInfo.option = event.params.challengeOption;
 
   gameInfo.challengeOption = event.params.challengeOption;
+  gameInfo.challengeTimestamp = event.block.timestamp;
+
+  let instanceGame = GameContract.bind(event.params.game);
+  let ret = instanceGame.try_getVoteNumbers();
+  if (!ret.reverted) {
+    gameInfo.voteNumbers = ret.value;
+  }
+  
   gameInfo.save()
 
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:3:', []);
@@ -539,6 +547,13 @@ export function handOpenGame(event: GameEvent._openGame): void {
   }
   gameInfo._winOption = event.params.option;
   gameInfo._winTimestamp = event.block.timestamp;
+
+  let instanceGame = GameContract.bind(event.params.game);
+  let ret = instanceGame.try_getVoteNumbers();
+  if (!ret.reverted) {
+    gameInfo.voteNumbers = ret.value;
+  }
+
   gameInfo.save();
   log.info('xxxxxxxxxxxxxxxxxx:handOpenGame:', []);
 }
@@ -581,7 +596,7 @@ export function handAddVote(event: GameEvent._addVote): void {
     log.error('GameInfo game not found: {}', [event.params.game.toHex()]);
     return;
   }
-  
+
   let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
   var voteUserInfo = VoteUserInfo.load(id);
   if (voteUserInfo != null) {
@@ -595,7 +610,7 @@ export function handAddVote(event: GameEvent._addVote): void {
   voteUserInfo.vote = gameInfo.id;
   // voteUserInfo.game = gameInfo.id;
   voteUserInfo.timestamp = event.block.timestamp;
-  
+
   gameInfo.challengeWinOption = BigInt.fromI32(event.params.winOption);
   gameInfo.voteNumbers = event.params.voteNumbers;
 

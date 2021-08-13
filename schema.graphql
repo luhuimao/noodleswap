@@ -104,6 +104,7 @@ type GameInfo @entity {
   _winOption: BigInt # 获胜选项
   timestamp: BigInt! #  下注时间
   challengeOption: BigInt # 质疑选项
+  challengeTimestamp: BigInt #质疑时间
   challengeWinOption: BigInt # 最新投票胜者选项
   voteNumbers: [BigInt!] # 投票结果列表
   vote: VoteInfo @derivedFrom(field: "game") # 投票地址
