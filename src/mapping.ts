@@ -554,11 +554,11 @@ export function handGetVoteAward(event: GameEvent._getVoteAward): void {
     log.error('handGetVoteAward GameInfo game not found: {}', [event.params.game.toHex()]);
     return;
   }
-  var voteInfo = VoteInfo.load(event.params.game.toHex());
-  if (voteInfo == null) {
-    log.error('handGetVoteAward VoteInfo vote not exists: {}', [event.params.game.toHex()]);
-    return;
-  }
+  // var voteInfo = VoteInfo.load(event.params.game.toHex());
+  // if (voteInfo == null) {
+  //   log.error('handGetVoteAward VoteInfo vote not exists: {}', [event.params.game.toHex()]);
+  //   return;
+  // }
   let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
   var voteUserInfo = VoteUserInfo.load(id);
   if (voteUserInfo == null) {
