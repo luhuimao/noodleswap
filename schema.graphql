@@ -162,7 +162,7 @@ type VoteInfo @entity {
   voteNumbers: [BigInt!] # 投票结果列表
   endTime: BigInt! #  投票结束时间
   timestamp: BigInt! #  下注时间
-  voteUserInfos: [VoteUserInfo!]! @derivedFrom(field: "vote") # 下注记录
+  voteUserInfos: [VoteUserInfo!]  # 下注记录
 }
 
 # 投票明细
@@ -170,7 +170,7 @@ type VoteUserInfo @entity {
   id: ID!
 
   sender: Bytes! # 投票者地址
-  vote: VoteInfo! # 所属游戏
+  vote: GameInfo! # 所属游戏
   option: Int! # 投票选项
   winNumber: BigInt #提取的投票奖励,空表示还未提取
   timestamp: BigInt! #  下注时间
