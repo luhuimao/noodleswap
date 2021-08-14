@@ -8,7 +8,7 @@ contract ConfigurableParametersContract {
 
     uint256 public stakeNumber = 10 ether;
 
-    uint256 public voteNumber = 1 ether;
+    uint256 public voteNumber = 0 ether;
 
     //Odds magnification multiple
     // uint32 public oddsMagnificationMultiple = 1000000;

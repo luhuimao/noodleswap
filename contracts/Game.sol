@@ -366,9 +366,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         voteMap[msg.sender] = receiveFlag;
         uint256 noodleAward;
         uint256 feeAward;
-        if(voteOption != winOption){
-            TransferHelper.safeTransferFrom(lockNoodleToken, address(this), msg.sender,  voteNumber);
-        }else {
+        if(voteOption == winOption){
             if(gameResultType == 2){
                 if(challengeOption == winOption){
                     if(msg.sender == challengeAddress){
@@ -397,6 +395,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
                 feeAward = feeAward / (options[winOption].voteNumber);
             }
         }
+        TransferHelper.safeTransferFrom(lockNoodleToken, address(this), msg.sender,  voteNumber);
         if(noodleAward > 0){
                 TransferHelper.safeTransferFrom(noodleToken, address(this), msg.sender, noodleAward);
             }
