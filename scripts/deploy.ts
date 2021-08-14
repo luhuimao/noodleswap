@@ -4,7 +4,7 @@ import { ConfigAddress } from '../typechain/ConfigAddress';
 import { Game } from '../typechain/Game';
 import { LGame } from '../typechain/LGame';
 import { LGameFactory } from '../typechain/LGameFactory';
-import { Vote } from '../typechain/Vote';
+// import { Vote } from '../typechain/Vote';
 import { PlayNFT } from '../typechain/PlayNFT';
 import { NoodleStaking } from '../typechain/NoodleStaking';
 import { NoodleLocking } from '../typechain/NoodleLocking';
@@ -159,13 +159,13 @@ let main = async () => {
     console.log('new LOCKNoodleToken address:', instanceLCKNDLToken.address);
   }
 
-  let instanceVote: Vote;
-  let voteContractFactory = await ethers.getContractFactory('Vote');
-  instanceVote = (await voteContractFactory.connect(owner).deploy(instanceNDLToken.address, {
-    gasLimit: blockGaslimit,
-    // gasLimit: await ethers.provider.estimateGas(voteContractFactory.getDeployTransaction(instanceNDLToken.address)),
-  })) as Vote;
-  console.log('new Vote address:', instanceVote.address);
+  // let instanceVote: Vote;
+  // let voteContractFactory = await ethers.getContractFactory('Vote');
+  // instanceVote = (await voteContractFactory.connect(owner).deploy(instanceNDLToken.address, {
+  //   gasLimit: blockGaslimit,
+  //   // gasLimit: await ethers.provider.estimateGas(voteContractFactory.getDeployTransaction(instanceNDLToken.address)),
+  // })) as Vote;
+  // console.log('new Vote address:', instanceVote.address);
 
   let instancePlayNFT: PlayNFT;
   let nftContractFactory = await ethers.getContractFactory('PlayNFT');
@@ -176,7 +176,7 @@ let main = async () => {
 
   let flag = '\\/\\/REPLACE_FLAG';
   let key = 'VOTE_ADDRESS_' + network.name.toUpperCase();
-  boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceVote.address + '"; ' + flag);
+  // boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceVote.address + '"; ' + flag);
 
   let instanceUSDT;
   if (configAddress && configAddress.ndlToken) {
@@ -264,7 +264,7 @@ let main = async () => {
     instanceGameFactory.address,
     instanceNDLToken.address,
     instanceUSDT.address,
-    instanceVote.address,
+    "",
     instanceStaking.address,
     instancePlayNFT.address,
     {
