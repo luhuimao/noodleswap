@@ -8,6 +8,7 @@ import './libraries/SafeMath.sol';
 import './libraries/TransferHelper.sol';
 import './libraries/LGame.sol';
 import './interfaces/IERC20.sol';
+import './interfaces/ILockNoodleERC20.sol';
 import './ConfigurableParametersContract.sol';
 import 'hardhat/console.sol';
 
@@ -218,7 +219,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     //抵押获取开奖资格
     function stakeGame(uint256 deadline) public override {
         require(openAddress == address(0), 'NoodleSwap: the game has openAddress');
-        uint256 balance = IERC20(noodleToken).balanceOf(address(msg.sender));
+        uint256 balance = INoodleGameERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
         openAddress = address(msg.sender);
@@ -245,7 +246,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function challengeGame(uint8 _challengeOption) public override {
         require(openAddress != address(0), 'NoodleSwap: the game has no openAddress');
         require(confirmResultTime + confirmSlot > block.timestamp, 'NoodleSwap: the game is over');
-        uint256 balance = IERC20(noodleToken).balanceOf(address(msg.sender));
+        uint256 balance = INoodleGameERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(noodleToken, msg.sender, address(this), stakeNumber);
         challengeAddress = address(msg.sender);
@@ -285,7 +286,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         }
         require(canVote == true, 'NoodleSwap: time can not vote');
         require(voteMap[msg.sender] == 0, 'NoodleSwap: vote only once');
-        uint256 balance = IERC20(lockNoodleToken).balanceOf(msg.sender);
+        uint256 balance = ILockNoodleERC20(lockNoodleToken).balanceOf(msg.sender);
         require(balance >= voteNumber, 'NoodleSwap: vote address have not enough amount');
         TransferHelper.safeTransferFrom(lockNoodleToken, msg.sender, address(this), voteNumber);
         if(option == 0 ){

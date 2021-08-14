@@ -527,7 +527,7 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   if (!ret.reverted) {
     gameInfo.voteNumbers = ret.value;
   }
-  
+
   gameInfo.save()
 
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:3:', []);
@@ -538,6 +538,15 @@ export function handChallengeGame(event: GameEvent._challengeGame): void {
   log.info('xxxxxxxxxxxxxxxxxx:handChallengeGame:4:', []);
   voteInfo.save();
   //VoteTemplate.create(event.params.vote);
+
+  let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
+  var voteUserInfo = new VoteUserInfo(id);
+  voteUserInfo.option = event.params.challengeOption.toI32();
+  voteUserInfo.sender = event.params.sender;
+  voteUserInfo.vote = gameInfo.id;
+  // voteUserInfo.game = gameInfo.id;
+  voteUserInfo.timestamp = event.block.timestamp;
+  voteUserInfo.save()
 }
 export function handOpenGame(event: GameEvent._openGame): void {
   var gameInfo = GameInfo.load(event.params.game.toHex());
@@ -556,6 +565,15 @@ export function handOpenGame(event: GameEvent._openGame): void {
 
   gameInfo.save();
   log.info('xxxxxxxxxxxxxxxxxx:handOpenGame:', []);
+
+  let id = event.params.game.toHex() + '-' + event.params.sender.toHex();
+  var voteUserInfo = new VoteUserInfo(id);
+  voteUserInfo.option = event.params.option.toI32();
+  voteUserInfo.sender = event.params.sender;
+  voteUserInfo.vote = gameInfo.id;
+  // voteUserInfo.game = gameInfo.id;
+  voteUserInfo.timestamp = event.block.timestamp;
+  voteUserInfo.save()
 }
 export function handleBlock(block: ethereum.Block): void {
   let id = block.hash.toHex();

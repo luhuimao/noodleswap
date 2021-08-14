@@ -196,10 +196,10 @@ let main = async () => {
   });
   const instanceGameFactory = (await gameFactoryContractFactory
     .connect(owner)
-    .deploy(instanceNDLToken.address, instancePlayNFT.address, {
+    .deploy(instanceNDLToken.address, instanceLCKNDLToken.address, instancePlayNFT.address, {
       gasPrice: gasprice,
       gasLimit: await ethers.provider.estimateGas(
-        gameFactoryContractFactory.getDeployTransaction(instanceNDLToken.address, instancePlayNFT.address)
+        gameFactoryContractFactory.getDeployTransaction(instanceNDLToken.address, instanceLCKNDLToken.address, instancePlayNFT.address)
       ),
     })) as GameFactory;
   console.log('new GameFactory address:', instanceGameFactory.address);
@@ -563,18 +563,18 @@ let main = async () => {
         from: owner.address,
       });
       console.log('xxxxxxx:4:', (await instanceNDLToken.balanceOf(owner.address)).toString());
-      await instanceGame.openGame(0, {
-        gasPrice: gasprice,
-        // gasLimit: await instanceGame.estimateGas['openGame(uint8)'](0),
-        gasLimit: blockGaslimit,
-      });
-      console.log('xxxxxxx:1');
-      console.info('instanceGame.openGame:ok');
-      await instanceGame.challengeGame(0, {
-        gasPrice: gasprice,
-        gasLimit: blockGaslimit,
-      });
-      console.info('instanceGame.challengeGame:ok');
+      // await instanceGame.openGame(0, {
+      //   gasPrice: gasprice,
+      //   // gasLimit: await instanceGame.estimateGas['openGame(uint8)'](0),
+      //   gasLimit: blockGaslimit,
+      // });
+      // console.log('xxxxxxx:1');
+      // console.info('instanceGame.openGame:ok');
+      // await instanceGame.challengeGame(0, {
+      //   gasPrice: gasprice,
+      //   gasLimit: blockGaslimit,
+      // });
+      // console.info('instanceGame.challengeGame:ok');
       // await instanceGame.addVote(1, {
       //   gasPrice: gasprice,
       //   gasLimit: blockGaslimit,
