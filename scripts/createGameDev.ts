@@ -78,6 +78,8 @@ let main = async () => {
   // 领币
   await instanceNDLToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceNDLToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
+  // await lockNoodleToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
+  // await lockNoodleToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   console.log('new ERC20Faucet address:', instanceERC20.address);

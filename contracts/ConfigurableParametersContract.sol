@@ -5,11 +5,8 @@ pragma solidity ^0.8.3;
 contract ConfigurableParametersContract {
     //Contract owner
     address public owner = address(0);
-
     uint256 public stakeNumber = 10 ether;
-
-    uint256 public voteNumber = 0 ether;
-
+    uint256 public voteNumber = 1 ether;
     //Odds magnification multiple
     // uint32 public oddsMagnificationMultiple = 1000000;
 

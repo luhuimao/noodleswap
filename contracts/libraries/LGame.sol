@@ -76,8 +76,9 @@ library LGame {
         tokenIds = new uint256[](options.length);
         //放入到做市池子里的金额：
         for (uint8 i = 0; i < options.length; i++) {
-            options[i].marketNumber += (options[i].marketNumber * amount) / sum;
-            liquidityNum += (options[i].marketNumber * amount) / sum;
+            uint256 marketNumber = (options[i].marketNumber * amount) / sum;
+            options[i].marketNumber += marketNumber;
+            liquidityNum += marketNumber;
             if (options[i].placeNumber > options[i].frozenNumber) {
                 //下单的金额
                 uint256 placeNumber = ((options[i].placeNumber - options[i].frozenNumber) * amount) / sum;
