@@ -139,6 +139,9 @@ let main = async () => {
     console.log('game optionNames[1]:', await instanceGame.options(1));
 
     console.log('creator liquidity:', await instanceGame.balanceOf(owner.address));
+
+    console.log('-------removeLiquidity--------');
+    await instanceGame.removeLiquidity(ethers.utils.parseEther('100'),0,boutils.GetUnixTimestamp() + 1000);
     //TODO 这里增加其他函数调用
     console.log('-------placeGame--------');
     let tokenIds = await instanceGame.placeGame(
@@ -185,7 +188,7 @@ let main = async () => {
     'Test T0',
     'TST0',
     ['BIG', 'SMALL'],
-    [ethers.utils.parseEther('40'), ethers.utils.parseEther('60')],
+    [ethers.utils.parseEther('50'), ethers.utils.parseEther('50')],
     'https://github.com/NoodleDAO/noodleswap',
     deadline
   );

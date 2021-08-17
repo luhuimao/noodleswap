@@ -340,7 +340,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     //领取输入结果奖励
     function getConfirmAward() public {
-        require(msg.sender == openAddress && originOption == winOption && confirmResultAward == 100, 'NoodleSwap: Confirmresult address has no award');
+        require(msg.sender == openAddress && confirmResultTime > 0 && originOption == winOption && confirmResultAward == 100, 'NoodleSwap: Confirmresult address has no award');
         confirmResultAward = 200;
         uint256 gameResultType = isGameClose();
         uint256 noodleAward;
@@ -359,7 +359,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function getVoteAward() public override {
         uint256 gameResultType = isGameClose();
         require(gameResultType < 100, 'NoodleSwap: Game is not over');
-        require(msg.sender != openAddress && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
+        require((msg.sender != openAddress || (msg.sender == openAddress && confirmResultTime == 0)) && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
         uint8 voteOption = voteMap[msg.sender];
         if(voteOption == voteFlag){
             voteOption = 0;
