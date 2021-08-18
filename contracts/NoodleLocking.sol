@@ -35,13 +35,13 @@ contract NoodleLocking is INoodleLocking {
     address public _noodleToken; //NOODLE Token
     address public _lockNoodleTOken; //锁仓代币
     // The NOODLE TOKEN!
-    ILockNoodleERC20 public noodle; //治理代币,产出币
+    INoodleGameERC20 public noodle; //治理代币,产出币
     ILockNoodleERC20 public lockNoodleToken; // lock noodle token 锁仓币
 
     // Info of each user that locking noodle tokens.
     mapping(address => LockedBalance) public lockedUserInfo;
     // Info of locking pool
-    mapping(ILockNoodleERC20 => LockingPoolInfo) public lockingPoolInfoMap;
+    mapping(INoodleGameERC20 => LockingPoolInfo) public lockingPoolInfoMap;
 
     //
     address public owner;
@@ -71,7 +71,7 @@ contract NoodleLocking is INoodleLocking {
         owner = msg.sender;
         blockSpeed = _blockSpeed;
 
-        noodle = ILockNoodleERC20(_noodleAddr);
+        noodle = INoodleGameERC20(_noodleAddr);
         lockNoodleToken = ILockNoodleERC20(_lockNoodleTokenAddr);
     }
 
@@ -248,8 +248,8 @@ contract NoodleLocking is INoodleLocking {
             safeNoodleTransfer(msg.sender, rewardAmount);
         }
 
-        // burn all lockNoodle Token
-        require(lockNoodleToken.burn(msg.sender, lockNoodleToken.balanceOf(msg.sender)));
+        // burn the same amount of _locked.amount lockNoodle Token
+        require(safeLockNoodleBurn(msg.sender, value));
 
         _locked.end = 0;
         _locked.start = 0;
@@ -290,5 +290,16 @@ contract NoodleLocking is INoodleLocking {
         } else {
             noodle.transfer(_to, _amount);
         }
+    }
+
+    function safeLockNoodleBurn(address from, uint256 _amount) internal returns (bool) {
+        uint256 lcknoodleBal = lockNoodleToken.balanceOf(address(from));
+        require(lcknoodleBal > 0, 'insufficient locknoodle token balance');
+        if (_amount > lcknoodleBal) {
+            lockNoodleToken.burn(from, lcknoodleBal);
+        } else {
+            lockNoodleToken.burn(from, _amount);
+        }
+        return true;
     }
 }

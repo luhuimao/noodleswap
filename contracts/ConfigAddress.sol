@@ -179,6 +179,9 @@ contract ConfigAddress {
         if (config.ndlToken != address(0)) {
             faucet(config.ndlToken, to, wad);
         }
+        if (config.lockTokenMap['lckndlToken'] != address(0)) {
+            faucet(config.lockTokenMap['lckndlToken'], to, wad);
+        }
         for (uint256 index = 0; index < config.gameTokenList.length; index++) {
             address tokenAddress = config.gameTokenList[index];
             faucet(tokenAddress, to, wad);

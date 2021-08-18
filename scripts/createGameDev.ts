@@ -60,9 +60,24 @@ let main = async () => {
     console.log('new NoodleToken address:', instanceNDLToken.address);
   }
 
-  let lockNoodleToken: LockNoodleTokenERC20;
-  lockNoodleToken = (await (await ethers.getContractFactory('LockNoodleTokenERC20')).connect(owner).deploy('LockNoodleToken','LockNoodleToken')) as LockNoodleTokenERC20;
-    console.log('new LockNoodleToken address:', lockNoodleToken.address);
+  // let lockNoodleToken: LockNoodleTokenERC20;
+
+  let instanceLCKNDLToken: LockNoodleTokenERC20
+  if (configAddress?.lckndlToken) {
+    instanceLCKNDLToken = (await ethers.getContractFactory('LockNoodleTokenERC20'))
+      .connect(owner)
+      .attach((configAddress.lckndlToken as any as LockNoodleTokenERC20).id) as LockNoodleTokenERC20;
+    console.log('reuse LockNoodleToken address:', instanceLCKNDLToken.address);
+  } else {
+    instanceLCKNDLToken = (await (await ethers.getContractFactory('LockNoodleTokenERC20'))
+      .connect(owner)
+      .deploy('LockNoodleToken', 'LCKNDLT')) as LockNoodleTokenERC20;
+
+    console.log('new LockNoodleToken address:', instanceLCKNDLToken.address);
+  }
+
+
+  // lockNoodleToken = (await (await ethers.getContractFactory('LockNoodleTokenERC20')).connect(owner).deploy('LockNoodleToken', 'LockNoodleToken')) as LockNoodleTokenERC20;
 
   // let voteToken: Vote;
   // voteToken = (await (await ethers.getContractFactory('Vote')).connect(owner).deploy(instanceNDLToken.address)) as Vote;
@@ -78,10 +93,11 @@ let main = async () => {
   // 领币
   await instanceNDLToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceNDLToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
-  // await lockNoodleToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
-  // await lockNoodleToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
+  await instanceLCKNDLToken['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
+  await instanceLCKNDLToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
+  console.log("--------------owner LCKNDL Banalce: ",(await instanceLCKNDLToken.balanceOf(owner.address)).toString());
   console.log('new ERC20Faucet address:', instanceERC20.address);
   // 工厂合约
   let instanceGameFactory = (await (
@@ -90,7 +106,7 @@ let main = async () => {
     })
   )
     .connect(owner)
-    .deploy(instanceNDLToken.address, lockNoodleToken.address, playNFTToken.address, {
+    .deploy(instanceNDLToken.address, instanceLCKNDLToken.address, playNFTToken.address, {
       gasPrice: 1,
       gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
     })) as GameFactory;
@@ -107,7 +123,7 @@ let main = async () => {
       ),
     })) as NoodleStaking;
   console.log('new NoodleStaking address:', instanceStaking.address);
-  
+
   let tmpr = await instanceGameFactory.setNoodleStaking(instanceStaking.address, {
     gasPrice: 1,
     gasLimit: (await ethers.provider.getBlock('latest')).gasLimit,
@@ -141,7 +157,7 @@ let main = async () => {
     console.log('creator liquidity:', await instanceGame.balanceOf(owner.address));
 
     console.log('-------removeLiquidity--------');
-    await instanceGame.removeLiquidity(ethers.utils.parseEther('100'),0,boutils.GetUnixTimestamp() + 1000);
+    await instanceGame.removeLiquidity(ethers.utils.parseEther('100'), 0, boutils.GetUnixTimestamp() + 1000);
     //TODO 这里增加其他函数调用
     console.log('-------placeGame--------');
     let tokenIds = await instanceGame.placeGame(
@@ -165,19 +181,19 @@ let main = async () => {
     // console.log('game optionNames[0]:', await instanceGame.options(0));
     // console.log('game optionNames[1]:', await instanceGame.options(1));
     console.log('-------addLiquidity--------');
-    let liquidity = await instanceGame.addLiquidity(ethers.utils.parseEther('102'),0,boutils.GetUnixTimestamp() + 1000);
+    let liquidity = await instanceGame.addLiquidity(ethers.utils.parseEther('102'), 0, boutils.GetUnixTimestamp() + 1000);
     // console.log('add liquidity:');
     // console.log('game optionNames[0]:', await instanceGame.options(0));
     // console.log('game optionNames[1]:', await instanceGame.options(1));
     console.log('-------removeLiquidity--------');
-    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'),0,boutils.GetUnixTimestamp() + 1000);
-   // console.log('-------stakeGame--------');
-   // await instanceGame.stakeGame(0);
-   // console.log('-------openGame--------');
-   // await instanceGame.openGame(0);
+    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), 0, boutils.GetUnixTimestamp() + 1000);
+    // console.log('-------stakeGame--------');
+    // await instanceGame.stakeGame(0);
+    // console.log('-------openGame--------');
+    // await instanceGame.openGame(0);
     // await instanceGame.getAward([0,1]);
-   // console.log('-------challengeGame--------');
-   // await instanceGame.challengeGame(1);
+    // console.log('-------challengeGame--------');
+    // await instanceGame.challengeGame(1);
     console.log('-------addVote--------');
     await instanceGame.addVote(0);
     console.log('-------getVoteAward--------');
