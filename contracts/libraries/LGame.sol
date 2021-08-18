@@ -123,9 +123,6 @@ library LGame {
 
             if (options[i].placeNumber > options[i].frozenNumber) {
                 frozenSum += ((options[i].placeNumber - options[i].frozenNumber) * _liquidity) / sumMarketNumber;
-                options[i].frozenNumber +=
-                    ((options[i].placeNumber - options[i].frozenNumber) * _liquidity) /
-                    sumMarketNumber;
             }
         }
         tokenIds = new uint256[](options.length);
@@ -144,6 +141,10 @@ library LGame {
                 playInfo.optionP = optionP;
                 playInfo.allFrozen = frozenSum;
                 tokenIds[i] = tokenId;
+            }else if(options[i].placeNumber > options[i].frozenNumber){
+                options[i].frozenNumber +=
+                    ((options[i].placeNumber - options[i].frozenNumber) * _liquidity) /
+                    sumMarketNumber;
             }
         }
     }
