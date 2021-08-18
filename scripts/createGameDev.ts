@@ -26,6 +26,13 @@ let main = async () => {
       to: owner.address,
     });
   }
+  let gasprice = (await owner.getGasPrice()).add(1);
+  let blockGaslimit0 = (await ethers.provider.getBlock('latest')).gasLimit;
+  let blockGaslimit = blockGaslimit0.div(4);
+  if (network.name == 'devnet') {
+    gasprice = gasprice.sub(gasprice).add(1);
+    blockGaslimit = blockGaslimit0;
+  }
 
   console.log(
     'deploy account:',
@@ -97,7 +104,7 @@ let main = async () => {
   await instanceLCKNDLToken['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](owner.address, ethers.utils.parseEther('1000'));
   await instanceERC20['faucet(address,uint256)'](user.address, ethers.utils.parseEther('1000'));
-  console.log("--------------owner LCKNDL Banalce: ",(await instanceLCKNDLToken.balanceOf(owner.address)).toString());
+  console.log("--------------owner LCKNDL Banalce: ", (await instanceLCKNDLToken.balanceOf(owner.address)).toString());
   console.log('new ERC20Faucet address:', instanceERC20.address);
   // 工厂合约
   let instanceGameFactory = (await (
@@ -154,23 +161,45 @@ let main = async () => {
     console.log('game optionNames[0]:', await instanceGame.options(0));
     console.log('game optionNames[1]:', await instanceGame.options(1));
 
-    console.log('creator liquidity:', await instanceGame.balanceOf(owner.address));
+    await instanceLCKNDLToken.approve(instanceGame.address, ethers.utils.parseEther('1000.0'), {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    });
+    await instanceNDLToken.approve(instanceGame.address, ethers.utils.parseEther('1000.0'), {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    });
+    await instanceERC20.approve(instanceGame.address, ethers.utils.parseEther('1000.0'), {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    });
 
-    console.log('-------removeLiquidity--------');
-    await instanceGame.removeLiquidity(ethers.utils.parseEther('100'), 0, boutils.GetUnixTimestamp() + 1000);
+    console.log('creator liquidity:', await (await instanceGame.balanceOf(owner.address)).toString());
+
+    // console.log('-------removeLiquidity--------');
+    // await instanceGame.removeLiquidity(ethers.utils.parseEther('100'), 0, boutils.GetUnixTimestamp() + 1000, {
+    //   gasPrice: gasprice.add(1),
+    //   gasLimit: blockGaslimit,
+    // });
     //TODO 这里增加其他函数调用
     console.log('-------placeGame--------');
     let tokenIds = await instanceGame.placeGame(
       [0],
       [ethers.utils.parseEther('10')],
       0,
-      boutils.GetUnixTimestamp() + 1000
+      boutils.GetUnixTimestamp() + 1000, {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    }
     );
     await instanceGame.placeGame(
       [0],
       [ethers.utils.parseEther('15')],
       0,
-      boutils.GetUnixTimestamp() + 1000
+      boutils.GetUnixTimestamp() + 1000, {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    }
     );
     // await instanceGame.placeGame(
     //   [1],
@@ -181,12 +210,18 @@ let main = async () => {
     // console.log('game optionNames[0]:', await instanceGame.options(0));
     // console.log('game optionNames[1]:', await instanceGame.options(1));
     console.log('-------addLiquidity--------');
-    let liquidity = await instanceGame.addLiquidity(ethers.utils.parseEther('102'), 0, boutils.GetUnixTimestamp() + 1000);
+    let liquidity = await instanceGame.addLiquidity(ethers.utils.parseEther('102'), 0, boutils.GetUnixTimestamp() + 1000, {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    });
     // console.log('add liquidity:');
     // console.log('game optionNames[0]:', await instanceGame.options(0));
     // console.log('game optionNames[1]:', await instanceGame.options(1));
     console.log('-------removeLiquidity--------');
-    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), 0, boutils.GetUnixTimestamp() + 1000);
+    let amount = await instanceGame.removeLiquidity(ethers.utils.parseEther('20'), 0, boutils.GetUnixTimestamp() + 1000, {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    });
     // console.log('-------stakeGame--------');
     // await instanceGame.stakeGame(0);
     // console.log('-------openGame--------');
@@ -195,7 +230,10 @@ let main = async () => {
     // console.log('-------challengeGame--------');
     // await instanceGame.challengeGame(1);
     console.log('-------addVote--------');
-    await instanceGame.addVote(0);
+    await instanceGame.addVote(0, {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    });
     console.log('-------getVoteAward--------');
     await instanceGame.getVoteAward();
   });
@@ -206,7 +244,10 @@ let main = async () => {
     ['BIG', 'SMALL'],
     [ethers.utils.parseEther('50'), ethers.utils.parseEther('50')],
     'https://github.com/NoodleDAO/noodleswap',
-    deadline
+    deadline, {
+    gasPrice: gasprice.add(1),
+    gasLimit: blockGaslimit,
+  }
   );
 };
 
