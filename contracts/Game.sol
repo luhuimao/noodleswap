@@ -279,7 +279,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         bool canVote = false;
         if(challengeTime > 0 && challengeTime + voteSlot > block.timestamp){
             canVote = true;
-        }else if(confirmResultTime == 0 && startVoteTime == 0 && endTime + confirmResultSlot < block.timestamp){
+        }else if(challengeTime == 0 && confirmResultTime == 0 && startVoteTime == 0 && endTime + confirmResultSlot < block.timestamp){
             canVote = true;
         }else if(confirmResultTime == 0 && startVoteTime != 0 && endTime + confirmResultSlot + voteSlot > block.timestamp){
             canVote = true;
@@ -361,7 +361,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function getVoteAward() public override {
         uint256 gameResultType = isGameClose();
         require(gameResultType < 100, 'NoodleSwap: Game is not over');
-        require(msg.sender != confirmResultAddress && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
+        //require(msg.sender != confirmResultAddress && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
         uint8 voteOption = voteMap[msg.sender];
         if(voteOption == voteFlag){
             voteOption = 0;
