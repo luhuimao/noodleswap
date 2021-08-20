@@ -39,8 +39,9 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     uint256 public challengeTime;       //质疑时间
     uint256 public startVoteTime;       //开始投票时间
     
-    address public openAddress;         //原始输入地址
-    uint8  public originOption = 200;   //原始输入结果
+    address public openAddress;           //原始输入地址
+    uint8  public originOption = 200;     //原始输入结果
+    address public confirmResultAddress;  //确认结果地址
     address public challengeAddress;    //挑战地址
     uint8  public challengeOption = 200;//挑战结果
     uint8  public winOption = 200;      //最终结果
@@ -230,6 +231,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function openGame(uint8 _winOption) public override {
         require(openAddress == msg.sender, 'NoodleSwap: cannot open game');
         require(endTime < block.timestamp && endTime + confirmResultSlot > block.timestamp, 'NoodleSwap: not open time');
+        confirmResultAddress = msg.sender;
         originOption = _winOption;
         winOption = _winOption;
         confirmResultTime = block.timestamp;
@@ -340,7 +342,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     //领取输入结果奖励
     function getConfirmAward() public {
-        require(msg.sender == openAddress && confirmResultTime > 0 && originOption == winOption && confirmResultAward == 100, 'NoodleSwap: Confirmresult address has no award');
+        require(msg.sender == confirmResultAddress && originOption == winOption && confirmResultAward == 100, 'NoodleSwap: Confirmresult address has no award');
         confirmResultAward = 200;
         uint256 gameResultType = isGameClose();
         uint256 noodleAward;
@@ -359,7 +361,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function getVoteAward() public override {
         uint256 gameResultType = isGameClose();
         require(gameResultType < 100, 'NoodleSwap: Game is not over');
-        require((msg.sender != openAddress || (msg.sender == openAddress && confirmResultTime == 0)) && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
+        require(msg.sender != confirmResultAddress && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
         uint8 voteOption = voteMap[msg.sender];
         if(voteOption == voteFlag){
             voteOption = 0;
