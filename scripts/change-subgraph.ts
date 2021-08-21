@@ -39,11 +39,15 @@ let main = async () => {
   }
   const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
   let configaddr = config.getConfigAddressByNetwork(network.name);
+  console.log('#############getConfigAddressByNetwork: ', configaddr);
   if (configaddr == null) {
     console.error('config address null:', network.name);
     return;
   }
   const instanceConfigAddress = ConfigAddressFactory.connect(owner).attach(configaddr) as ConfigAddressContract;
+  if (configaddr != instanceConfigAddress.address) {
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! config addr error!!!!!!!!!');
+  }
   console.log('ConfigAddress address:', instanceConfigAddress.address);
   let key = 'address';
   let flag = '#{{CONFIGADDRESS_ADDRESS}}';

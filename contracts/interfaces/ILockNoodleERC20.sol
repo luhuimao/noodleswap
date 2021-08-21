@@ -16,6 +16,7 @@ interface ILockNoodleERC20 {
 
     function approve(address spender, uint value) external returns (bool);
     function transfer(address to, uint256 value) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint);
 
     function transferFrom(
         address from,

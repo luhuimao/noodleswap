@@ -68,6 +68,7 @@ let main = async () => {
   } else {
     const ConfigAddressFactory = await ethers.getContractFactory('ConfigAddress');
     let tmpaddr = config.getConfigAddressByNetwork(network.name);
+    console.log("Config Address Recored In Config: ", tmpaddr);
     if (tmpaddr == null) {
       console.error('config address null:', network.name);
       return;
@@ -245,7 +246,6 @@ let main = async () => {
   key = 'LOCKING_ADDRESS_' + network.name.toUpperCase();
   boutils.ReplaceLine('.config.ts', key + '.*' + flag, key + ' = "' + instanceLocking.address + '"; ' + flag);
 
-
   const wethAddr = config.getTokenAddrBySymbol(tokens, 'WBNB');
   console.log('WETH address:', wethAddr);
 
@@ -253,9 +253,9 @@ let main = async () => {
   console.log('BUSD address:', usdtAddr);
 
   let chainId = (await ethers.provider.getNetwork()).chainId;
-
   //方便目前测试已经部署的业务
   //let ret = await (
+
   let ret = await instanceConfigAddress.upsert(
     chainId,
     config.getRpcUrlByNetwork(network.name),
@@ -264,27 +264,12 @@ let main = async () => {
     instanceGameFactory.address,
     instanceNDLToken.address,
     instanceUSDT.address,
-    "",
+    instanceUSDT.address,
     instanceStaking.address,
     instancePlayNFT.address,
     {
       gasPrice: gasprice,
       gasLimit: blockGaslimit,
-      // gasLimit: await instanceConfigAddress.estimateGas[
-      //   'upsert(address,uint256,address,address,address,string,string,string,address,address,address)'
-      // ](
-      //   instanceGameFactory.address,
-      //   chainId,
-      //   instanceNDLToken.address,
-      //   instanceWETH9.address,
-      //   instanceUSDT.address,
-      //   config.getRpcUrlByNetwork(network.name),
-      //   config.getBlockUrlByNetwork(network.name),
-      //   network.name,
-      //   instanceVote.address,
-      //   instanceStaking.address,
-      //   instancePlayNFT.address
-      // ),
     }
   );
   //).wait(1);
@@ -297,24 +282,41 @@ let main = async () => {
     console.log('instanceConfigAddress.upsert:', ret.gasPrice!.toString());
   }
   // */
+  // console.log("##############factoryAddress:", (await instanceConfigAddress.configMap(instanceGameFactory.address)));
 
-  await instanceConfigAddress.upsertLockNoodleToken(instanceGameFactory.address, instanceLCKNDLToken.address, {
+  ret = await instanceConfigAddress.upsertLockNoodleToken(instanceGameFactory.address, instanceLCKNDLToken.address, {
     gasPrice: gasprice,
     gasLimit: instanceConfigAddress.estimateGas.upsertLockNoodleToken(
       instanceGameFactory.address,
       instanceLCKNDLToken.address
     ),
   });
+
+  if (!ret.gasPrice) {
+    console.log('instanceConfigAddress.upsertLockNoodleToken:', ret);
+    let ret1 = await ret.wait();
+    console.log('instanceConfigAddress.upsertLockNoodleToken:', ret1);
+  } else {
+    console.log('instanceConfigAddress.upsertLockNoodleToken:', ret.gasPrice!.toString());
+  }
   console.log('instanceConfigAddress.upsertLockNoodleToken:', instanceLCKNDLToken.address);
 
 
-  await instanceConfigAddress.upsertNoodleLocking(instanceGameFactory.address, instanceLocking.address, {
+  ret = await instanceConfigAddress.upsertNoodleLocking(instanceGameFactory.address, instanceLocking.address, {
     gasPrice: gasprice,
     gasLimit: instanceConfigAddress.estimateGas.upsertNoodleLocking(
       instanceGameFactory.address,
       instanceLocking.address
     ),
   });
+
+  if (!ret.gasPrice) {
+    console.log('instanceConfigAddress.upsertLockNoodleToken:', ret);
+    let ret1 = await ret.wait();
+    console.log('instanceConfigAddress.upsertLockNoodleToken:', ret1);
+  } else {
+    console.log('instanceConfigAddress.upsertLockNoodleToken:', ret.gasPrice!.toString());
+  }
   console.log('instanceConfigAddress.upsertNoodleLocking:', instanceLocking.address);
 
   //await instanceConfigAddress.updateBlockUrl(instanceConfigAddress.address,"test4");
@@ -333,6 +335,11 @@ let main = async () => {
     }
   }
   // console.log('xxxxxxxxxxxxxx:0:', await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T0'));
+  console.log('################instanceGameFactory address: ', instanceGameFactory.address);
+  // console.log("###########################", (await instanceConfigAddress.configMap(instanceGameFactory.address)).factoryAddress);
+  let T0Addr = await instanceConfigAddress.getLockNoodleToken(instanceGameFactory.address)
+  console.log('################T0Addr: ', T0Addr);
+
   if (
     (await instanceConfigAddress.getGameToken(instanceGameFactory.address, 'T0')) ==
     '0x0000000000000000000000000000000000000000'

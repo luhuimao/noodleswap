@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.3;
+import 'hardhat/console.sol';
 
 contract ConfigAddress {
     event UpsertGameToken(address indexed factoryAddress, address indexed tokenAddress, string tokenSymbol);
@@ -77,8 +78,6 @@ contract ConfigAddress {
         Config storage config = configMap[factoryAddress];
         config.factoryAddress = factoryAddress;
         config.ndlToken = ndlToken;
-        // config.lockTokenMap['lckndlToken'] = lockTokenMap[0];
-        // config.lockTokenMap['lockingAddress'] = lockTokenMap[1];
         config.usdtToken = usdtToken;
         config.blockUrl = blockUrl;
         config.rpcUrl = rpcUrl;
@@ -149,6 +148,7 @@ contract ConfigAddress {
 
     function getGameToken(address factoryAddress, string memory tokenSymbol) public view returns (address) {
         Config storage config = configMap[factoryAddress];
+        console.log(tokenSymbol, " address in config is : ", config.gameTokenMap[tokenSymbol]);
         return config.gameTokenMap[tokenSymbol];
     }
 
