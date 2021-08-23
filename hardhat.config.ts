@@ -18,11 +18,15 @@ export default {
   default: 'hardhat',
   networks: {
     hardhat: {
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,
       allowUnlimitedContractSize: true,
+      blockGasLimit: 0x1ffffffff,
     },
     localhost: {
       url: 'http://127.0.0.1:8545',
       allowUnlimitedContractSize: true,
+      gas: "auto",
     },
     ganache: {
       url: 'http://127.0.0.1:7545',
@@ -47,6 +51,7 @@ export default {
       url: 'https://eth-mainnet.alchemyapi.io/v2/123abc123abc123abc123abc123abcde',
       //accounts: [privateKey1, privateKey2, ...]
     },
+    devnet: { url: 'http://10.0.0.89:8545' },
   },
   solidity: {
     version: '0.8.3',
