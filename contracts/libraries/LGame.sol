@@ -14,6 +14,7 @@ library LGame {
         uint256 allFrozen;
     }
     struct OptionDataStruct {
+        uint256 initMarketNumber;
         uint256 marketNumber;
         uint256 placeNumber;
         uint256 frozenNumber;
@@ -65,7 +66,9 @@ library LGame {
             uint256 liquidityNum
         )
     {
+        uint256 initSum;
         for (uint8 i = 0; i < options.length; i++) {
+            initSum += options[i].initMarketNumber;
             sum += options[i].marketNumber;
             if (options[i].placeNumber > options[i].frozenNumber) {
                 sum += (options[i].placeNumber - options[i].frozenNumber);
@@ -76,7 +79,12 @@ library LGame {
         tokenIds = new uint256[](options.length);
         //放入到做市池子里的金额：
         for (uint8 i = 0; i < options.length; i++) {
-            uint256 marketNumber = (options[i].marketNumber * amount) / sum;
+            uint256 marketNumber ;
+            if(sum > 0){
+                marketNumber = (options[i].marketNumber * amount) / sum;
+            }else{
+                marketNumber = (options[i].initMarketNumber * amount) / initSum;
+            }
             options[i].marketNumber += marketNumber;
             liquidityNum += marketNumber;
             if (options[i].placeNumber > options[i].frozenNumber) {
@@ -92,7 +100,7 @@ library LGame {
                 playInfo.optionP = optionP;
                 playInfo.allFrozen = frozenSum;
                 tokenIds[i] = tokenId;
-            } else {
+            } else if((options[i].placeNumber < options[i].frozenNumber)){
                 //冻结的金额
                 options[i].frozenNumber += ((options[i].frozenNumber - options[i].placeNumber) * amount) / sum;
             }

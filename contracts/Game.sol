@@ -85,6 +85,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         lockNoodleToken = _lockNoodleToken;
         for (uint8 i = 0; i < _optionNum.length; i++) {
             LGame.OptionDataStruct memory option;
+            option.initMarketNumber = _optionNum[i];
             option.marketNumber = _optionNum[i];
             option.placeNumber = 0;
             option.frozenNumber = 0;
@@ -101,6 +102,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         uint256 _spread,
         uint256 _deadline
     ) public payable override ensure(_deadline) gameEndCheck(endTime) returns (uint256[] memory tokenIds) {
+        require(options[0].marketNumber != 0, 'NoodleSwap: market pool have not enough amount');
         uint256 balance = IERC20(token).balanceOf(address(msg.sender));
         uint256 sum = 0;
         for (uint8 i = 0; i < _optionNum.length; i++) {
@@ -386,7 +388,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     function getVoteAward() public override {
         uint256 gameResultType = isGameClose();
         require(gameResultType < 100, 'NoodleSwap: Game is not over');
-        //require(msg.sender != confirmResultAddress && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
+        // require(msg.sender != confirmResultAddress && voteMap[msg.sender] > 0 && voteMap[msg.sender] != receiveFlag, 'NoodleSwap: address cannot get award');
         uint8 voteOption = voteMap[msg.sender];
         if (voteOption == voteFlag) {
             voteOption = 0;

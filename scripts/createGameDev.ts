@@ -176,11 +176,21 @@ let main = async () => {
 
     console.log('creator liquidity:', await (await instanceGame.balanceOf(owner.address)).toString());
 
-    // console.log('-------removeLiquidity--------');
-    // await instanceGame.removeLiquidity(ethers.utils.parseEther('100'), 0, boutils.GetUnixTimestamp() + 1000, {
-    //   gasPrice: gasprice.add(1),
-    //   gasLimit: blockGaslimit,
-    // });
+    console.log('-------removeLiquidity--------');
+    await instanceGame.removeLiquidity(ethers.utils.parseEther('100'), 0, boutils.GetUnixTimestamp() + 1000, {
+      gasPrice: gasprice.add(1),
+      gasLimit: blockGaslimit,
+    });
+    console.log('remove liquidity:', await (await instanceGame.balanceOf(owner.address)).toString());
+
+     console.log('-------addLiquidity--------');
+     await instanceGame.addLiquidity(ethers.utils.parseEther('102'), 0, boutils.GetUnixTimestamp() + 1000, {
+       gasPrice: gasprice.add(1),
+       gasLimit: blockGaslimit,
+     });
+
+     console.log('add liquidity:', await (await instanceGame.balanceOf(owner.address)).toString());
+
     //TODO 这里增加其他函数调用
     console.log('-------placeGame--------');
     let tokenIds = await instanceGame.placeGame(
