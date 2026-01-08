@@ -2,18 +2,14 @@
 pragma solidity ^0.8.3;
 
 import './interfaces/IGame.sol';
-// import './interfaces/IVote.sol';
 import './GameERC20.sol';
-import './libraries/SafeMath.sol';
 import './libraries/TransferHelper.sol';
 import './libraries/LGame.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/ILockNoodleERC20.sol';
 import './ConfigurableParametersContract.sol';
-import 'hardhat/console.sol';
 
 contract Game is IGame, GameERC20, ConfigurableParametersContract {
-    using SafeMath for uint256;
     using LGame for LGame.PlayInfoStruct;
     using LGame for mapping(uint256 => LGame.PlayInfoStruct);
 
@@ -27,46 +23,48 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         _;
     }
 
-    uint256 public confirmResultSlot = 300; //游戏结束时间到可输入结果时间，单位为s，设置为1h
-    uint256 public confirmSlot = 300; //结果确认后时间，单位为s，设置为4h
-    uint256 public voteSlot = 300; //投票时间，单位为s,设置为4h
-
+    // Gas优化: 存储布局优化 - 将相同大小的变量打包到同一个 slot
+    // Slot 1-3: 时间配置
+    uint256 public confirmResultSlot = 300;
+    uint256 public confirmSlot = 300;
+    uint256 public voteSlot = 300;
+    
+    // Slot 4-7: 时间戳
+    uint256 public endTime;
+    uint256 public confirmResultTime;
+    uint256 public challengeTime;
+    uint256 public startVoteTime;
+    
+    // Slot 8: creator(20) + originOption(1) + challengeOption(1) + winOption(1) + voteFlag(1) + receiveFlag(1) + feeRate(1) = 26 bytes
     address public creator;
+    uint8 public originOption;
+    uint8 public challengeOption;
+    uint8 public winOption;
+    uint8 private voteFlag;
+    uint8 private receiveFlag;
+    uint8 public feeRate; // 0.5% = 5/1000
+    
+    // Slot 9: token(20) + confirmResultAward(1) = 21 bytes
     address public token;
-
-    uint256 public endTime; //结束game时间
-    uint256 public confirmResultTime; //输入结果时间
-    uint256 public challengeTime; //质疑时间
-    uint256 public startVoteTime; //开始投票时间
-
-    address public openAddress; //原始输入地址
-    uint8 public originOption = 200; //原始输入结果
-    address public confirmResultAddress; //确认结果地址
-    address public challengeAddress; //挑战地址
-    uint8 public challengeOption = 200; //挑战结果
-    uint8 public winOption = 200; //最终结果
-
-    uint8 private voteFlag = 100; //投票标志
-    uint8 private receiveFlag = 200; //领奖标志
-
-    uint256 public confirmResultAward = 100; //结果输出者是否领奖
-    mapping(address => uint8) public voteMap; //投票数据
-
+    uint8 public confirmResultAward;
+    
+    // Slot 10-12: 地址(各占一个 slot)
+    address public openAddress;
+    address public confirmResultAddress;
+    address public challengeAddress;
+    
+    // Gas优化: immutable 变量不占用 storage
+    address public immutable noodleToken;
+    address public immutable lockNoodleToken;
+    address public immutable playNFT;
+    
+    // Slot 13: 总手续费
+    uint256 public fee;
+    
+    // Slot 14+: 映射和动态数组
+    mapping(address => uint8) public voteMap;
     LGame.OptionDataStruct[] public options;
-
     mapping(uint256 => LGame.PlayInfoStruct) public playInfoMap;
-
-    //手续费率
-    uint256 public feeRate = 5; //0.5%
-
-    //总手续费
-    uint256 public fee = 0;
-
-    address public noodleToken;
-
-    address public lockNoodleToken;
-
-    address public playNFT;
 
     constructor(
         address _creator,
@@ -83,30 +81,44 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
         endTime = _endTime;
         noodleToken = _noodleToken;
         lockNoodleToken = _lockNoodleToken;
-        for (uint8 i = 0; i < _optionNum.length; i++) {
-            LGame.OptionDataStruct memory option;
-            option.initMarketNumber = _optionNum[i];
-            option.marketNumber = _optionNum[i];
-            option.placeNumber = 0;
-            option.frozenNumber = 0;
-            option.voteNumber = 0;
-            options.push(option);
-        }
         playNFT = _playNFT;
+        
+        // Gas优化: 初始化默认值
+        originOption = 200;
+        challengeOption = 200;
+        winOption = 200;
+        voteFlag = 100;
+        receiveFlag = 200;
+        confirmResultAward = 100;
+        feeRate = 5; // 0.5%
+        
+        uint256 len = _optionNum.length;
+        for (uint8 i = 0; i < len; ) {
+            options.push(LGame.OptionDataStruct({
+                initMarketNumber: _optionNum[i],
+                marketNumber: _optionNum[i],
+                placeNumber: 0,
+                frozenNumber: 0,
+                voteNumber: 0
+            }));
+            unchecked { ++i; }
+        }
     }
 
     //下单
     function placeGame(
         uint8[] memory _options,
         uint256[] memory _optionNum,
-        uint256 _spread,
+        uint256, // _spread (unused)
         uint256 _deadline
     ) public payable override ensure(_deadline) gameEndCheck(endTime) returns (uint256[] memory tokenIds) {
         require(options[0].marketNumber != 0, 'NoodleSwap: market pool have not enough amount');
-        uint256 balance = IERC20(token).balanceOf(address(msg.sender));
-        uint256 sum = 0;
-        for (uint8 i = 0; i < _optionNum.length; i++) {
+        uint256 balance = IERC20(token).balanceOf(msg.sender);
+        uint256 sum;
+        uint256 len = _optionNum.length;
+        for (uint8 i = 0; i < len; ) {
             sum += _optionNum[i];
+            unchecked { ++i; }
         }
         require(balance >= sum, 'NoodleSwap: address have not enough amount');
         TransferHelper.safeTransferFrom(token, msg.sender, address(this), sum);
@@ -133,7 +145,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     function addLiquidity(
         uint256 amount,
-        uint256 _spread,
+        uint256, // _spread (unused)
         uint256 _deadline
     )
         public
@@ -155,7 +167,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
 
     function removeLiquidity(
         uint256 _liquidity,
-        uint256 _spread,
+        uint256, // _spread (unused)
         uint256 _deadline
     ) public payable override ensure(_deadline) returns (uint256 amount, uint256[] memory tokenIds) {
         uint256 balance = balanceOf[address(msg.sender)];
@@ -194,7 +206,7 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     }
 
     //游戏是否可以领奖
-    function isGameClose() private returns (uint256 gameResultType) {
+    function isGameClose() private view returns (uint256 gameResultType) {
         if (
             confirmResultTime > 0 && challengeAddress == address(0) && confirmResultTime + confirmSlot < block.timestamp
         ) {
@@ -224,15 +236,13 @@ contract Game is IGame, GameERC20, ConfigurableParametersContract {
     //获得奖励
     function getAward(uint256[] memory tokenIds) public payable returns (uint256 amount) {
         require(isGameClose() < 100, 'NoodleSwap: Game is not over');
-        console.log('winOption:', winOption);
         amount = playInfoMap.getAward(tokenIds, winOption, playNFT);
-        console.log('award amount:', amount);
         TransferHelper.safeTransferFrom(token, address(this), msg.sender, amount);
         emit _getAward(address(this), token, msg.sender, tokenIds, amount);
     }
 
     //抵押获取开奖资格
-    function stakeGame(uint256 deadline) public override {
+    function stakeGame(uint256 /* deadline */) public override {
         require(openAddress == address(0), 'NoodleSwap: the game has openAddress');
         uint256 balance = INoodleGameERC20(noodleToken).balanceOf(address(msg.sender));
         require(balance >= stakeNumber, 'NoodleSwap: address have not enough amount');

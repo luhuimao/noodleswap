@@ -2,7 +2,6 @@
 pragma solidity ^0.8.3;
 
 import '../PlayNFT.sol';
-import 'hardhat/console.sol';
 // a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)
 
 library LGame {
@@ -38,17 +37,18 @@ library LGame {
         uint8 winOption,
         address playNFT
     ) public returns (uint256 amount) {
-        for (uint8 i = 0; i < tokenIds.length; i++) {
+        uint256 len = tokenIds.length;
+        for (uint8 i = 0; i < len; ) {
             require(msg.sender == PlayNFT(playNFT).ownerOf(tokenIds[i]), 'NoodleSwap: address have no right');
-            console.log('play info:',self[tokenIds[i]].option);
-            if (self[tokenIds[i]].option == 200) {
-                continue;
+            uint8 option = self[tokenIds[i]].option;
+            if (option != 200) {
+                if (option == winOption) {
+                    // 用户赢了，则将币转给用户
+                    amount += self[tokenIds[i]].optionNum + self[tokenIds[i]].allFrozen;
+                }
+                self[tokenIds[i]].option = 200; // 标记已经领取
             }
-            if (self[tokenIds[i]].option == winOption) {
-                //用户赢了，则将币转给用户
-                amount += self[tokenIds[i]].optionNum + self[tokenIds[i]].allFrozen;
-            }
-            self[tokenIds[i]].option = 200; //表示已经领取
+            unchecked { ++i; }
         }
     }
 
@@ -158,14 +158,14 @@ library LGame {
     }
 
     function removeLiquidityWithWinOption (
-        mapping(uint256 => LGame.PlayInfoStruct) storage self,
+        mapping(uint256 => LGame.PlayInfoStruct) storage, // self (unused)
         OptionDataStruct[] storage options,
         uint256 totalSupply,
         uint256 _liquidity,
         uint256 winOption,
         uint256 marketFee
     )
-        public 
+        public view 
         returns (uint256 sum){
         for (uint8 i = 0; i < options.length; i++) {
             if(winOption == i){
@@ -188,39 +188,47 @@ library LGame {
         uint256[] memory _optionNum,
         address playNFT,
         uint256 feeRate
-    ) public returns (uint256[] memory tokenIds,uint256 fee) {
-        for (uint8 i = 0; i < _options.length; i++) {
-            options[_options[i]].placeNumber += _optionNum[i]*(1000-feeRate)/1000;
-            fee += _optionNum[i]*feeRate/1000;
+    ) public returns (uint256[] memory tokenIds, uint256 fee) {
+        // 第一步: 更新 placeNumber 和计算手续费
+        for (uint8 i = 0; i < _options.length; ) {
+            options[_options[i]].placeNumber += (_optionNum[i] * (1000 - feeRate)) / 1000;
+            fee += (_optionNum[i] * feeRate) / 1000;
+            unchecked { ++i; }
         }
-        uint256[] memory currentFrozen = new uint256[](options.length);
+        
         tokenIds = new uint256[](_options.length);
-        for (uint8 i = 0; i < _options.length; i++) {
-            uint8 optionId = _options[i];
-            uint256 optionNum = _optionNum[i]*(1000-feeRate)/1000;
-            uint256 allFrozen = 0;
-            for (uint8 j = 0; j < options.length; j++) {
-                if (j != optionId) {
-                    //计算optionId 和 j 池子的赔率
-                    uint256 p = _calcOdd(options[optionId], options[j]);
-                    uint256 frozenJ = optionNum * p / 1 ether;
-                    currentFrozen[j] = frozenJ;
-                    allFrozen += frozenJ;
+        uint256[] memory currentFrozen = new uint256[](options.length);
+        
+        // 第二步: 生成 NFT
+        for (uint8 i = 0; i < _options.length; ) {
+            uint256 allFrozen;
+            uint256 adjustedNum = (_optionNum[i] * (1000 - feeRate)) / 1000;
+            
+            // 计算冻结金额
+            for (uint8 j = 0; j < options.length; ) {
+                if (j != _options[i]) {
+                    currentFrozen[j] = (adjustedNum * 
+                        (options[j].placeNumber + options[j].marketNumber - options[j].frozenNumber) * 1 ether) / 
+                        (options[_options[i]].placeNumber + options[_options[i]].marketNumber - options[_options[i]].frozenNumber) / 1 ether;
+                    allFrozen += currentFrozen[j];
                 }
+                unchecked { ++j; }
             }
-            //这个选项的赔率
-            uint256 optionP = (allFrozen + optionNum)*1 ether/optionNum;
-            //调用生成ERC721 token的接口, option,optionNum,optionP,allFrozen,返回tokenId
-            uint256 tokenId = PlayNFT(playNFT).createNFT(msg.sender, '');
-            // LGame.PlayInfoStruct memory playInfo = self[tokenId];
-            self[tokenId].option = optionId;
-            self[tokenId].optionNum = optionNum;
-            self[tokenId].optionP = optionP;
-            self[tokenId].allFrozen = allFrozen;
-            tokenIds[i] = tokenId;
+            
+            // 铸造 NFT
+            tokenIds[i] = PlayNFT(playNFT).createNFT(msg.sender, '');
+            self[tokenIds[i]].option = _options[i];
+            self[tokenIds[i]].optionNum = adjustedNum;
+            self[tokenIds[i]].optionP = ((allFrozen + adjustedNum) * 1 ether) / adjustedNum;
+            self[tokenIds[i]].allFrozen = allFrozen;
+            
+            unchecked { ++i; }
         }
-        for (uint8 i = 0; i < options.length; i++) {
-            options[i].frozenNumber = options[i].frozenNumber + currentFrozen[i];
+        
+        // 第三步: 更新冻结金额
+        for (uint8 i = 0; i < options.length; ) {
+            options[i].frozenNumber += currentFrozen[i];
+            unchecked { ++i; }
         }
     }
 }
